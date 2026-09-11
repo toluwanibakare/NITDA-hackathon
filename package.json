@@ -1,0 +1,16 @@
+{
+  "name": "thirdeye",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ThirdEye watches your third parties — ICSC 2nd Edition G1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces",
+    "typecheck": "tsc --noEmit -p tsconfig.json || true"
+  }
+}

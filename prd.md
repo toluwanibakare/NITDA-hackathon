@@ -1,20 +1,20 @@
-# TRUSTGUARD — BUILD-READY PRD
+# THIRDEYE — BUILD-READY PRD
 
 **Project:** ICSC Conference 2nd Edition — G1
-**Product:** TrustGuard
-**Type:** Third-Party Integration Security Middleware
+**Product:** ThirdEye
+**Type:** Third-Party Integration Security Middleware (ThirdEye watches your third parties)
 **Goal:** Build a working security middleware that detects when an authorized third-party integration starts behaving outside its intended purpose.
 
 ---
 
 # 1. THE PRODUCT
 
-TrustGuard sits between an application and its third-party integrations.
+ThirdEye sits between an application and its third-party integrations.
 
 ```text
 APPLICATION
      ↓
-TRUSTGUARD MIDDLEWARE
+THIRDEYE MIDDLEWARE
      ↓
 RISK ENGINE
      ↓
@@ -23,7 +23,7 @@ THIRD-PARTY API
 
 Every request is evaluated before it reaches the external service.
 
-TrustGuard answers:
+ThirdEye answers:
 
 > **“Is this integration allowed to make this request, and does this request make sense for what the integration is supposed to do?”**
 
@@ -586,7 +586,7 @@ Create a visual map:
                     │ APPLICATION   │
                     └───────┬───────┘
                             │
-                     TRUSTGUARD
+                     THIRDEYE
                             │
           ┌─────────────────┼─────────────────┐
           ↓                 ↓                 ↓
@@ -1053,7 +1053,7 @@ The entire presentation should follow this sequence:
 
 7. Request volume increases.
 
-8. TrustGuard detects:
+8. ThirdEye detects:
    - purpose violation
    - forbidden data
    - abnormal endpoint
@@ -1083,13 +1083,13 @@ The entire presentation should follow this sequence:
 
 # 25. CORE DIFFERENTIATOR
 
-Do not pitch TrustGuard as:
+Do not pitch ThirdEye as:
 
 > "Another API monitoring tool."
 
 Pitch it as:
 
-> **"A continuous trust layer for third-party integrations."**
+> **"ThirdEye watches your third parties — a continuous trust layer for third-party integrations."**
 
 Existing API security products already provide API discovery, monitoring, schema validation, rate limiting and other protections. Traceable also explicitly monitors third-party API usage and sensitive-data exposure.
 
@@ -1113,7 +1113,7 @@ GRADED RESPONSE
 
 # 26. THE ONE SENTENCE
 
-> **TrustGuard continuously verifies that authorized third-party integrations are behaving within their intended purpose and approved scope, then progressively restricts integrations when their behaviour becomes risky.**
+> **ThirdEye continuously verifies that authorized third-party integrations are behaving within their intended purpose and approved scope, then progressively restricts integrations when their behaviour becomes risky.**
 
 ---
 
