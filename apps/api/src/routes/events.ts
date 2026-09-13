@@ -80,7 +80,7 @@ eventsRouter.get('/', async (req: Request, res: Response) => {
 
     let filtered = demoEvents;
     if (integrationId) {
-      filtered = filtered.filter((e) => e.integrationId === integrationId);
+      filtered = filtered.filter((e) => (e.integrationId === integrationId || e.integration_id === integrationId));
     }
     return res.status(200).json(filtered.slice(0, limit).map(formatEvent));
   } catch (err: any) {

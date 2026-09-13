@@ -169,7 +169,7 @@ integrationsRouter.get('/:id', async (req: Request, res: Response) => {
       behaviour: {
         normalRate: expectedRate,
         currentRate,
-        deviationMultiple: Number((currentRate / expectedRate).toFixed(2)),
+        deviationMultiple: Number((currentRate / Math.max(1, expectedRate)).toFixed(2)),
       },
       recentViolations: recentViolations.map((v) => ({
         id: v.id,

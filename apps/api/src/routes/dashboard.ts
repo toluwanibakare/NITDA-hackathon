@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { supabase, isSupabaseConfigured } from '../supabase.js';
+import { fallbackIntegrations } from './integrations.js';
+import { demoEvents } from './events.js';
 
 export const dashboardRouter = Router();
 
@@ -15,24 +17,41 @@ dashboardRouter.get('/stats', async (_req: Request, res: Response) => {
       const { count: monitored } = await supabase.from('requests').select('id', { count: 'exact', head: true });
 
       const list = integrations || [];
+      const total = list.length;
       const active = list.filter((i) => i.status === 'ACTIVE').length;
       const quarantined = list.filter((i) => i.status === 'QUARANTINED').length;
+      const totalThreats = threats || 0;
+      const totalMonitored = monitored || 0;
 
       return res.status(200).json({
-        integrations: list.length,
+        integrations: total,
+        totalIntegrations: total,
         active,
-        monitoredRequests: monitored || 0,
-        threats: threats || 0,
+        activeIntegrations: active,
+        monitoredRequests: totalMonitored,
+        threats: totalThreats,
+        totalThreats,
         quarantined,
+        quarantinedIntegrations: quarantined,
       });
     }
 
+    const fallbackList = Object.values(fallbackIntegrations);
+    const total = fallbackList.length;
+    const active = fallbackList.filter((i: any) => i.status === 'ACTIVE').length;
+    const quarantined = fallbackList.filter((i: any) => i.status === 'QUARANTINED').length;
+    const threats = demoEvents.length;
+
     return res.status(200).json({
-      integrations: 4,
-      active: 3,
+      integrations: total,
+      totalIntegrations: total,
+      active,
+      activeIntegrations: active,
       monitoredRequests: 12480,
-      threats: 7,
-      quarantined: 1,
+      threats,
+      totalThreats: threats,
+      quarantined,
+      quarantinedIntegrations: quarantined,
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message, code: 'STATS_FETCH_FAILED' });
