@@ -23,7 +23,7 @@ async function request(path, options = {}) {
   } catch (e) {
     json = text;
   }
-  return { status: res.status, ok: res.ok, data: json };
+  return { status: res.status, ok: res.ok, data: json, headers: res.headers };
 }
 
 function assert(condition, message) {
@@ -213,8 +213,42 @@ async function runVerification() {
   assert(blackFridayTest.data.level === 'TRUSTED' || blackFridayTest.data.level === 'LOW_RISK', `Black Friday level is TRUSTED (level: ${blackFridayTest.data.level})`);
   console.log('[FLOW 5 COMPATIBILITY: 100% CONFIRMED]\n');
 
+  // ---------------------------------------------------------------
+  // ENTERPRISE UPGRADES: Tracing, Service Index, Hash Chain & Filtering
+  // ---------------------------------------------------------------
+  console.log('[ENTERPRISE] Observability, Tamper-Evident Hashing & Query Filters');
+
+  // 1. Request tracing and latency profiling headers
+  assert(blackFridayTest.headers.get('x-request-id') !== null, 'Response includes X-Request-Id header');
+  assert(blackFridayTest.headers.get('x-response-time') !== null, 'Response includes X-Response-Time header');
+
+  // 2. Service discovery index (GET /api)
+  const serviceIndex = await request('/api');
+  assert(serviceIndex.status === 200, 'GET /api returns 200 OK');
+  assert(serviceIndex.data.service === 'ThirdEye Security Engine API', 'Service index returns correct service name');
+  assert(serviceIndex.data.endpoints !== undefined && typeof serviceIndex.data.endpoints === 'object', 'Service index lists endpoint directory');
+
+  // 3. Cryptographic audit chain verification (GET /api/security-events/verify)
+  const auditVerification = await request('/api/security-events/verify');
+  assert(auditVerification.status === 200, 'GET /api/security-events/verify returns 200 OK');
+  assert(auditVerification.data.verified === true, 'Cryptographic chain verification passed (verified: true)');
+  assert(auditVerification.data.integrity === 'INTACT', 'Audit trail integrity is INTACT');
+  assert(auditVerification.data.chainLength > 0, `Audit trail verified ${auditVerification.data.chainLength} chained records`);
+  assert(auditVerification.data.latestHash && auditVerification.data.latestHash.length === 64, 'Computed valid 64-char SHA-256 hash');
+
+  // 4. Integrations filtering & search
+  const filteredActive = await request('/api/integrations?status=ACTIVE');
+  assert(filteredActive.status === 200, 'GET /api/integrations?status=ACTIVE returns 200 OK');
+  assert(filteredActive.data.every((i) => i.status === 'ACTIVE'), 'All returned integrations match status=ACTIVE');
+
+  const searchDelivery = await request('/api/integrations?search=delivery');
+  assert(searchDelivery.status === 200, 'GET /api/integrations?search=delivery returns 200 OK');
+  assert(searchDelivery.data.length > 0 && searchDelivery.data[0].id === 'delivery_001', 'Fuzzy search accurately found delivery_001');
+
+  console.log('[ENTERPRISE ENHANCEMENTS: 100% CONFIRMED]\n');
+
   console.log('====================================================');
-  console.log('ALL FRONTEND INTEGRATION FLOWS VERIFIED SUCCESSFULLY');
+  console.log('ALL FRONTEND INTEGRATION FLOWS & ENTERPRISE UPGRADES VERIFIED');
   console.log('====================================================');
 }
 

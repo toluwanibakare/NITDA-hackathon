@@ -105,22 +105,58 @@ function formatIntegration(item: any) {
 
 /**
  * GET /api/integrations
- * Retrieves all registered integrations
+ * Retrieves all registered integrations with optional status, search, and sort filters
  */
-integrationsRouter.get('/', async (_req: Request, res: Response) => {
-  try {
-    if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .order('risk_score', { ascending: false });
+integrationsRouter.get('/', async (req: Request, res: Response) => {
+  const { status, search, sort } = req.query;
 
+  try {
+    let list: any[] = [];
+
+    if (isSupabaseConfigured) {
+      let query = supabase.from('integrations').select('*');
+      if (status) {
+        query = query.eq('status', String(status).toUpperCase());
+      }
+      if (sort === 'rate') {
+        query = query.order('expected_request_rate', { ascending: false });
+      } else if (sort === 'name') {
+        query = query.order('name', { ascending: true });
+      } else {
+        query = query.order('risk_score', { ascending: false });
+      }
+
+      const { data, error } = await query;
       if (!error && data && data.length > 0) {
-        return res.status(200).json(data.map(formatIntegration));
+        list = data.map(formatIntegration);
       }
     }
 
-    const list = Object.values(fallbackIntegrations).map(formatIntegration);
+    if (list.length === 0) {
+      list = Object.values(fallbackIntegrations).map(formatIntegration);
+      if (status) {
+        const filterStatus = String(status).toUpperCase();
+        list = list.filter((i) => i.status === filterStatus);
+      }
+      if (sort === 'rate') {
+        list.sort((a, b) => b.expectedRequestRate - a.expectedRequestRate);
+      } else if (sort === 'name') {
+        list.sort((a, b) => a.name.localeCompare(b.name));
+      } else {
+        list.sort((a, b) => b.riskScore - a.riskScore);
+      }
+    }
+
+    if (search) {
+      const q = String(search).toLowerCase();
+      list = list.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.purpose.toLowerCase().includes(q) ||
+          i.id.toLowerCase().includes(q)
+      );
+    }
+
     return res.status(200).json(list);
   } catch (err: any) {
     return res.status(500).json({ error: err.message, code: 'INTEGRATIONS_FETCH_FAILED' });

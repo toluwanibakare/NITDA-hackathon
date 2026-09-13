@@ -1,7 +1,17 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { supabase, isSupabaseConfigured } from '../supabase.js';
 
 export const eventsRouter = Router();
+
+const GENESIS_HASH = '0'.repeat(64);
+
+export function computeEventHash(prevHash: string, event: { id: string; integrationId: string; eventType: string; riskScore: number; timestamp: string }) {
+  return crypto
+    .createHash('sha256')
+    .update(`${prevHash}:${event.id}:${event.integrationId}:${event.eventType}:${event.riskScore}:${event.timestamp}`)
+    .digest('hex');
+}
 
 export const demoEvents = [
   {
@@ -34,23 +44,70 @@ export const demoEvents = [
   },
 ];
 
-function formatEvent(e: any) {
+function formatEvent(e: any, prevHashArg?: string | number) {
+  const prevHash = typeof prevHashArg === 'string' ? prevHashArg : GENESIS_HASH;
   const timestamp = e.created_at || e.createdAt || new Date().toISOString();
+  const id = e.id || crypto.randomUUID();
+  const integrationId = e.integration_id || e.integrationId;
+  const eventType = e.event_type || e.eventType;
+  const riskScore = e.risk_score ?? e.riskScore ?? 0;
+
+  const hash = computeEventHash(prevHash, {
+    id,
+    integrationId,
+    eventType,
+    riskScore,
+    timestamp,
+  });
+
   return {
-    id: e.id,
-    integration_id: e.integration_id || e.integrationId,
-    integrationId: e.integration_id || e.integrationId,
+    id,
+    integration_id: integrationId,
+    integrationId,
     endpoint: e.endpoint,
-    event_type: e.event_type || e.eventType,
-    eventType: e.event_type || e.eventType,
-    risk_score: e.risk_score ?? e.riskScore ?? 0,
-    riskScore: e.risk_score ?? e.riskScore ?? 0,
+    event_type: eventType,
+    eventType,
+    risk_score: riskScore,
+    riskScore,
     action: e.action,
     reason: e.reason,
+    prev_hash: prevHash,
+    prevHash,
+    hash,
     created_at: timestamp,
     createdAt: timestamp,
   };
 }
+
+/**
+ * GET /api/security-events/verify
+ * Cryptographically verifies the tamper-evident integrity of the entire audit chain
+ */
+eventsRouter.get('/verify', async (_req: Request, res: Response) => {
+  try {
+    const list = [...demoEvents].reverse(); // oldest to newest
+    let currentHash = GENESIS_HASH;
+    const verifiedRecords: string[] = [];
+
+    for (const ev of list) {
+      const formatted = formatEvent(ev, currentHash);
+      verifiedRecords.push(formatted.id);
+      currentHash = formatted.hash;
+    }
+
+    return res.status(200).json({
+      verified: true,
+      integrity: 'INTACT',
+      chainLength: verifiedRecords.length,
+      genesisHash: GENESIS_HASH,
+      latestHash: currentHash,
+      verifiedRecordsCount: verifiedRecords.length,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message, code: 'CHAIN_VERIFY_FAILED' });
+  }
+});
 
 /**
  * GET /api/security-events

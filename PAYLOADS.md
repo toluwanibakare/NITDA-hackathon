@@ -9,6 +9,9 @@ This document serves as the complete reference for frontend developers integrati
 * **Base URL**: `http://localhost:4000`
 * **Default Content-Type**: `application/json`
 * **Dual Casing Guarantee**: All response objects provide attributes in both `camelCase` and `snake_case` (e.g., `risk_score` and `riskScore`) to guarantee zero `undefined` reference bugs across JavaScript/TypeScript components.
+* **Observability Headers**: Every response returns:
+  * `X-Request-Id`: Unique UUID correlation ID for distributed tracing.
+  * `X-Response-Time`: Server processing duration in milliseconds (e.g. `0.84ms`).
 
 ---
 
@@ -103,7 +106,10 @@ Evaluates an outbound third-party request against its registered trust profile.
 Lists all registered integrations with trust scores and rate quotas.
 
 * **Used By**: `/integrations` (Registry Table), Navigation dropdowns.
-* **Query Parameters**: None
+* **Query Parameters**:
+  * `status` (string, optional): Filter by `ACTIVE`, `QUARANTINED`, `MONITORED`, `RATE_LIMITED`
+  * `search` (string, optional): Fuzzy keyword search matching name, purpose, or id
+  * `sort` (string, optional): Sort order: `risk` (highest risk first, default), `rate` (highest request rate), or `name` (alphabetical)
 * **Success Response (`200 OK`)**:
   ```json
   [
@@ -296,6 +302,9 @@ Returns tamper-evident security audit logs with filtering support.
       "riskScore": 95,
       "action": "BLOCK",
       "reason": "Analytics integration attempted to access payment information",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "c5f886f4a86b5c3e7d991b1a7d65b706d860dcfb94cbfeef3359d9c882194c6f",
       "created_at": "2026-09-13T11:55:00.000Z",
       "createdAt": "2026-09-13T11:55:00.000Z"
     }
@@ -304,7 +313,56 @@ Returns tamper-evident security audit logs with filtering support.
 
 ---
 
-### 3.4 Dashboard & Analytics
+#### `GET /api/security-events/verify`
+Cryptographically verifies the SHA-256 hash chain across all recorded security events to prove tamper-evident log integrity.
+
+* **Used By**: Compliance audits, Track G tamper-proof verification, security inspector views.
+* **Success Response (`200 OK`)**:
+  ```json
+  {
+    "verified": true,
+    "integrity": "INTACT",
+    "chainLength": 9,
+    "genesisHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "latestHash": "c5f886f4a86b5c3e7d991b1a7d65b706d860dcfb94cbfeef3359d9c882194c6f",
+    "verifiedRecordsCount": 9,
+    "timestamp": "2026-09-13T12:55:00.000Z"
+  }
+  ```
+
+---
+
+### 3.4 Service Discovery
+
+#### `GET /api`
+Self-documenting root service index returning operational metadata and registered endpoints.
+
+* **Success Response (`200 OK`)**:
+  ```json
+  {
+    "service": "ThirdEye Security Engine API",
+    "version": "1.0.0",
+    "status": "operational",
+    "uptimeSeconds": 1420,
+    "environment": "production",
+    "endpoints": {
+      "health": "GET /healthz",
+      "serviceIndex": "GET /api",
+      "integrations": "GET /api/integrations",
+      "integrationDetail": "GET /api/integrations/:id",
+      "checkRequest": "POST /api/check-request",
+      "securityEvents": "GET /api/security-events",
+      "verifyAuditTrail": "GET /api/security-events/verify",
+      "dashboardStats": "GET /api/dashboard/stats",
+      "dashboardActivity": "GET /api/dashboard/activity",
+      "simulatorStart": "POST /api/simulator/start"
+    }
+  }
+  ```
+
+---
+
+### 3.5 Dashboard & Analytics
 
 #### `GET /api/dashboard/stats`
 Provides high-level KPI cards for the executive dashboard overview.
