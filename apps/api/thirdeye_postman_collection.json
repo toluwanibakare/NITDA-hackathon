@@ -1,13 +1,13 @@
 {
   "info": {
-    "_postman_id": "thirdeye-full-api-suite-v1",
-    "name": "ThirdEye API - Complete Backend Test Suite",
-    "description": "Production-grade test suite covering every backend endpoint, error boundary, and business logic invariant for ThirdEye API.",
+    "_postman_id": "thirdeye-full-api-suite-v2",
+    "name": "ThirdEye API - Complete Postman Production Suite",
+    "description": "Exhaustive production-grade Postman collection covering all ThirdEye backend endpoints, enterprise telemetry, cryptographic verification, compliance export, threat analytics, and interceptor flows.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Healthcheck",
+      "name": "1. System & Discovery",
       "item": [
         {
           "name": "GET /healthz - Service Liveness",
@@ -17,7 +17,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Service reports healthy', () => {",
+                  "pm.test('Service reports healthy and identifies as thirdeye-api', () => {",
                   "  const json = pm.response.json();",
                   "  pm.expect(json.ok).to.eql(true);",
                   "  pm.expect(json.service).to.eql('thirdeye-api');",
@@ -32,21 +32,75 @@
             "header": [],
             "url": "{{baseUrl}}/healthz"
           }
-        }
-      ]
-    },
-    {
-      "name": "2. Integrations Registry (BE-1)",
-      "item": [
+        },
         {
-          "name": "GET /api/integrations - List All",
+          "name": "GET /api - Self-Documenting Service Discovery",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Returns an array of at least 4 seeded integrations', () => {",
+                  "pm.test('Returns operational status and endpoint registry', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.service).to.eql('ThirdEye Security Engine API');",
+                  "  pm.expect(json.status.toLowerCase()).to.eql('operational');",
+                  "  pm.expect(json.endpoints).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api"
+          }
+        },
+        {
+          "name": "GET /healthz - Enterprise Tracing Headers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Echoes client correlation ID in X-Request-Id header', () => {",
+                  "  const reqId = pm.response.headers.get('X-Request-Id');",
+                  "  pm.expect(reqId).to.eql('postman-trace-9999');",
+                  "});",
+                  "pm.test('Includes X-Response-Time header', () => {",
+                  "  const respTime = pm.response.headers.get('X-Response-Time');",
+                  "  pm.expect(respTime).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Request-Id", "value": "postman-trace-9999" }
+            ],
+            "url": "{{baseUrl}}/healthz"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Integrations Registry",
+      "item": [
+        {
+          "name": "GET /api/integrations - List All Integrations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array of seeded integrations', () => {",
                   "  const data = pm.response.json();",
                   "  pm.expect(data).to.be.an('array');",
                   "  pm.expect(data.length).to.be.at.least(4);",
@@ -63,18 +117,94 @@
           }
         },
         {
-          "name": "POST /api/integrations - Register New",
+          "name": "GET /api/integrations?status=ACTIVE - Filter by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All returned records have status ACTIVE', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data).to.be.an('array');",
+                  "  data.forEach(item => pm.expect(item.status).to.eql('ACTIVE'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations?status=ACTIVE"
+          }
+        },
+        {
+          "name": "GET /api/integrations?search=delivery - Search by Query",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Finds matching integration record', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data).to.be.an('array');",
+                  "  pm.expect(data.length).to.be.at.least(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations?search=delivery"
+          }
+        },
+        {
+          "name": "GET /api/integrations?sort=risk - Sort by Risk Score",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Sorts integrations descending by risk', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data).to.be.an('array');",
+                  "  for (let i = 0; i < data.length - 1; i++) {",
+                  "    pm.expect(data[i].riskScore >= data[i + 1].riskScore).to.be.true;",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations?sort=risk"
+          }
+        },
+        {
+          "name": "POST /api/integrations - Register New Integration (with Sanitization)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 201 Created', () => pm.response.to.have.status(201));",
-                  "pm.test('Integration is initialized as ACTIVE with 0 risk', () => {",
+                  "pm.test('Initializes ACTIVE with 0 risk and normalizes paths & methods', () => {",
                   "  const data = pm.response.json();",
-                  "  pm.expect(data.id).to.eql('crm_senior_test_001');",
+                  "  pm.expect(data.id).to.eql('postman_service_001');",
                   "  pm.expect(data.status).to.eql('ACTIVE');",
                   "  pm.expect(data.riskScore).to.eql(0);",
+                  "  pm.expect(data.allowedEndpoints[0]).to.eql('/inventory');",
+                  "  pm.expect(data.allowedMethods[0]).to.eql('GET');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -86,7 +216,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\"id\":\"crm_senior_test_001\",\"name\":\"Senior Enterprise CRM Gateway\",\"purpose\":\"Synchronize enterprise customer contact records\",\"expectedRequestRate\":150,\"allowedEndpoints\":[\"/contacts\",\"/contacts/sync\"],\"allowedMethods\":[\"GET\",\"POST\"],\"allowedData\":[\"contact_id\",\"email\",\"name\"],\"forbiddenData\":[\"credit_card\",\"password\",\"ssn\"]}"
+              "raw": "{\"id\":\"postman_service_001\",\"name\":\"Postman Cloud ERP\",\"purpose\":\"Inventory dispatch sync\",\"expectedRequestRate\":180,\"allowedEndpoints\":[\"inventory/\",\"/orders\"],\"allowedMethods\":[\"get\",\"post\"],\"allowedData\":[\"item_id\",\"qty\"],\"forbiddenData\":[\"customer_ssn\",\"tax_pin\"]}"
             },
             "url": "{{baseUrl}}/api/integrations"
           }
@@ -99,9 +229,10 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Calculates deviationMultiple correctly', () => {",
+                  "pm.test('Returns profile and calculated behaviour metrics', () => {",
                   "  const data = pm.response.json();",
-                  "  pm.expect(data.profile.id).to.eql('crm_senior_test_001');",
+                  "  pm.expect(data.profile.id).to.eql('postman_service_001');",
+                  "  pm.expect(data.behaviour.normalRate).to.eql(180);",
                   "  pm.expect(data.behaviour.deviationMultiple).to.be.a('number');",
                   "});"
                 ],
@@ -112,21 +243,21 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001"
+            "url": "{{baseUrl}}/api/integrations/postman_service_001"
           }
         },
         {
-          "name": "PATCH /api/integrations/:id - Update Rate & Purpose",
+          "name": "PATCH /api/integrations/:id - Update Settings",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Fields are updated', () => {",
+                  "pm.test('Updates expectedRequestRate and purpose', () => {",
                   "  const data = pm.response.json();",
-                  "  pm.expect(data.expectedRequestRate).to.eql(250);",
-                  "  pm.expect(data.purpose).to.eql('Hardened enterprise contact sync');",
+                  "  pm.expect(data.expectedRequestRate).to.eql(300);",
+                  "  pm.expect(data.purpose).to.eql('High-throughput enterprise inventory sync');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -138,9 +269,36 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\"expectedRequestRate\":250,\"purpose\":\"Hardened enterprise contact sync\"}"
+              "raw": "{\"expectedRequestRate\":300,\"purpose\":\"High-throughput enterprise inventory sync\"}"
             },
-            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001"
+            "url": "{{baseUrl}}/api/integrations/postman_service_001"
+          }
+        },
+        {
+          "name": "GET /api/integrations/:id/history - Risk & Traffic Historical Trend",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 6 chronological trend intervals for UI area chart', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.history).to.be.an('array');",
+                  "  pm.expect(data.history.length).to.eql(6);",
+                  "  pm.expect(data.history[0].volume).to.be.a('number');",
+                  "  pm.expect(data.history[0].risk).to.be.a('number');",
+                  "  pm.expect(data.history[0].normalRate).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations/postman_service_001/history"
           }
         },
         {
@@ -151,7 +309,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Status is QUARANTINED and risk set to 95', () => {",
+                  "pm.test('Locks status to QUARANTINED and sets risk to 95', () => {",
                   "  const data = pm.response.json();",
                   "  pm.expect(data.status).to.eql('QUARANTINED');",
                   "  pm.expect(data.riskScore).to.eql(95);",
@@ -166,9 +324,9 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\"reason\":\"Immediate quarantine test\"}"
+              "raw": "{\"reason\":\"Automated quarantine test via Postman\"}"
             },
-            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001/quarantine"
+            "url": "{{baseUrl}}/api/integrations/postman_service_001/quarantine"
           }
         },
         {
@@ -179,7 +337,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Status restored to ACTIVE and risk reset to 8', () => {",
+                  "pm.test('Restores status to ACTIVE and resets risk to 8', () => {",
                   "  const data = pm.response.json();",
                   "  pm.expect(data.status).to.eql('ACTIVE');",
                   "  pm.expect(data.riskScore).to.eql(8);",
@@ -193,50 +351,30 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": { "mode": "raw", "raw": "{}" },
-            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001/release"
+            "url": "{{baseUrl}}/api/integrations/postman_service_001/release"
           }
         }
       ]
     },
     {
-      "name": "3. Error Boundary & Edge Cases",
+      "name": "3. Security Audit Events & Cryptographic Ledger",
       "item": [
         {
-          "name": "POST /api/integrations - Missing Required Fields (400)",
+          "name": "GET /api/security-events - Query Audit Trail",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 400 Bad Request on missing fields', () => {",
-                  "  pm.response.to.have.status(400);",
-                  "  pm.expect(pm.response.json().code).to.eql('INVALID_INPUT');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\":\"Incomplete Integration\"}"
-            },
-            "url": "{{baseUrl}}/api/integrations"
-          }
-        },
-        {
-          "name": "GET /api/integrations/:id - Non-existent ID (404)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Returns 404 Not Found on invalid ID', () => {",
-                  "  pm.response.to.have.status(404);",
-                  "  pm.expect(pm.response.json().code).to.eql('NOT_FOUND');",
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns events array with dual casing and cryptographic hashes', () => {",
+                  "  const events = pm.response.json();",
+                  "  pm.expect(events).to.be.an('array');",
+                  "  if (events.length > 0) {",
+                  "    pm.expect(events[0].riskScore).to.be.a('number');",
+                  "    pm.expect(events[0].hash).to.be.a('string');",
+                  "    pm.expect(events[0].prevHash).to.be.a('string');",
+                  "  }",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -246,19 +384,23 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/integrations/non_existent_random_id_999"
+            "url": "{{baseUrl}}/api/security-events?limit=10"
           }
         },
         {
-          "name": "POST /api/check-request - Missing Required Body (400)",
+          "name": "GET /api/security-events/verify - Cryptographic SHA-256 Chain Verification",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Returns 400 when checkRequest is missing required payload', () => {",
-                  "  pm.response.to.have.status(400);",
-                  "  pm.expect(pm.response.json().code).to.eql('INVALID_REQUEST');",
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cryptographic hash chain is verified and intact', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.verified).to.be.true;",
+                  "  pm.expect(data.integrity).to.eql('INTACT');",
+                  "  pm.expect(data.algorithm).to.eql('SHA-256');",
+                  "  pm.expect(data.verifiedRecordsCount).to.be.at.least(1);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -266,31 +408,101 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            },
-            "url": "{{baseUrl}}/api/check-request"
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/security-events/verify"
           }
-        }
-      ]
-    },
-    {
-      "name": "4. Dashboard & Analytics (BE-1)",
-      "item": [
+        },
         {
-          "name": "GET /api/dashboard/stats - High Level Metrics",
+          "name": "GET /api/security-events/export?format=csv - Compliance CSV Export",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has required KPI numeric fields', () => {",
+                  "pm.test('Returns text/csv content with spreadsheet headers', () => {",
+                  "  const text = pm.response.text();",
+                  "  pm.expect(text).to.include('id,timestamp,integration_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/security-events/export?format=csv"
+          }
+        },
+        {
+          "name": "GET /api/security-events/export?format=json - Compliance JSON Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns compliance report envelope', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.title).to.include('Compliance Report');",
+                  "  pm.expect(data.integrity).to.eql('VERIFIED_INTACT');",
+                  "  pm.expect(data.events).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/security-events/export?format=json"
+          }
+        },
+        {
+          "name": "GET /api/security-events/stats - Threat Intelligence Breakdown",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns aggregated threat intelligence statistics', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.byEventType).to.be.an('object');",
+                  "  pm.expect(data.byAction).to.be.an('object');",
+                  "  pm.expect(data.topTargetedEndpoints).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/security-events/stats"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Dashboard Analytics",
+      "item": [
+        {
+          "name": "GET /api/dashboard/stats - High Level KPI Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has required KPI numeric fields with dual casing', () => {",
                   "  const s = pm.response.json();",
                   "  pm.expect(s.integrations).to.be.a('number');",
+                  "  pm.expect(s.totalIntegrations).to.be.a('number');",
                   "  pm.expect(s.active).to.be.a('number');",
                   "  pm.expect(s.monitoredRequests).to.be.a('number');",
                   "  pm.expect(s.threats).to.be.a('number');",
@@ -315,7 +527,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Returns activity array', () => {",
+                  "pm.test('Returns chronological activity feed', () => {",
                   "  const a = pm.response.json();",
                   "  pm.expect(a).to.be.an('array');",
                   "});"
@@ -327,40 +539,13 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/dashboard/activity?limit=5"
+            "url": "{{baseUrl}}/api/dashboard/activity?limit=10"
           }
         }
       ]
     },
     {
-      "name": "5. Security Events Audit (BE-1)",
-      "item": [
-        {
-          "name": "GET /api/security-events - Query Log",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Returns events array', () => {",
-                  "  pm.expect(pm.response.json()).to.be.an('array');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/security-events?limit=10"
-          }
-        }
-      ]
-    },
-    {
-      "name": "6. Middleware Interceptor (BE-2)",
+      "name": "5. Core Interceptor & Risk Engine",
       "item": [
         {
           "name": "POST /api/check-request - Normal Request (ALLOW)",
@@ -370,12 +555,11 @@
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('CheckResult has required fields', () => {",
+                  "pm.test('Evaluates as TRUSTED/LOW_RISK with ALLOW action', () => {",
                   "  const r = pm.response.json();",
-                  "  pm.expect(r.riskScore).to.be.a('number');",
-                  "  pm.expect(r.level).to.be.a('string');",
-                  "  pm.expect(r.action).to.be.a('string');",
-                  "  pm.expect(r.violations).to.be.an('array');",
+                  "  pm.expect(r.riskScore <= 5).to.be.true;",
+                  "  pm.expect(r.level === 'TRUSTED' || r.level === 'LOW_RISK').to.be.true;",
+                  "  pm.expect(r.action).to.eql('ALLOW');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -387,7 +571,93 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\"integrationId\":\"payment_001\",\"method\":\"POST\",\"endpoint\":\"/payments\",\"dataRequested\":[\"order_id\",\"amount\"],\"requestCount\":50}"
+              "raw": "{\"integrationId\":\"payment_001\",\"method\":\"POST\",\"endpoint\":\"/payments\",\"dataRequested\":[\"order_id\",\"amount\"],\"requestCount\":45}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
+          }
+        },
+        {
+          "name": "POST /api/check-request - Volume Spike / Rate Drift (MONITOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Detects SUSPICIOUS rate drift with MONITOR action', () => {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.riskScore).to.eql(45);",
+                  "  pm.expect(r.level).to.eql('SUSPICIOUS');",
+                  "  pm.expect(r.action).to.eql('MONITOR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"analytics_001\",\"method\":\"GET\",\"endpoint\":\"/customers/profile\",\"dataRequested\":[\"event\"],\"requestCount\":300}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
+          }
+        },
+        {
+          "name": "POST /api/check-request - Malicious Data Exfiltration (BLOCK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Detects CRITICAL exfiltration with BLOCK action', () => {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.riskScore).to.eql(95);",
+                  "  pm.expect(r.level).to.eql('CRITICAL');",
+                  "  pm.expect(r.action).to.eql('BLOCK');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"analytics_001\",\"method\":\"GET\",\"endpoint\":\"/customers/payment-details\",\"dataRequested\":[\"payment\",\"phone\",\"address\"],\"requestCount\":1780}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
+          }
+        },
+        {
+          "name": "POST /api/check-request - Business Context (Black Friday Safety)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Forgives surge volume due to Black Friday campaign context', () => {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.riskScore).to.eql(0);",
+                  "  pm.expect(r.action).to.eql('ALLOW');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"payment_001\",\"method\":\"POST\",\"endpoint\":\"/payments\",\"dataRequested\":[\"order_id\",\"amount\"],\"requestCount\":350,\"context\":{\"isSalesDay\":true}}"
             },
             "url": "{{baseUrl}}/api/check-request"
           }
@@ -395,17 +665,17 @@
       ]
     },
     {
-      "name": "7. Attack Simulator (BE-2)",
+      "name": "6. Attack Simulator",
       "item": [
         {
-          "name": "POST /api/simulator/start - Launch 4-phase Attack",
+          "name": "POST /api/simulator/start - Launch 4-Phase Attack Session",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Returns 4 attack phases', () => {",
+                  "pm.test('Returns sessionId and 4 attack escalation phases', () => {",
                   "  const s = pm.response.json();",
                   "  pm.expect(s.sessionId).to.be.a('string');",
                   "  pm.expect(s.phases).to.be.an('array');",
@@ -427,16 +697,16 @@
           }
         },
         {
-          "name": "POST /api/simulator/reset - Reset Demo State",
+          "name": "POST /api/simulator/reset - Reset Simulator Demo State",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Resets integration to ACTIVE with score 8', () => {",
+                  "pm.test('Resets integration to ACTIVE status with baseline score 8', () => {",
                   "  const r = pm.response.json();",
-                  "  pm.expect(r.reset).to.eql(true);",
+                  "  pm.expect(r.reset).to.be.true;",
                   "  pm.expect(r.status).to.eql('ACTIVE');",
                   "  pm.expect(r.riskScore).to.eql(8);",
                   "});"
@@ -453,6 +723,88 @@
               "raw": "{\"integrationId\":\"analytics_001\"}"
             },
             "url": "{{baseUrl}}/api/simulator/reset"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Error Boundary & Edge Cases",
+      "item": [
+        {
+          "name": "POST /api/integrations - Missing Required Fields (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Returns INVALID_INPUT error code', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.code).to.eql('INVALID_INPUT');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Deficient Integration Missing Purpose and ID\"}"
+            },
+            "url": "{{baseUrl}}/api/integrations"
+          }
+        },
+        {
+          "name": "GET /api/integrations/:id - Non-existent ID (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Returns NOT_FOUND error code', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.code).to.eql('NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations/non_existent_random_id_999"
+          }
+        },
+        {
+          "name": "POST /api/check-request - Missing Required Body (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Returns INVALID_REQUEST error code', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.code).to.eql('INVALID_REQUEST');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
           }
         }
       ]

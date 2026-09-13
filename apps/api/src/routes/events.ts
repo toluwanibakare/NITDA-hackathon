@@ -98,6 +98,7 @@ eventsRouter.get('/verify', async (_req: Request, res: Response) => {
     return res.status(200).json({
       verified: true,
       integrity: 'INTACT',
+      algorithm: 'SHA-256',
       chainLength: verifiedRecords.length,
       genesisHash: GENESIS_HASH,
       latestHash: currentHash,
