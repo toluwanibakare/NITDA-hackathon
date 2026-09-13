@@ -125,6 +125,27 @@ async function runMasterTestSuite() {
   });
   check('PATCH /api/integrations/:id updates expectedRequestRate and purpose', patchRes.status === 200 && patchRes.data?.expectedRequestRate === 350);
 
+  // Historical trend points test (powers UI Area Chart)
+  const historyRes = await request(`/api/integrations/${testId}/history`);
+  check('GET /api/integrations/:id/history returns 200 OK', historyRes.status === 200);
+  check('History returns 6 progressive time intervals', Array.isArray(historyRes.data?.history) && historyRes.data?.history.length === 6);
+  check('History items contain { t, volume, risk, normalRate }', historyRes.data?.history[0]?.volume !== undefined && historyRes.data?.history[0]?.risk !== undefined);
+
+  // Input sanitization test
+  const dirtyId = `dirty_sanitize_${Date.now()}`;
+  const sanitizeRes = await request('/api/integrations', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: dirtyId,
+      name: '  Sanitized Vendor  ',
+      purpose: 'Testing path normalization',
+      allowedEndpoints: ['payments/checkout/', '/orders'],
+      allowedMethods: ['get', 'post'],
+    }),
+  });
+  check('Input sanitization normalizes endpoints with leading slash', sanitizeRes.data?.allowed_endpoints?.includes('/payments/checkout'));
+  check('Input sanitization capitalizes HTTP methods', sanitizeRes.data?.allowed_methods?.includes('GET') && sanitizeRes.data?.allowed_methods?.includes('POST'));
+
   // 5. State Transitions (Quarantine & Release)
   console.log('\nSection 5: State Transitions (Quarantine Lockdown & Release)');
   const quarantineRes = await request(`/api/integrations/${testId}/quarantine`, {
@@ -235,6 +256,22 @@ async function runMasterTestSuite() {
   check('Cryptographic hash chain validated as INTACT', verifyAudit.data?.verified === true && verifyAudit.data?.integrity === 'INTACT');
   check('Genesis hash begins chain (64 zeros)', verifyAudit.data?.genesisHash === '0'.repeat(64));
   check('Verified chain records count > 0', verifyAudit.data?.chainLength > 0);
+
+  // Compliance Export tests (CSV and JSON)
+  const exportCsv = await request('/api/security-events/export?format=csv');
+  check('GET /api/security-events/export?format=csv returns 200 OK', exportCsv.status === 200);
+  check('CSV export returns text/csv content type', exportCsv.headers.get('content-type')?.includes('text/csv'));
+  check('CSV export contains CSV column headers and rows', typeof exportCsv.data === 'string' && exportCsv.data.includes('id,timestamp,integration_id'));
+
+  const exportJson = await request('/api/security-events/export?format=json');
+  check('GET /api/security-events/export?format=json returns 200 OK', exportJson.status === 200);
+  check('JSON export contains compliance report envelope', exportJson.data?.title?.includes('Compliance Report') && Array.isArray(exportJson.data?.events));
+
+  // Threat Intelligence Stats test
+  const threatStats = await request('/api/security-events/stats');
+  check('GET /api/security-events/stats returns 200 OK', threatStats.status === 200);
+  check('Stats breakdown includes byEventType and byAction', typeof threatStats.data?.byEventType === 'object' && typeof threatStats.data?.byAction === 'object');
+  check('Stats breakdown includes topTargetedEndpoints array', Array.isArray(threatStats.data?.topTargetedEndpoints));
 
   // 9. Dashboard Analytics
   console.log('\nSection 9: Dashboard Analytics & Feed');

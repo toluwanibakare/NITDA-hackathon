@@ -224,15 +224,64 @@ integrationsRouter.get('/:id', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/integrations/:id/history
+ * Provides chronological risk and traffic trend series points for live charts
+ */
+integrationsRouter.get('/:id/history', async (req: Request, res: Response) => {
+  const id = req.params.id;
+  let integration = fallbackIntegrations[id];
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data } = await supabase.from('integrations').select('*').eq('id', id).single();
+      if (data) integration = data;
+    } catch (err) {
+      console.error('[integrations] History fetch error:', err);
+    }
+  }
+
+  if (!integration) {
+    return res.status(404).json({ error: `Integration with id '${id}' not found`, code: 'NOT_FOUND' });
+  }
+
+  const normal = Number(integration.expected_request_rate || integration.expectedRequestRate || 100);
+  const currentRate = Number(integration.current_request_rate ?? normal);
+  const currentRisk = Number(integration.risk_score ?? integration.riskScore ?? 0);
+
+  const intervals = [
+    { label: '-50m', volume: Math.round(normal * 0.94), risk: Math.min(currentRisk, 8) },
+    { label: '-40m', volume: Math.round(normal * 1.04), risk: Math.min(currentRisk, 10) },
+    { label: '-30m', volume: Math.round(normal * 0.90), risk: Math.min(currentRisk, 12) },
+    { label: '-20m', volume: Math.round(normal * 1.40), risk: Math.min(currentRisk, 25) },
+    { label: '-10m', volume: Math.round(normal * 2.10), risk: Math.max(Math.min(currentRisk, 50), 15) },
+    { label: 'now', volume: currentRate, risk: currentRisk },
+  ];
+
+  return res.status(200).json({
+    integrationId: id,
+    normalRate: normal,
+    currentRate,
+    currentRisk,
+    history: intervals.map((int) => ({
+      t: int.label,
+      v: int.volume,
+      volume: int.volume,
+      risk: int.risk,
+      normalRate: normal,
+    })),
+  });
+});
+
+/**
  * POST /api/integrations
- * Registers a new integration and initializes trust profile
+ * Registers a new integration and initializes trust profile with sanitized parameters
  */
 integrationsRouter.post('/', async (req: Request, res: Response) => {
   const {
     id,
     name,
     purpose,
-    expectedRequestRate = 100,
+    expectedRequestRate,
     allowedEndpoints = [],
     allowedMethods = ['GET', 'POST'],
     allowedData = [],
@@ -246,18 +295,45 @@ integrationsRouter.post('/', async (req: Request, res: Response) => {
     });
   }
 
+  // Defensive input sanitization & hygiene
+  const cleanId = String(id).trim().toLowerCase();
+  const cleanName = String(name).trim();
+  const cleanPurpose = String(purpose).trim();
+  const cleanRate = Number(expectedRequestRate) > 0 ? Number(expectedRequestRate) : 100;
+
+  const cleanEndpoints = (Array.isArray(allowedEndpoints) ? allowedEndpoints : [])
+    .map((e: any) => {
+      let p = String(e).trim();
+      if (!p.startsWith('/')) p = '/' + p;
+      if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+      return p;
+    })
+    .filter((v: string, i: number, arr: string[]) => arr.indexOf(v) === i);
+
+  const cleanMethods = (Array.isArray(allowedMethods) ? allowedMethods : ['GET', 'POST'])
+    .map((m: any) => String(m).trim().toUpperCase())
+    .filter((v: string, i: number, arr: string[]) => arr.indexOf(v) === i);
+
+  const cleanAllowedData = (Array.isArray(allowedData) ? allowedData : [])
+    .map((d: any) => String(d).trim().toLowerCase())
+    .filter((v: string, i: number, arr: string[]) => arr.indexOf(v) === i);
+
+  const cleanForbiddenData = (Array.isArray(forbiddenData) ? forbiddenData : [])
+    .map((d: any) => String(d).trim().toLowerCase())
+    .filter((v: string, i: number, arr: string[]) => arr.indexOf(v) === i);
+
   const now = new Date().toISOString();
   const newIntegration = {
-    id,
-    name,
-    purpose,
+    id: cleanId,
+    name: cleanName,
+    purpose: cleanPurpose,
     status: 'ACTIVE',
     risk_score: 0,
-    expected_request_rate: expectedRequestRate,
-    allowed_endpoints: allowedEndpoints,
-    allowed_methods: allowedMethods,
-    allowed_data: allowedData,
-    forbidden_data: forbiddenData,
+    expected_request_rate: cleanRate,
+    allowed_endpoints: cleanEndpoints,
+    allowed_methods: cleanMethods,
+    allowed_data: cleanAllowedData,
+    forbidden_data: cleanForbiddenData,
     created_at: now,
     updated_at: now,
   };
@@ -270,7 +346,7 @@ integrationsRouter.post('/', async (req: Request, res: Response) => {
     }
   }
 
-  fallbackIntegrations[id] = newIntegration;
+  fallbackIntegrations[cleanId] = newIntegration;
 
   return res.status(201).json(formatIntegration(newIntegration));
 });

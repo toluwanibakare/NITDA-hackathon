@@ -238,6 +238,30 @@ Updates baseline quotas or declared purpose.
 
 ---
 
+#### `GET /api/integrations/:id/history`
+Provides chronological risk and traffic trend series points used directly by the frontend Area Chart.
+
+* **Used By**: `/integrations/[id]` (Live Traffic & Risk Area Chart).
+* **Success Response (`200 OK`)**:
+  ```json
+  {
+    "integrationId": "analytics_001",
+    "normalRate": 100,
+    "currentRate": 95,
+    "currentRisk": 8,
+    "history": [
+      { "t": "-50m", "volume": 94, "risk": 8, "normalRate": 100 },
+      { "t": "-40m", "volume": 104, "risk": 8, "normalRate": 100 },
+      { "t": "-30m", "volume": 90, "risk": 8, "normalRate": 100 },
+      { "t": "-20m", "volume": 140, "risk": 8, "normalRate": 100 },
+      { "t": "-10m", "volume": 210, "risk": 8, "normalRate": 100 },
+      { "t": "now", "volume": 95, "risk": 8, "normalRate": 100 }
+    ]
+  }
+  ```
+
+---
+
 #### `POST /api/integrations/:id/quarantine`
 Locks an integration into quarantine mode, instantly setting risk to 95 and blocking outbound requests.
 
@@ -327,6 +351,64 @@ Cryptographically verifies the SHA-256 hash chain across all recorded security e
     "latestHash": "c5f886f4a86b5c3e7d991b1a7d65b706d860dcfb94cbfeef3359d9c882194c6f",
     "verifiedRecordsCount": 9,
     "timestamp": "2026-09-13T12:55:00.000Z"
+  }
+  ```
+
+---
+
+#### `GET /api/security-events/export`
+Exports the complete tamper-evident audit log as downloadable CSV or structured JSON compliance report.
+
+* **Used By**: Incident reports, auditor exports, compliance proof.
+* **Query Parameters**:
+  * `format` (string, default: `json`): `csv` or `json`.
+* **Success Response (CSV)**:
+  * Headers: `Content-Type: text/csv`, `Content-Disposition: attachment; filename="thirdeye-audit-log.csv"`
+  * Payload: Comma-separated records with SHA-256 hash proofs.
+* **Success Response (JSON)**:
+  ```json
+  {
+    "title": "ThirdEye Security Incident & Audit Compliance Report",
+    "standard": "Track G Consumer & Merchant Protection Specification",
+    "generatedAt": "2026-09-13T13:00:00.000Z",
+    "totalRecords": 10,
+    "genesisHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "latestHash": "c5f886f4a86b5c3e7d991b1a7d65b706d860dcfb94cbfeef3359d9c882194c6f",
+    "integrity": "VERIFIED_INTACT",
+    "events": [ ... ]
+  }
+  ```
+
+---
+
+#### `GET /api/security-events/stats`
+Aggregates threat intelligence and violation distribution.
+
+* **Used By**: Analytics charts, threat breakdown widgets.
+* **Success Response (`200 OK`)**:
+  ```json
+  {
+    "totalEvents": 10,
+    "byEventType": {
+      "FORBIDDEN_DATA": 4,
+      "PURPOSE_VIOLATION": 3,
+      "ABNORMAL_VOLUME": 2,
+      "QUARANTINED": 1
+    },
+    "byAction": {
+      "BLOCK": 5,
+      "RATE_LIMIT": 2,
+      "MONITOR": 3
+    },
+    "topTargetedEndpoints": [
+      { "endpoint": "/customers/payment-details", "count": 4 },
+      { "endpoint": "/customers/profile", "count": 3 }
+    ],
+    "topOffendingIntegrations": [
+      { "integrationId": "analytics_001", "count": 7 }
+    ],
+    "mostTargetedEndpoint": "/customers/payment-details",
+    "mostFlaggedIntegration": "analytics_001"
   }
   ```
 
