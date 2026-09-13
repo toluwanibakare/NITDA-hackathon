@@ -1,22 +1,31 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon, paths } from './icons';
 
 export function StatCard({ label, value, sub, tone = 'neutral', delta }: {
-  label: string; value: string; sub: string; tone?: 'neutral' | 'good' | 'warn' | 'bad'; delta?: string;
+  label: string; value: string | number; sub: string; tone?: 'neutral' | 'good' | 'warn' | 'bad'; delta?: string;
 }) {
-  const accent = tone === 'good' ? '#19D98A' : tone === 'warn' ? '#FFC42E' : tone === 'bad' ? '#FF4D5E' : '#00C8D7';
+  const accent = tone === 'good' ? '#0E9F6E' : tone === 'warn' ? '#D9930D' : tone === 'bad' ? '#E5484D' : '#0A65FF';
+  const bgTint = tone === 'good' ? '#F0F9F5' : tone === 'warn' ? '#FFF9F0' : tone === 'bad' ? '#FEF2F2' : '#EEF2FF';
+  const iconD = tone === 'good' ? paths.eye : tone === 'warn' ? paths.pulse : tone === 'bad' ? paths.alert : paths.layers;
   return (
-    <div className="panel panel-hover relative overflow-hidden p-4">
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }} />
-      <div className="eyebrow">{label}</div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <div className="mono-num text-[30px] font-semibold leading-none text-ink">{value}</div>
+    <div className="stat-card">
+      <div className="flex items-start justify-between gap-3">
+        <span className="stat-card__label">{label}</span>
+        <span className="stat-card__icon" style={{ background: bgTint, color: accent }}>
+          <Icon d={iconD} size={17} />
+        </span>
+      </div>
+      <div className="mt-2.5 flex items-end justify-between gap-3">
+        <span className="stat-card__value" style={{ color: accent }}>{value}</span>
         {delta && (
-          <span className="chip" style={{ color: accent, borderColor: `${accent}33` }}>{delta}</span>
+          <span className="chip" style={{ color: accent, borderColor: `${accent}33`, background: `${accent}0D` }}>
+            {delta}
+          </span>
         )}
       </div>
-      <div className="body-muted mt-2 text-[12px]">{sub}</div>
+      <div className="stat-card__sub mt-1">{sub}</div>
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-2xl" style={{ background: `linear-gradient(90deg, ${accent}44, ${accent}11, transparent)` }} />
     </div>
   );
 }
@@ -30,8 +39,8 @@ export function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="mono-num hidden items-center gap-2 text-[12px] text-muted sm:inline-flex">
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-trust animate-pulseDot" />
+    <span className="liquid-glass mono-num hidden items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-medium text-[#5A6B82] sm:inline-flex">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#0E9F6E] animate-pulseDot" />
       {t} WAT
     </span>
   );
@@ -39,33 +48,35 @@ export function LiveClock() {
 
 export function BootLoader({ done }: { done: boolean }) {
   const [show, setShow] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (done) {
-      const id = setTimeout(() => setShow(false), 600);
+      const id = setTimeout(() => setShow(false), 650);
       return () => clearTimeout(id);
     }
   }, [done]);
   if (!show) return null;
   return (
-    <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-abyss ${done ? 'boot-fade' : ''}`}>
-      <video src="/loading.webm" autoPlay muted loop playsInline className="h-40 w-40 object-contain opacity-90" />
-      <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.3em] text-faint">Initialising trust layer</div>
-      <div className="mt-3 h-px w-44 overflow-hidden bg-white/10">
-        <div className="h-full w-1/2 bg-aqua/80" style={{ animation: 'ticker 1.1s linear infinite' }} />
-      </div>
-      <style>{`@keyframes ticker { from { transform: translateX(-100%);} to { transform: translateX(300%);} }`}</style>
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-white ${done ? 'boot-fade' : ''}`}>
+      <video
+        ref={videoRef}
+        src="/loading.webm"
+        autoPlay muted playsInline preload="auto"
+        onLoadedMetadata={() => { if (videoRef.current) videoRef.current.playbackRate = 5; }}
+        className="h-32 w-32 object-contain md:h-40 md:w-40"
+      />
     </div>
   );
 }
 
 export function EmptyState({ title, body, icon = 'grid' }: { title: string; body: string; icon?: keyof typeof paths }) {
   return (
-    <div className="panel flex flex-col items-center px-6 py-10 text-center">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-muted">
-        <Icon d={paths[icon]} size={18} />
+    <div className="section-card flex flex-col items-center py-10">
+      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#0A65FF] shadow-sm">
+        <Icon d={paths[icon]} size={19} />
       </span>
-      <div className="h-section mt-3">{title}</div>
-      <div className="body-muted mt-1 max-w-sm">{body}</div>
+      <div className="h-section mt-4">{title}</div>
+      <div className="section-sub-soft mt-1.5 max-w-sm">{body}</div>
     </div>
   );
 }

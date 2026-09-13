@@ -25,51 +25,58 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <BootLoader done={booted} />
       <div className="bg-grid pointer-events-none fixed inset-0" />
-      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-abyss/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-[60px] max-w-7xl items-center gap-3 px-5">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="relative block h-9 w-9 overflow-hidden rounded-xl border border-white/10 bg-black">
-              <Image src="/logo.jpeg" alt="ThirdEye" fill className="object-cover" priority />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-[15px] font-semibold tracking-[-0.01em]">ThirdEye</span>
-              <span className="block font-mono text-[10px] uppercase tracking-[0.22em] text-faint">Trust layer · G1</span>
+
+      {/* liquid-glass nav bar — floats edge-to-edge */}
+      <header className="sticky top-0 z-40">
+        <div className="liquid-glass mx-auto flex h-[64px] w-full items-center gap-4 px-5 md:px-8">
+          <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5">
+            <Image
+              src="/logo.jpeg"
+              alt="ThirdEye"
+              width={44}
+              height={44}
+              className="h-10 w-10 object-contain"
+              priority
+            />
+            <span className="leading-none">
+              <span className="block text-[18px] font-bold tracking-[-0.02em] text-ink">ThirdEye</span>
             </span>
           </Link>
-          <nav className="ml-8 hidden items-center gap-1 md:flex">
+
+          <nav className="liquid-segment mx-auto flex items-center gap-0.5 rounded-full p-[3px] md:flex">
             {NAV.map((n) => {
               const active = path === n.href || (n.href === '/dashboard' && path === '/');
               return (
                 <Link
                   key={n.href}
                   href={n.href}
-                  className={`relative rounded-lg px-3.5 py-2 text-[13.5px] transition-colors ${active ? 'text-ink' : 'text-muted hover:text-ink'}`}
+                  className={`relative rounded-full px-4 py-1.5 text-[13px] font-medium transition-all ${
+                    active
+                      ? 'liquid-active text-ink'
+                      : 'text-muted hover:bg-white/60 hover:text-ink'
+                  }`}
                 >
-                  {active && <span className="absolute inset-0 rounded-lg border border-white/10 bg-white/[0.06]" />}
-                  <span className="relative">{n.label}</span>
-                  {active && <span className="absolute inset-x-3 -bottom-[13px] h-[2px] rounded-full bg-aqua" />}
+                  {n.label}
                 </Link>
               );
             })}
           </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="chip hidden lg:inline-flex">
+
+          <div className="ml-auto flex shrink-0 items-center gap-2.5">
+            <span className="chip hidden !border-trust/25 !bg-trust/[0.07] !text-[#0B7A55] lg:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-trust animate-pulseDot" />
               ENGINE NOMINAL
             </span>
             <LiveClock />
           </div>
         </div>
-        <div className="flex gap-1 overflow-x-auto border-t border-white/[0.05] px-4 py-1.5 md:hidden">
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className={`whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] ${path === n.href ? 'bg-white/10 text-ink' : 'text-muted'}`}>{n.label}</Link>
-          ))}
-        </div>
       </header>
-      <main className="relative mx-auto max-w-7xl px-5 pb-16 pt-6">{children}</main>
-      <footer className="border-t border-white/[0.06] py-5">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-5 font-mono text-[11px] text-faint">
-          <span>THIRDEYE · ICSC 2026 · TRACK G</span>
+
+      <main className="relative mx-auto w-full max-w-6xl px-5 md:px-6 pb-16 pt-6 md:pt-8">{children}</main>
+
+      <footer className="border-t border-line bg-white/70">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-2 py-5 px-5 font-mono text-[11px] tracking-wide text-faint md:px-6">
+          <span className="font-semibold text-muted">THIRDEYE · ICSC 2026 · TRACK G</span>
           <span className="ml-auto">Synthetic demo data only · No personal data</span>
         </div>
       </footer>

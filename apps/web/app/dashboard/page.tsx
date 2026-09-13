@@ -37,100 +37,93 @@ export default function Dashboard() {
     let chan: { unsubscribe: () => void } | null = null;
     try {
       const sb = supabaseBrowser();
-      chan = sb
-        .channel('te-events')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => load())
-        .subscribe() as unknown as { unsubscribe: () => void };
-    } catch { /* realtime optional — polling covers judge wifi */ }
+      chan = sb.channel('te-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => load()).subscribe() as unknown as { unsubscribe: () => void };
+    } catch { /* realtime optional */ }
     return () => { clearInterval(id); chan?.unsubscribe(); };
   }, [load]);
 
   async function quarantine(id: string) {
     setQuarantining(id);
     try {
-      await apiSafe(`/api/integrations/${id}/quarantine`, { status: 'QUARANTINED' }, {
-        method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from dashboard' }),
-      });
-    } finally {
-      setQuarantining(null);
-      load();
-    }
+      await apiSafe(`/api/integrations/${id}/quarantine`, { status: 'QUARANTINED' }, { method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from dashboard' }) });
+    } finally { setQuarantining(null); load(); }
   }
 
   return (
-    <div className="stagger space-y-5">
-      {/* header */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <div className="eyebrow">Track G · Commerce & consumer protection</div>
-          <h1 className="h-display mt-1">Third parties, under continuous watch</h1>
-          <p className="body-muted mt-1.5 max-w-2xl">
-            Every authorised integration is verified against its declared purpose and approved scope.
-            Risk is scored live and the response is graded — never just on or off.
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="chip" style={{ color: live ? '#19D98A' : '#FFC42E', borderColor: live ? '#19D98A44' : '#FFC42E44' }}>
-            <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-trust animate-pulseDot' : 'bg-watch animate-blink'}`} />
-            {live ? 'LIVE · ENGINE CONNECTED' : 'DEMO DATA · ENGINE OFFLINE'}
-          </span>
-          <Link href="/simulator" className="btn-primary">
-            <Icon d={paths.play} size={14} /> Run attack demo
-          </Link>
+    <div className="stagger space-y-6">
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-[28px] border border-[#E4EAF3] bg-gradient-to-br from-[#FFFFFF] via-[#FAFBFC] to-[#F1F5F9] px-6 py-7 md:px-8 md:py-9">
+        <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-brand/[0.06] blur-3xl" />
+        <div className="absolute bottom-0 left-20 h-40 w-40 rounded-full bg-[#08B1C8]/[0.05] blur-3xl" />
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="section-label">Track G · Commerce & consumer protection</div>
+            <h1 className="section-heading mt-2.5 max-w-lg">Third parties, under continuous watch</h1>
+            <p className="section-sub mt-3">Every authorised integration is verified against its declared purpose and approved scope. Risk is scored live and the response is graded — never just on or off.</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <span className="chip" style={{ color: live ? '#0B7A55' : '#92600A', borderColor: live ? '#0E9F6E44' : '#D9930D44', background: live ? '#0E9F6E0F' : '#D9930D0F' }}>
+              <span className={`h-2 w-2 rounded-full ${live ? 'bg-[#0E9F6E] animate-pulseDot' : 'bg-[#D9930D] animate-blink'}`} />
+              {live ? 'ENGINE NOMINAL' : 'DEMO DATA · OFFLINE'}
+            </span>
+            <Link href="/simulator" className="btn-accent">
+              <Icon d={paths.play} size={15} /> Run attack demo
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* stats */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         <StatCard label="Integrations" value={String(stats.integrations)} sub="Registered third parties" />
-        <StatCard label="Active" value={String(stats.active)} sub="Within purpose" tone="good" />
-        <StatCard label="Monitored requests" value={Number(stats.monitoredRequests).toLocaleString()} sub="Verified by middleware" />
+        <StatCard label="Active" value={String(stats.active)} sub="Within purpose" tone="good" delta="up" />
+        <StatCard label="Requests" value={Number(stats.monitoredRequests).toLocaleString()} sub="Verified by middleware" />
         <StatCard label="Threats" value={String(stats.threats)} sub="Graded responses issued" tone={stats.threats > 0 ? 'warn' : 'neutral'} />
         <StatCard label="Quarantined" value={String(stats.quarantined)} sub="Blocked + isolated" tone={stats.quarantined > 0 ? 'bad' : 'neutral'} />
       </div>
 
-      {/* map */}
+      {/* Map */}
       <IntegrationMap items={items} onSelect={(id) => router.push(`/integrations/${id}`)} />
 
-      {/* table + feed */}
-      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <div className="panel overflow-hidden">
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
+      {/* Table + Timeline */}
+      <div className="grid gap-5 lg:grid-cols-[1.65fr_1fr]">
+        <div className="section-card--numbered overflow-hidden">
+          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
             <div>
-              <div className="eyebrow">Integration registry</div>
+              <div className="section-label-soft">Integration registry</div>
               <div className="h-section mt-0.5">Declared purpose vs live behaviour</div>
             </div>
-            <Link href="/integrations" className="font-mono text-[11px] tracking-wide text-aqua hover:underline">Registry →</Link>
+            <Link href="/integrations" className="hidden shrink-0 font-mono text-[11px] font-semibold tracking-wide text-brand hover:underline md:block">View all →</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left">
+            <table className="data-table">
               <thead>
-                <tr className="table-head border-b border-white/[0.06]">
-                  <th className="px-5 py-2.5 font-medium">Integration</th>
-                  <th className="px-3 py-2.5 font-medium">Req/min</th>
-                  <th className="px-3 py-2.5 font-medium">Risk</th>
-                  <th className="px-3 py-2.5 font-medium">Status</th>
-                  <th className="px-3 py-2.5 font-medium">Activity</th>
-                  <th className="px-5 py-2.5 text-right font-medium">Action</th>
+                <tr className="data-table__head">
+                  <th className="data-table__cell font-medium md:px-6">Integration</th>
+                  <th className="data-table__cell font-medium">Req/min</th>
+                  <th className="data-table__cell font-medium">Risk</th>
+                  <th className="data-table__cell font-medium">Status</th>
+                  <th className="data-table__cell font-medium">Activity</th>
+                  <th className="data-table__cell text-right font-medium md:px-6">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05]">
+              <tbody className="data-table__divider">
                 {items.map((it) => (
-                  <tr key={it.id} className="group transition-colors hover:bg-white/[0.02]">
-                    <td className="px-5 py-3">
+                  <tr key={it.id} className="data-table__row">
+                    <td className="data-table__cell">
                       <Link href={`/integrations/${it.id}`} className="block">
-                        <span className="block text-[13.5px] font-semibold text-ink group-hover:text-aqua">{it.name}</span>
-                        <span className="block max-w-[260px] truncate text-[12px] text-muted">{it.purpose}</span>
+                        <span className="font-semibold text-[#0A1830]">{it.name}</span>
+                        <span className="block max-w-[220px] truncate text-[12px] text-[#64748B]">{it.purpose}</span>
                       </Link>
                     </td>
-                    <td className="mono-num px-3 py-3 text-[13px] text-ink">{it.requestsPerMin ?? '—'}</td>
-                    <td className="px-3 py-3"><RiskBadge score={it.risk_score ?? 0} size="sm" /></td>
-                    <td className="px-3 py-3"><StatusDot status={it.status} /></td>
-                    <td className="mono-num px-3 py-3 text-[11.5px] text-faint">{it.lastActivity ?? '—'}</td>
-                    <td className="px-5 py-3 text-right">
+                    <td className="data-table__cell mono-num font-medium text-[#0A1830]">{it.requestsPerMin ?? '—'}</td>
+                    <td className="data-table__cell"><RiskBadge score={it.risk_score ?? 0} size="sm" /></td>
+                    <td className="data-table__cell"><StatusDot status={it.status} /></td>
+                    <td className="data-table__cell mono-num text-[11px] text-[#8B9BB4]">{it.lastActivity ?? '—'}</td>
+                    <td className="data-table__cell text-right md:px-6">
                       {(it.risk_score ?? 0) >= 61 && it.status !== 'QUARANTINED' ? (
                         <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
-                          {quarantining === it.id ? 'Working…' : 'Quarantine'}
+                          {quarantining === it.id ? '…' : 'Quarantine'}
                         </button>
                       ) : (
                         <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
@@ -143,29 +136,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="panel overflow-hidden">
-          <div className="border-b border-white/[0.06] px-5 py-3.5">
-            <div className="eyebrow">Security timeline</div>
+        <div className="section-card--numbered overflow-hidden">
+          <div className="relative z-10 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
+            <div className="section-label-soft">Security timeline</div>
             <div className="h-section mt-0.5">Graded response as it happened</div>
           </div>
           <EventTimeline events={events.slice(0, 6)} compact />
         </div>
       </div>
 
-      {/* graded response strip */}
-      <div className="panel px-5 py-4">
-        <div className="eyebrow">Graded response — why not just block</div>
-        <div className="mt-3 grid gap-2 md:grid-cols-4">
+      {/* Graded Response */}
+      <div className="section-card--numbered overflow-hidden">
+        <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
+          <div className="section-label-soft">Graded response — why not just block</div>
+          <span className="font-mono text-[10.5px] tracking-[0.16em] text-[#8B9BB4]">ALLOW → MONITOR → THROTTLE → ISOLATE</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 px-5 pb-5 pt-4 md:px-6">
           {[
-            ['0–30 · Trusted', 'Allow', '#19D98A', 'Matches declared purpose and scope.'],
-            ['31–60 · Watch', 'Allow + Monitor', '#FFC42E', 'Endpoint or purpose drift. Watched closely.'],
-            ['61–80 · High risk', 'Rate limit + Monitor', '#FF9F2E', 'Forbidden data or volume anomaly. Throttled.'],
-            ['81–100 · Critical', 'Block + Quarantine', '#FF4D5E', 'Sustained abuse. Isolated until reviewed.'],
-          ].map(([t, a, c, d]) => (
-            <div key={t} className="rounded-xl border border-white/[0.07] bg-abyss/60 p-3.5">
-              <div className="font-mono text-[11px] tracking-wide" style={{ color: c }}>{t}</div>
-              <div className="mt-1 text-[13.5px] font-semibold">{a}</div>
-              <div className="body-muted mt-1 text-[12px]">{d}</div>
+            ['0-30', 'TRUSTED', 'Allow', '#0E9F6E', 'Matches declared purpose and scope'],
+            ['31-60', 'WATCH', 'Allow + Monitor', '#D9930D', 'Endpoint or purpose drift detected'],
+            ['61-80', 'HIGH RISK', 'Rate limit + Monitor', '#F59E0B', 'Forbidden data or volume anomaly'],
+            ['81-100', 'CRITICAL', 'Block + Quarantine', '#E5484D', 'Sustained abuse, isolated until review'],
+          ].map(([range, tier, action, color, desc]) => (
+            <div key={tier} className="rounded-xl border border-[#E4EAF3] bg-[#FAFBFC] p-4 transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_20px_-12px_rgba(0,0,0,0.12)]">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: color }}>{range}</span>
+              </div>
+              <div className="mt-1.5 font-bold text-[14px] text-[#0A1830]">{tier}</div>
+              <div className="mt-0.5 text-[12px] font-semibold text-[#374151]">{action}</div>
+              <div className="mt-2 text-[12px] leading-relaxed text-[#64748B]">{desc}</div>
             </div>
           ))}
         </div>
@@ -175,9 +175,5 @@ export default function Dashboard() {
 }
 
 function normalise(r: IntegrationRow): IntegrationRow {
-  return {
-    ...r,
-    requestsPerMin: r.requestsPerMin ?? r.expected_request_rate ?? 90,
-    lastActivity: r.lastActivity ?? (r.updated_at ? timeAgo(r.updated_at) : 'just now'),
-  };
+  return { ...r, requestsPerMin: r.requestsPerMin ?? r.expected_request_rate ?? 90, lastActivity: r.lastActivity ?? (r.updated_at ? timeAgo(r.updated_at) : 'just now') };
 }

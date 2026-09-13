@@ -24,11 +24,9 @@ export default function EventsPage() {
     let chan: { unsubscribe: () => void } | null = null;
     try {
       const sb = supabaseBrowser();
-      chan = sb.channel('te-events-page')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, (payload) => {
-          setEvents((prev) => [payload.new as SecEvent, ...prev].slice(0, 60));
-        })
-        .subscribe() as unknown as { unsubscribe: () => void };
+      chan = sb.channel('te-events-page').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, (payload) => {
+        setEvents((prev) => [payload.new as SecEvent, ...prev].slice(0, 60));
+      }).subscribe() as unknown as { unsubscribe: () => void };
       setLive(true);
     } catch { /* polling fallback */ }
     return () => { clearInterval(poll); chan?.unsubscribe(); };
@@ -38,37 +36,47 @@ export default function EventsPage() {
   const shown = filter === 'all' ? events : events.filter((e) => e.integration_id === filter);
 
   return (
-    <div className="stagger space-y-5">
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <div className="eyebrow">Audit trail · tamper-evident log</div>
-          <h1 className="h-display mt-1">Every violation, with its reason</h1>
-          <p className="body-muted mt-1.5 max-w-2xl">The evidence the judges asked for: what happened, to which data, and why the engine responded that way.</p>
+    <div className="stagger space-y-6">
+      {/* ═══ Header ═══ */}
+      <div className="relative">
+        <div className="page-header__bar" />
+        <div className="page-header">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <div className="section-label">Audit trail · tamper-evident log</div>
+              <h1 className="section-heading mt-2">Every violation, with its reason</h1>
+              <p className="section-sub mt-2">The evidence the judges asked for: what happened, to which data, and why the engine responded that way.</p>
+            </div>
+            <span className="chip shrink-0 border-[#D1DBE8] bg-[#FFFFFF]">
+              <span className={`h-2 w-2 rounded-full ${live ? 'bg-[#0E9F6E] animate-pulseDot' : 'bg-[#D9930D] animate-blink'}`} />
+              {live ? 'REALTIME' : 'POLLING · 5S'}
+            </span>
+          </div>
         </div>
-        <span className="chip ml-auto" style={{ color: live ? '#19D98A' : '#FFC42E' }}>
-          <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-trust animate-pulseDot' : 'bg-watch'}`} />
-          {live ? 'REALTIME' : 'POLLING · 5S'}
-        </span>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      {/* ═══ Filters ═══ */}
+      <div className="pill-nav">
         {ids.map((id) => (
           <button
             key={id}
             onClick={() => setFilter(id)}
-            className={`rounded-full border px-3.5 py-1.5 font-mono text-[11.5px] tracking-wide transition-all ${filter === id ? 'border-aqua/50 bg-aqua/10 text-ink' : 'border-white/10 bg-white/[0.03] text-muted hover:text-ink'}`}
+            className={`pill-nav__item ${filter === id ? 'pill-nav__item--active' : ''}`}
           >
             {id === 'all' ? 'ALL INTEGRATIONS' : id.toUpperCase().replace('_001', '')}
           </button>
         ))}
       </div>
 
-      <div className="panel overflow-hidden">
-        {shown.length === 0 ? (
-          <EmptyState title="No events for this filter" body="Traffic here is clean. Try another integration." />
-        ) : (
-          <EventTimeline events={shown} />
-        )}
+      {/* ═══ Timeline ═══ */}
+      <div className="section-card--numbered overflow-hidden">
+        <div className="relative z-10">
+          {shown.length === 0 ? (
+            <EmptyState title="No events for this filter" body="Traffic here is clean. Try another integration." />
+          ) : (
+            <EventTimeline events={shown} />
+          )}
+        </div>
       </div>
     </div>
   );
