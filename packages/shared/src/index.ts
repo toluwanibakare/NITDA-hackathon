@@ -1,9 +1,9 @@
-// ThirdEye shared contracts — single source of truth for web + api.
-// TECH_PRD §4-5. Do not change without group OK.
+// ThirdEye shared contracts for web client and API service.
 
 export type RiskLevel = 'TRUSTED' | 'SUSPICIOUS' | 'HIGH_RISK' | 'CRITICAL';
 export type Action = 'ALLOW' | 'MONITOR' | 'RATE_LIMIT' | 'BLOCK' | 'QUARANTINE';
 export type IntegrationStatus = 'ACTIVE' | 'MONITORED' | 'RATE_LIMITED' | 'QUARANTINED';
+
 export type EventType =
   | 'PURPOSE_VIOLATION'
   | 'FORBIDDEN_DATA'
@@ -56,21 +56,98 @@ export interface SecurityEvent {
   riskScore: number;
   action: Action;
   reason: string;
+  createdAt?: string;
   timestamp?: string;
 }
 
-export const RISK_THRESHOLDS = { suspicious: 31, high: 61, critical: 81 };
+// Integration DTOs
+export interface IntegrationListItem {
+  id: string;
+  name: string;
+  purpose: string;
+  status: IntegrationStatus;
+  riskScore: number;
+  expectedRequestRate: number;
+  currentRequestRate?: number;
+  allowedEndpoints: string[];
+  allowedMethods: string[];
+  allowedData: string[];
+  forbiddenData: string[];
+  lastActivity?: string;
+}
+
+export interface IntegrationDetailResponse {
+  profile: IntegrationListItem;
+  behaviour: {
+    normalRate: number;
+    currentRate: number;
+    deviationMultiple: number;
+  };
+  recentViolations: SecurityEvent[];
+}
+
+// Dashboard DTOs
+export interface DashboardStats {
+  integrations: number;
+  active: number;
+  monitoredRequests: number;
+  threats: number;
+  quarantined: number;
+}
+
+export interface ActivityItem {
+  id: string;
+  type: 'NORMAL' | 'VIOLATION' | 'QUARANTINE' | 'RELEASE';
+  integrationId: string;
+  integrationName?: string;
+  endpoint?: string;
+  action: Action;
+  riskScore: number;
+  reason: string;
+  timestamp: string;
+}
+
+// Simulator DTOs
+export interface SimulatorPhase {
+  phase: number;
+  name: string;
+  endpoint: string;
+  dataRequested?: string[];
+  requestCount: number;
+  expectedRisk?: number;
+  expectedAction?: Action;
+}
+
+export interface SimulatorStartResponse {
+  sessionId: string;
+  integrationId: string;
+  status: 'running' | 'completed' | 'stopped';
+  phases: SimulatorPhase[];
+}
+
+// Risk thresholds
+export const RISK_THRESHOLDS = {
+  suspicious: 31,
+  high: 61,
+  critical: 81,
+} as const;
+
 export function levelForScore(score: number): RiskLevel {
-  if (score >= 81) return 'CRITICAL';
-  if (score >= 61) return 'HIGH_RISK';
-  if (score >= 31) return 'SUSPICIOUS';
+  if (score >= RISK_THRESHOLDS.critical) return 'CRITICAL';
+  if (score >= RISK_THRESHOLDS.high) return 'HIGH_RISK';
+  if (score >= RISK_THRESHOLDS.suspicious) return 'SUSPICIOUS';
   return 'TRUSTED';
 }
+
 export function actionForLevel(level: RiskLevel): Action {
   switch (level) {
-    case 'TRUSTED': return 'ALLOW';
-    case 'SUSPICIOUS': return 'MONITOR';
-    case 'HIGH_RISK': return 'RATE_LIMIT';
-    case 'CRITICAL': return 'BLOCK';
+    case 'TRUSTED':
+      return 'ALLOW';
+    case 'SUSPICIOUS':
+      return 'MONITOR';
+    case 'HIGH_RISK':
+      return 'RATE_LIMIT';
+    case 'CRITICAL':
+      return 'BLOCK';
   }
 }

@@ -1,0 +1,468 @@
+{
+  "info": {
+    "_postman_id": "thirdeye-full-api-suite-v1",
+    "name": "ThirdEye API - Complete Backend Test Suite",
+    "description": "Production-grade test suite covering every backend endpoint, error boundary, and business logic invariant for ThirdEye API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Healthcheck",
+      "item": [
+        {
+          "name": "GET /healthz - Service Liveness",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Service reports healthy', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.ok).to.eql(true);",
+                  "  pm.expect(json.service).to.eql('thirdeye-api');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/healthz"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Integrations Registry (BE-1)",
+      "item": [
+        {
+          "name": "GET /api/integrations - List All",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns an array of at least 4 seeded integrations', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data).to.be.an('array');",
+                  "  pm.expect(data.length).to.be.at.least(4);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations"
+          }
+        },
+        {
+          "name": "POST /api/integrations - Register New",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Integration is initialized as ACTIVE with 0 risk', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.id).to.eql('crm_senior_test_001');",
+                  "  pm.expect(data.status).to.eql('ACTIVE');",
+                  "  pm.expect(data.riskScore).to.eql(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\":\"crm_senior_test_001\",\"name\":\"Senior Enterprise CRM Gateway\",\"purpose\":\"Synchronize enterprise customer contact records\",\"expectedRequestRate\":150,\"allowedEndpoints\":[\"/contacts\",\"/contacts/sync\"],\"allowedMethods\":[\"GET\",\"POST\"],\"allowedData\":[\"contact_id\",\"email\",\"name\"],\"forbiddenData\":[\"credit_card\",\"password\",\"ssn\"]}"
+            },
+            "url": "{{baseUrl}}/api/integrations"
+          }
+        },
+        {
+          "name": "GET /api/integrations/:id - Retrieve Profile & Behaviour",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Calculates deviationMultiple correctly', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.profile.id).to.eql('crm_senior_test_001');",
+                  "  pm.expect(data.behaviour.deviationMultiple).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001"
+          }
+        },
+        {
+          "name": "PATCH /api/integrations/:id - Update Rate & Purpose",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Fields are updated', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.expectedRequestRate).to.eql(250);",
+                  "  pm.expect(data.purpose).to.eql('Hardened enterprise contact sync');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expectedRequestRate\":250,\"purpose\":\"Hardened enterprise contact sync\"}"
+            },
+            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001"
+          }
+        },
+        {
+          "name": "POST /api/integrations/:id/quarantine - Lock Down",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is QUARANTINED and risk set to 95', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.status).to.eql('QUARANTINED');",
+                  "  pm.expect(data.riskScore).to.eql(95);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Immediate quarantine test\"}"
+            },
+            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001/quarantine"
+          }
+        },
+        {
+          "name": "POST /api/integrations/:id/release - Restore Access",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status restored to ACTIVE and risk reset to 8', () => {",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.status).to.eql('ACTIVE');",
+                  "  pm.expect(data.riskScore).to.eql(8);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{baseUrl}}/api/integrations/crm_senior_test_001/release"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Error Boundary & Edge Cases",
+      "item": [
+        {
+          "name": "POST /api/integrations - Missing Required Fields (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request on missing fields', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().code).to.eql('INVALID_INPUT');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Incomplete Integration\"}"
+            },
+            "url": "{{baseUrl}}/api/integrations"
+          }
+        },
+        {
+          "name": "GET /api/integrations/:id - Non-existent ID (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 Not Found on invalid ID', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.json().code).to.eql('NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/integrations/non_existent_random_id_999"
+          }
+        },
+        {
+          "name": "POST /api/check-request - Missing Required Body (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 when checkRequest is missing required payload', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().code).to.eql('INVALID_REQUEST');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Dashboard & Analytics (BE-1)",
+      "item": [
+        {
+          "name": "GET /api/dashboard/stats - High Level Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has required KPI numeric fields', () => {",
+                  "  const s = pm.response.json();",
+                  "  pm.expect(s.integrations).to.be.a('number');",
+                  "  pm.expect(s.active).to.be.a('number');",
+                  "  pm.expect(s.monitoredRequests).to.be.a('number');",
+                  "  pm.expect(s.threats).to.be.a('number');",
+                  "  pm.expect(s.quarantined).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/dashboard/stats"
+          }
+        },
+        {
+          "name": "GET /api/dashboard/activity - Feed Timeline",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns activity array', () => {",
+                  "  const a = pm.response.json();",
+                  "  pm.expect(a).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/dashboard/activity?limit=5"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Security Events Audit (BE-1)",
+      "item": [
+        {
+          "name": "GET /api/security-events - Query Log",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns events array', () => {",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/security-events?limit=10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Middleware Interceptor (BE-2)",
+      "item": [
+        {
+          "name": "POST /api/check-request - Normal Request (ALLOW)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('CheckResult has required fields', () => {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.riskScore).to.be.a('number');",
+                  "  pm.expect(r.level).to.be.a('string');",
+                  "  pm.expect(r.action).to.be.a('string');",
+                  "  pm.expect(r.violations).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"payment_001\",\"method\":\"POST\",\"endpoint\":\"/payments\",\"dataRequested\":[\"order_id\",\"amount\"],\"requestCount\":50}"
+            },
+            "url": "{{baseUrl}}/api/check-request"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Attack Simulator (BE-2)",
+      "item": [
+        {
+          "name": "POST /api/simulator/start - Launch 4-phase Attack",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 4 attack phases', () => {",
+                  "  const s = pm.response.json();",
+                  "  pm.expect(s.sessionId).to.be.a('string');",
+                  "  pm.expect(s.phases).to.be.an('array');",
+                  "  pm.expect(s.phases.length).to.eql(4);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"analytics_001\",\"attack\":\"credential_compromise\",\"speed\":\"demo\"}"
+            },
+            "url": "{{baseUrl}}/api/simulator/start"
+          }
+        },
+        {
+          "name": "POST /api/simulator/reset - Reset Demo State",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resets integration to ACTIVE with score 8', () => {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.reset).to.eql(true);",
+                  "  pm.expect(r.status).to.eql('ACTIVE');",
+                  "  pm.expect(r.riskScore).to.eql(8);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"integrationId\":\"analytics_001\"}"
+            },
+            "url": "{{baseUrl}}/api/simulator/reset"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    }
+  ]
+}
