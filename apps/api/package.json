@@ -6,10 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
-    "test:api": "node scripts/simulate-postman.js",
-    "test:verbose": "node scripts/test-verbose.js",
-    "test:postman": "node scripts/postman-runner.js"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.44.0",
