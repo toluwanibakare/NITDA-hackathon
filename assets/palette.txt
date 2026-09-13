@@ -1,0 +1,8 @@
+| Color         | Hex       | Purpose               |
+| ------------- | --------- | --------------------- |
+| Deep Navy     | `#071426` | Main background       |
+| Electric Blue | `#1677FF` | Primary brand color   |
+| Cyan          | `#00C8D7` | Technology/visibility |
+| Emerald       | `#19D98A` | Trust/safety          |
+| White         | `#F5F9FF` | Typography            |
+

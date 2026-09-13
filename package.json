@@ -8,9 +8,13 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:api": "npm run dev --workspace=apps/api",
+    "dev": "npm run dev:web",
     "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:all": "npm run dev:api & npm run dev:web",
     "build": "npm run build --workspaces",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
     "typecheck": "tsc --noEmit -p tsconfig.json || true"
   }
 }
