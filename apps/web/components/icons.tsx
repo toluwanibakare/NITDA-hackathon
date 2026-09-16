@@ -6,7 +6,6 @@ export function Icon({ d, size = 16, strokeWidth = 1.6, className = '' }: { d: s
   );
 }
 
-
 export const paths = {
   shield: 'M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z',
   pulse: 'M3 12h4l2.5-6 4 12L16 12h5',
@@ -22,4 +21,10 @@ export const paths = {
   stop: 'M6 6h12v12H6z',
   layers: 'M12 3l9 5-9 5-9-5z M3 13l9 5 9-5',
   radio: 'M12 12m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0 M5.5 5.5a9 9 0 0 0 0 13 M18.5 5.5a9 9 0 0 1 0 13',
+  zap: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
+  cpu: 'M4 4h16v16H4z M9 1v3 M15 1v3 M9 20v3 M15 20v3 M1 9h3 M1 15h3 M20 9h3 M20 15h3',
+  sparkles: 'M12 3v4 M12 17v4 M3 12h4 M17 12h4 M18.36 5.64l-2.83 2.83 M8.46 15.54l-2.82 2.83 M5.64 5.64l2.83 2.83 M15.54 15.54l2.83 2.83',
+  activity: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  database: 'M12 3c-4.97 0-9 1.79-9 4v10c0 2.21 4.03 4 9 4s9-1.79 9-4V7c0-2.21-4.03-4-9-4z M3 7c0 2.21 4.03 4 9 4s9-1.79 9-4 M3 12c0 2.21 4.03 4 9 4s9-1.79 9-4',
 };
+

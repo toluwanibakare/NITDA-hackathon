@@ -14,11 +14,14 @@
   --brand-glow: rgba(10, 101, 255, 0.08);
   --accent: #0891B2;
   --success: #0E9F6E;
+  --font-jakarta: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 html {
   background: var(--bg);
   color-scheme: light;
+  font-family: var(--font-jakarta);
 }
 
 body {
@@ -28,10 +31,12 @@ body {
     radial-gradient(900px 500px at 50% 110%, rgba(14, 159, 110, 0.05), transparent 60%),
     var(--bg);
   color: var(--ink);
+  font-family: var(--font-jakarta);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
 }
+
 
 /* light dot grid — subtle */
 .bg-grid {
