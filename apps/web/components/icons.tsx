@@ -1,10 +1,11 @@
-export function Icon({ d, size = 16, strokeWidth = 1.6 }: { d: string; size?: number; strokeWidth?: number }) {
+export function Icon({ d, size = 16, strokeWidth = 1.6, className = '' }: { d: string; size?: number; strokeWidth?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d={d} />
     </svg>
   );
 }
+
 
 export const paths = {
   shield: 'M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z',

@@ -6,7 +6,18 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'rec
 import { EventTimeline } from '@/components/EventTimeline';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, RiskRing, StatusDot } from '@/components/RiskBadge';
-import { apiSafe, riskColor, type IntegrationRow, type SecEvent } from '@/lib/api';
+import {
+  apiSafe,
+  getAllowedData,
+  getAllowedEndpoints,
+  getAllowedMethods,
+  getExpectedRate,
+  getForbiddenData,
+  getRiskScore,
+  riskColor,
+  type IntegrationRow,
+  type SecEvent,
+} from '@/lib/api';
 import { MOCK_EVENTS, MOCK_INTEGRATIONS } from '@/lib/mock';
 
 export default function IntegrationDetail() {
@@ -20,7 +31,8 @@ export default function IntegrationDetail() {
   const load = useCallback(async () => {
     const [p, ev] = await Promise.all([
       apiSafe<{ profile: IntegrationRow; recentViolations: SecEvent[] } | IntegrationRow>(
-        `/api/integrations/${id}`, { profile: MOCK_INTEGRATIONS.find((m) => m.id === id) ?? MOCK_INTEGRATIONS[2], recentViolations: MOCK_EVENTS },
+        `/api/integrations/${id}`,
+        { profile: MOCK_INTEGRATIONS.find((m) => m.id === id) ?? MOCK_INTEGRATIONS[2], recentViolations: MOCK_EVENTS }
       ),
       apiSafe<SecEvent[]>(`/api/security-events?integrationId=${id}&limit=10`, MOCK_EVENTS.filter((e) => e.integration_id === id)),
     ]);
@@ -30,26 +42,41 @@ export default function IntegrationDetail() {
     setLive(p.live || ev.live);
   }, [id]);
 
-  useEffect(() => { load(); const t = setInterval(load, 6000); return () => clearInterval(t); }, [load]);
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 6000);
+    return () => clearInterval(t);
+  }, [load]);
 
   async function act(kind: 'quarantine' | 'release') {
     setBusy(true);
     try {
-      await apiSafe(`/api/integrations/${id}/${kind}`, {}, { method: 'POST', body: JSON.stringify(kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}) });
+      await apiSafe(
+        `/api/integrations/${id}/${kind}`,
+        {},
+        { method: 'POST', body: JSON.stringify(kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}) }
+      );
       await load();
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!profile) return <div className="section-card flex items-center justify-center py-20 text-[14px] text-[#64748B]">Loading trust profile…</div>;
-  const score = profile.risk_score ?? 0;
+
+  const score = getRiskScore(profile);
   const c = riskColor(score);
-  const current = (profile.requestsPerMin ?? profile.expected_request_rate ?? 100) as number;
-  const normal = profile.expected_request_rate ?? 100;
+  const normal = getExpectedRate(profile);
+  const current = (profile.requestsPerMin ?? normal) as number;
   const deviation = (current / Math.max(1, normal)).toFixed(1);
 
   const series = [
-    { t: '-50m', v: normal * 0.94 }, { t: '-40m', v: normal * 1.04 }, { t: '-30m', v: normal * 0.9 },
-    { t: '-20m', v: normal * 1.6 }, { t: '-10m', v: normal * 4.2 }, { t: 'now', v: current },
+    { t: '-50m', v: Math.round(normal * 0.94) },
+    { t: '-40m', v: Math.round(normal * 1.04) },
+    { t: '-30m', v: Math.round(normal * 0.9) },
+    { t: '-20m', v: Math.round(normal * 1.6) },
+    { t: '-10m', v: Math.round(normal * 4.2) },
+    { t: 'now', v: current },
   ];
 
   return (
@@ -102,7 +129,15 @@ export default function IntegrationDetail() {
         <div className="section-card">
           <div className="section-label-soft mb-5">Trust profile — declared scope</div>
           <div className="space-y-5">
-            {(() => { const scopes = [{ title: 'Allowed endpoints', items: profile.allowed_endpoints ?? [], tone: 'good' as const }, { title: 'Allowed methods', items: profile.allowed_methods ?? [], tone: 'neutral' as const }, { title: 'Allowed data', items: profile.allowed_data ?? [], tone: 'good' as const }, { title: 'Forbidden data', items: profile.forbidden_data ?? [], tone: 'bad' as const }]; return scopes.map(({ title, items, tone }) => <ScopeList key={title} title={title} items={items} tone={tone} />); })() }
+            {(() => {
+              const scopes = [
+                { title: 'Allowed endpoints', items: getAllowedEndpoints(profile), tone: 'good' as const },
+                { title: 'Allowed methods', items: getAllowedMethods(profile), tone: 'neutral' as const },
+                { title: 'Allowed data', items: getAllowedData(profile), tone: 'good' as const },
+                { title: 'Forbidden data', items: getForbiddenData(profile), tone: 'bad' as const },
+              ];
+              return scopes.map(({ title, items, tone }) => <ScopeList key={title} title={title} items={items} tone={tone} />);
+            })()}
           </div>
         </div>
 

@@ -7,7 +7,7 @@ import { IntegrationMap } from '@/components/IntegrationMap';
 import { StatCard } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, StatusDot } from '@/components/RiskBadge';
-import { apiSafe, type DashboardStats, type IntegrationRow, type SecEvent } from '@/lib/api';
+import { apiSafe, getRiskScore, type DashboardStats, type IntegrationRow, type SecEvent } from '@/lib/api';
 import { MOCK_EVENTS, MOCK_INTEGRATIONS, MOCK_STATS, timeAgo } from '@/lib/mock';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 
@@ -49,6 +49,12 @@ export default function Dashboard() {
     } finally { setQuarantining(null); load(); }
   }
 
+  const integrationsCount = stats.integrations ?? stats.totalIntegrations ?? 4;
+  const activeCount = stats.active ?? stats.activeIntegrations ?? 4;
+  const reqCount = stats.monitoredRequests ?? stats.totalRequestsToday ?? 1420;
+  const threatCount = stats.threats ?? stats.totalViolationsToday ?? 0;
+  const quarantineCount = stats.quarantined ?? stats.quarantinedIntegrations ?? 0;
+
   return (
     <div className="stagger space-y-6">
       {/* Hero */}
@@ -75,11 +81,11 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-        <StatCard label="Integrations" value={String(stats.integrations)} sub="Registered third parties" />
-        <StatCard label="Active" value={String(stats.active)} sub="Within purpose" tone="good" delta="up" />
-        <StatCard label="Requests" value={Number(stats.monitoredRequests).toLocaleString()} sub="Verified by middleware" />
-        <StatCard label="Threats" value={String(stats.threats)} sub="Graded responses issued" tone={stats.threats > 0 ? 'warn' : 'neutral'} />
-        <StatCard label="Quarantined" value={String(stats.quarantined)} sub="Blocked + isolated" tone={stats.quarantined > 0 ? 'bad' : 'neutral'} />
+        <StatCard label="Integrations" value={String(integrationsCount)} sub="Registered third parties" />
+        <StatCard label="Active" value={String(activeCount)} sub="Within purpose" tone="good" delta="up" />
+        <StatCard label="Requests" value={Number(reqCount).toLocaleString()} sub="Verified by middleware" />
+        <StatCard label="Threats" value={String(threatCount)} sub="Graded responses issued" tone={threatCount > 0 ? 'warn' : 'neutral'} />
+        <StatCard label="Quarantined" value={String(quarantineCount)} sub="Blocked + isolated" tone={quarantineCount > 0 ? 'bad' : 'neutral'} />
       </div>
 
       {/* Map */}
@@ -108,29 +114,32 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="data-table__divider">
-                {items.map((it) => (
-                  <tr key={it.id} className="data-table__row">
-                    <td className="data-table__cell">
-                      <Link href={`/integrations/${it.id}`} className="block">
-                        <span className="font-semibold text-[#0A1830]">{it.name}</span>
-                        <span className="block max-w-[220px] truncate text-[12px] text-[#64748B]">{it.purpose}</span>
-                      </Link>
-                    </td>
-                    <td className="data-table__cell mono-num font-medium text-[#0A1830]">{it.requestsPerMin ?? '—'}</td>
-                    <td className="data-table__cell"><RiskBadge score={it.risk_score ?? 0} size="sm" /></td>
-                    <td className="data-table__cell"><StatusDot status={it.status} /></td>
-                    <td className="data-table__cell mono-num text-[11px] text-[#8B9BB4]">{it.lastActivity ?? '—'}</td>
-                    <td className="data-table__cell text-right md:px-6">
-                      {(it.risk_score ?? 0) >= 61 && it.status !== 'QUARANTINED' ? (
-                        <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
-                          {quarantining === it.id ? '…' : 'Quarantine'}
-                        </button>
-                      ) : (
-                        <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {items.map((it) => {
+                  const score = getRiskScore(it);
+                  return (
+                    <tr key={it.id} className="data-table__row">
+                      <td className="data-table__cell">
+                        <Link href={`/integrations/${it.id}`} className="block">
+                          <span className="font-semibold text-[#0A1830]">{it.name}</span>
+                          <span className="block max-w-[220px] truncate text-[12px] text-[#64748B]">{it.purpose}</span>
+                        </Link>
+                      </td>
+                      <td className="data-table__cell mono-num font-medium text-[#0A1830]">{it.requestsPerMin ?? '—'}</td>
+                      <td className="data-table__cell"><RiskBadge score={score} size="sm" /></td>
+                      <td className="data-table__cell"><StatusDot status={it.status} /></td>
+                      <td className="data-table__cell mono-num text-[11px] text-[#8B9BB4]">{it.lastActivity ?? '—'}</td>
+                      <td className="data-table__cell text-right md:px-6">
+                        {score >= 61 && it.status !== 'QUARANTINED' ? (
+                          <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
+                            {quarantining === it.id ? '…' : 'Quarantine'}
+                          </button>
+                        ) : (
+                          <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -175,5 +184,6 @@ export default function Dashboard() {
 }
 
 function normalise(r: IntegrationRow): IntegrationRow {
-  return { ...r, requestsPerMin: r.requestsPerMin ?? r.expected_request_rate ?? 90, lastActivity: r.lastActivity ?? (r.updated_at ? timeAgo(r.updated_at) : 'just now') };
+  return { ...r, requestsPerMin: r.requestsPerMin ?? r.expected_request_rate ?? r.expectedRequestRate ?? 90, lastActivity: r.lastActivity ?? (r.updated_at ? timeAgo(r.updated_at) : 'just now') };
 }
+
