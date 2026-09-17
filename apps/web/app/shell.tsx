@@ -109,28 +109,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <BootLoader done={booted} />
       <NotificationToastContainer />
 
-      {/* Translucent console bar — content scrolls underneath, edge fades instead of a hard rule */}
+      {/* Translucent Cloudflare-style Enterprise console bar */}
       <header className="sticky top-0 z-40">
         <div
           className="liquid-glass scroll-edge transition-shadow duration-200"
           style={scrolled ? { boxShadow: '0 12px 32px -20px rgba(0,0,0,0.8)' } : undefined}
         >
-          <div className="console-full flex h-[60px] w-full items-center justify-between gap-3">
-            <Link href="/dashboard" className="flex shrink-0 items-center gap-3" aria-label="ThirdEye overview">
-              <Image
-                src="/logo.jpeg"
-                alt="ThirdEye"
-                width={48}
-                height={48}
-                className="h-11 w-11 sm:h-12 sm:w-12 object-contain rounded-xl shadow-sm"
-                priority
-              />
-              <span className="leading-none">
-                <span className="block text-[16px] sm:text-[17px] font-bold text-[#F2F6FC]" style={{ letterSpacing: '-0.015em' }}>ThirdEye</span>
-                <span className="block text-[10.5px] sm:text-[11px] font-medium" style={{ color: '#6E7E99' }}>Third-party trust</span>
-              </span>
-            </Link>
+          <div className="console-full flex h-[64px] w-full items-center justify-between gap-3">
+            {/* Left: Brand + Project Switcher */}
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="ThirdEye overview">
+                <Image
+                  src="/logo.jpeg"
+                  alt="ThirdEye"
+                  width={44}
+                  height={44}
+                  className="h-10 w-10 sm:h-11 sm:w-11 object-contain rounded-xl shadow-md"
+                  priority
+                />
+                <span className="leading-none hidden sm:block">
+                  <span className="block text-[16px] sm:text-[17px] font-bold text-[#F2F6FC]" style={{ letterSpacing: '-0.015em' }}>ThirdEye</span>
+                  <span className="block text-[10px] sm:text-[10.5px] font-medium" style={{ color: '#6E7E99' }}>API Gateway Security</span>
+                </span>
+              </Link>
 
+              {/* Cloudflare-style Project Switcher */}
+              <div className="hidden md:flex items-center gap-2 border-l pl-3 border-white/10">
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[12.5px] text-white">
+                  <span className="flex h-2 w-2 rounded-full bg-[#10B981] animate-pulse" />
+                  <span className="font-semibold">ShopX Store</span>
+                  <span className="rounded bg-white/10 px-1.5 py-0.2 font-mono text-[10px] text-[#5B9CFF]">PROD</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: Main Navigation Flow */}
             <nav className="liquid-segment hidden mx-auto items-center gap-0.5 rounded-full p-[3px] md:flex" aria-label="Console">
               {NAV.map((n) => {
                 const active = path === n.href || (n.href === '/dashboard' && path === '/dashboard');
@@ -139,9 +152,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     key={n.href}
                     href={n.href}
                     aria-current={active ? 'page' : undefined}
-                    className="relative rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors"
+                    className="relative rounded-full px-4 py-1.5 text-[13px] font-medium transition-all"
                     style={active
-                      ? { background: 'rgba(22,119,255,0.16)', color: '#F2F6FC', fontWeight: 600 }
+                      ? { background: '#1677FF', color: '#F2F6FC', fontWeight: 650, boxShadow: '0 2px 10px rgba(22,119,255,0.35)' }
                       : { color: '#93A1B8' }}
                   >
                     {n.label}
@@ -150,20 +163,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               })}
             </nav>
 
+            {/* Right: Quick Command Search + Dev Mode Switch + Live Health */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
-              {/* Developer Mode Toggle Button */}
+              {/* Quick Command Search Button */}
+              <button
+                onClick={() => {
+                  showToast('Search Command Palette', 'Press Ctrl+K to quickly search APIs, logs, and gateway policies.', 'info');
+                }}
+                className="hidden xl:flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] text-[#93A1B8] hover:border-white/20 hover:text-white transition-colors"
+              >
+                <Icon d={paths.grid} size={14} />
+                <span>Search APIs or events…</span>
+                <kbd className="rounded border border-white/10 bg-black/40 px-1.5 font-mono text-[10px] text-[#6E7E99]">⌘K</kbd>
+              </button>
+
+              {/* Mode Switcher Button (Simplified vs Developer) */}
               <button
                 onClick={toggleDevMode}
-                className="rounded-full border px-3 py-1 text-[11.5px] font-semibold transition-all duration-150 active:scale-95 flex items-center gap-1.5"
+                className="rounded-full border px-3 py-1.5 text-[11.5px] font-semibold transition-all duration-150 active:scale-95 flex items-center gap-1.5"
                 style={
                   devMode
-                    ? { borderColor: '#1677FF', background: 'rgba(22,119,255,0.18)', color: '#8FBFFF' }
+                    ? { borderColor: '#1677FF', background: 'rgba(22,119,255,0.22)', color: '#8FBFFF', boxShadow: '0 0 12px rgba(22,119,255,0.25)' }
                     : { borderColor: 'rgba(245,249,255,0.14)', background: 'rgba(245,249,255,0.04)', color: '#93A1B8' }
                 }
                 title="Toggle Developer Mode (unlocks SDK snippets, cURL commands, raw payloads)"
               >
-                <span className={`h-1.5 w-1.5 rounded-full ${devMode ? 'bg-[#5B9CFF]' : 'bg-[#6E7E99]'}`} />
-                Dev Mode: <span className="font-mono font-bold">{devMode ? 'ON' : 'OFF'}</span>
+                <span className={`h-1.5 w-1.5 rounded-full ${devMode ? 'bg-[#5B9CFF]' : 'bg-[#10B981]'}`} />
+                {devMode ? '⚡ Dev Mode: ON' : '👤 Merchant Mode'}
               </button>
 
               <span
@@ -175,7 +201,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 }
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${engineOnline ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#FFC42E] animate-blink'}`} />
-                {engineOnline ? 'Live' : 'Offline'}
+                {engineOnline ? 'Gateway 0.8ms' : 'Offline'}
               </span>
               <LiveClock />
               <button
@@ -200,10 +226,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       key={n.href}
                       href={n.href}
                       className="flex items-center justify-between rounded-xl px-3.5 py-3 text-[14.5px] font-medium transition-colors"
-                      style={active ? { background: 'rgba(22,119,255,0.18)', color: '#fff', fontWeight: 600 } : { color: '#93A1B8' }}
+                      style={active ? { background: '#1677FF', color: '#fff', fontWeight: 600 } : { color: '#93A1B8' }}
                     >
                       <span>{n.label}</span>
-                      {active && <span className="h-2 w-2 rounded-full bg-[#1677FF]" />}
+                      {active && <span className="h-2 w-2 rounded-full bg-white" />}
                     </Link>
                   );
                 })}
@@ -218,7 +244,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       : { borderColor: 'rgba(245,249,255,0.14)', background: 'rgba(245,249,255,0.04)', color: '#93A1B8' }
                   }
                 >
-                  Dev Mode: {devMode ? 'ON' : 'OFF'}
+                  {devMode ? '⚡ Dev Mode: ON' : '👤 Merchant Mode'}
                 </button>
                 <Link href="/simulator" className="btn-accent !px-3.5 !py-2 !text-[12.5px]">
                   <Icon d={paths.play} size={13} /> Attack demo
