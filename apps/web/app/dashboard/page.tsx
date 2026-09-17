@@ -95,160 +95,162 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="stagger space-y-6">
-      {/* ═══ Cloudflare Enterprise Security Control Center Header ═══ */}
-      <div className="panel relative overflow-hidden p-6 border-white/15 bg-gradient-to-r from-[#0D1424] via-[#09101D] to-[#0D1424] shadow-2xl">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="chip !border-[#3B82F6]/30 !bg-[#3B82F6]/10 !text-[#5B9CFF] !py-0.5 !text-[10.5px]">
-                ZERO-TRUST THIRD-PARTY API SHIELD
-              </span>
-              <span className="chip !border-[#10B981]/30 !bg-[#10B981]/10 !text-[#10B981] !py-0.5 !text-[10.5px]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" /> GATEWAY PROTECTED
-              </span>
+    <div className="space-y-6">
+      {/* ═══ TOP ROW: 2 CARDS (Wide Category Donut + Bar Chart) ═══ */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Card 1: Wide Category Donut Breakdown (Row 1 Left) */}
+        <div className="panel lg:col-span-8 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E92A4]">Integration Scope & Telemetry</p>
+              <h2 className="text-[28px] font-extrabold text-white mt-1">4,725.05</h2>
             </div>
-            <h1 className="text-[26px] md:text-[30px] font-bold text-white mt-2 tracking-tight">
-              ThirdEye Security Control Center
-            </h1>
-            <p className="text-[14px] text-[#94A3B8] mt-1 max-w-2xl leading-relaxed">
-              Active protection layer for <strong className="text-white">ShopX Store</strong>. Monitoring declared scope, zero-trust endpoint access, data leakage, and automated quarantine across all third-party integrations.
-            </p>
+            <span className="chip !border-[#5B50E6]/30 !bg-[#5B50E6]/15 !text-white !py-1 !px-3 font-semibold">
+              Live Gateway Stream
+            </span>
           </div>
 
-          {/* Quick Defense Toggles & Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              onClick={toggleUnderAttack}
-              className={`rounded-xl border px-4 py-2.5 text-[13px] font-bold transition-all flex items-center gap-2 ${
-                underAttackMode
-                  ? 'border-[#EF4444] bg-[#EF4444] text-white shadow-lg shadow-[#EF4444]/30 animate-pulse'
-                  : 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[#F59E0B] hover:bg-[#F59E0B]/20'
-              }`}
-            >
-              <span>⚡</span>
-              <span>{underAttackMode ? 'Under Attack Mode: ON' : 'Under Attack Mode'}</span>
-            </button>
-
-            <Link href="/integrations" className="btn-accent !px-4 !py-2.5 !text-[13px] flex items-center gap-1.5">
-              <Icon d={paths.plus} size={15} /> Connect Integration
-            </Link>
-          </div>
-        </div>
-
-        {/* Live Security Posture Score Bar */}
-        <div className="mt-5 border-t border-white/10 pt-4 flex flex-wrap items-center justify-between gap-4 text-[12.5px]">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[#8494AD]">Global Security Posture:</span>
-              <span className="font-mono font-bold text-[#10B981] text-[15px]">94 / 100 (EXCELLENT)</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-6 pt-6">
+            {/* Left Category Breakdown List */}
+            <div className="space-y-4">
+              {[
+                { label: 'Stripe Payments', pct: '40%', color: '#5B50E6', val: '1,890 reqs' },
+                { label: 'Segment Analytics', pct: '35%', color: '#9B51E0', val: '1,653 reqs' },
+                { label: 'FedEx Shipping', pct: '15%', color: '#FF2A6D', val: '708 reqs' },
+                { label: 'Klaviyo Marketing', pct: '10%', color: '#FF9F43', val: '474 reqs' },
+              ].map((c) => (
+                <div key={c.label} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="flex items-center gap-2 text-white font-medium">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.color }} />
+                      {c.label}
+                    </span>
+                    <span className="mono-num text-[#8E92A4] font-semibold">{c.pct}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500" style={{ width: c.pct, background: c.color }} />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="hidden sm:block text-white/20">|</div>
-            <div className="hidden sm:flex items-center gap-2 text-[#8494AD]">
-              <span>Target Project:</span>
-              <code className="font-mono text-[#5B9CFF]">ShopX E-Commerce Platform</code>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/events" className="text-[#5B9CFF] font-semibold hover:underline">
-              View Log Stream →
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      {/* ═══ 4 Enterprise Cloudflare Stat Cards ═══ */}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatCard label="Protected Integrations" value={String(integrationsCount)} sub={`${activeCount} within scope`} />
-        <StatCard label="Verified API Requests" value={Number(reqCount).toLocaleString()} sub="Verified by ThirdEye Proxy" />
-        <StatCard label="Security Threat Interceptions" value={String(threatCount)} sub="Automated graded responses" tone={threatCount > 0 ? 'warn' : 'neutral'} />
-        <StatCard label="Quarantined Connectors" value={String(quarantineCount)} sub="Isolated from ShopX core" tone={quarantineCount > 0 ? 'bad' : 'neutral'} />
-      </div>
-
-      {/* Main 12-col: map + registry left, live rail right — blends full width */}
-      <div className="grid items-start gap-5 xl:grid-cols-12">
-        <div className="space-y-5 xl:col-span-8">
-          <IntegrationMap items={items} onSelect={(id) => router.push(`/integrations/${id}`)} />
-
-          <div className="section-card--numbered overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b px-5 py-4 md:px-6" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
-              <div>
-                <p className="section-label-soft">Registry</p>
-                <p className="h-section mt-0.5">Declared purpose vs live behaviour</p>
+            {/* Right Multi-Color Donut Chart */}
+            <div className="flex justify-center relative">
+              <svg width="200" height="200" viewBox="0 0 200 200" className="rotate-[-90deg]">
+                {/* Donut Segments */}
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#5B50E6" strokeWidth="24" strokeDasharray="175 440" strokeDashoffset="0" />
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#9B51E0" strokeWidth="24" strokeDasharray="153 440" strokeDashoffset="-175" />
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#FF2A6D" strokeWidth="24" strokeDasharray="66 440" strokeDashoffset="-328" />
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#FF9F43" strokeWidth="24" strokeDasharray="44 440" strokeDashoffset="-394" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-[20px] font-bold text-white">4.7k</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#8E92A4]">Verified</span>
               </div>
-              <Link href="/integrations" className="shrink-0 text-[12.5px] font-semibold text-[#5B9CFF]">View all →</Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr className="data-table__head">
-                    <th className="data-table__cell font-medium md:px-6">Integration</th>
-                    <th className="data-table__cell font-medium">Req/min</th>
-                    <th className="data-table__cell font-medium">Risk</th>
-                    <th className="data-table__cell font-medium">Status</th>
-                    <th className="data-table__cell font-medium">Activity</th>
-                    <th className="data-table__cell text-right font-medium md:px-6">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="data-table__divider">
-                  {items.map((it) => {
-                    const score = getRiskScore(it);
-                    return (
-                      <tr key={it.id} className="data-table__row">
-                        <td className="data-table__cell">
-                          <Link href={`/integrations/${it.id}`} className="block">
-                            <span className="font-semibold text-[#F2F6FC]" style={{ letterSpacing: '-0.006em' }}>{it.name}</span>
-                            <span className="block max-w-[240px] truncate text-[12px]" style={{ color: '#8494AD' }}>{it.purpose}</span>
-                          </Link>
-                        </td>
-                        <td className="data-table__cell mono-num font-medium text-[#F2F6FC]">{it.requestsPerMin ?? '—'}</td>
-                        <td className="data-table__cell"><RiskBadge score={score} size="sm" /></td>
-                        <td className="data-table__cell"><StatusDot status={it.status} /></td>
-                        <td className="data-table__cell mono-num text-[11px]" style={{ color: '#6E7E99' }}>{it.lastActivity ?? '—'}</td>
-                        <td className="data-table__cell text-right md:px-6">
-                          {score >= 61 && it.status !== 'QUARANTINED' ? (
-                            <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
-                              {quarantining === it.id ? '…' : 'Quarantine'}
-                            </button>
-                          ) : (
-                            <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
 
-        <div className="space-y-5 xl:col-span-4">
-          <div className="section-card--numbered overflow-hidden">
-            <div className="border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
-              <p className="section-label-soft">Live activity</p>
-              <p className="h-section mt-0.5">Response as it happened</p>
+        {/* Card 2: Bar Chart Analytics (Row 1 Right) */}
+        <div className="panel lg:col-span-4 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] font-bold text-[#8E92A4]">Verified Bandwidth</span>
+              <span className="text-[11px] font-semibold text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded-md">+2.5%</span>
             </div>
-            <EventTimeline events={events.slice(0, 7)} compact />
+            <h3 className="text-[32px] font-extrabold text-white mt-1">$4,751</h3>
+            <p className="text-[12px] text-[#8E92A4]">14.8k API calls processed today</p>
           </div>
 
-          <div className="panel overflow-hidden">
-            <div className="border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
-              <p className="section-label-soft">Graded response</p>
-            </div>
-            {[
-              ['0–30', 'Trusted · Allow', '#19D98A'],
-              ['31–60', 'Suspicious · Monitor', '#FFC42E'],
-              ['61–80', 'High risk · Rate limit', '#FF9F2E'],
-              ['81–100', 'Critical · Quarantine', '#FF4D5E'],
-            ].map(([range, label, color]) => (
-              <div key={range} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: '1px solid rgba(245,249,255,0.05)' }}>
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
-                <span className="mono-num text-[11.5px]" style={{ color: '#6E7E99' }}>{range}</span>
-                <span className="text-[13px] font-medium text-[#E6EDF7]">{label}</span>
+          {/* Bar Chart Visualization matching image */}
+          <div className="pt-6 flex items-end justify-between gap-2 h-44">
+            {[45, 65, 35, 85, 95, 60, 75].map((h, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                <div
+                  className="w-full rounded-t-lg bg-[#5B50E6] group-hover:bg-[#FF2A6D] transition-all duration-300"
+                  style={{ height: `${h}%` }}
+                />
+                <span className="text-[10px] text-[#8E92A4] font-mono">Day {i + 1}</span>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ═══ BOTTOM ROW: 3 CARDS (Calendar Grid + Gauge + Featured Gradient Card) ═══ */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Card 3: Security Audit Calendar Grid (Row 2 Left) */}
+        <div className="panel lg:col-span-4 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl space-y-4">
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <h4 className="text-[14px] font-bold text-white">Security Audit Log</h4>
+            <span className="text-[12px] text-[#8E92A4] font-semibold">September 2026</span>
+          </div>
+
+          {/* Calendar Grid Days */}
+          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-mono">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
+              <span key={d} className="text-[#8E92A4] py-1 font-bold">{d}</span>
+            ))}
+            {Array.from({ length: 30 }).map((_, idx) => {
+              const day = idx + 1;
+              const isActive = [12, 15, 21, 28].includes(day);
+              return (
+                <div
+                  key={day}
+                  className={`py-2 rounded-lg text-[12px] transition-all ${
+                    isActive
+                      ? 'bg-[#5B50E6] text-white font-bold shadow-md shadow-[#5B50E6]/50'
+                      : 'text-white/70 hover:bg-white/5'
+                  }`}
+                >
+                  {day}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Card 4: Semi-Circular Radial Gauge Chart (Row 2 Middle) */}
+        <div className="panel lg:col-span-4 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-bold text-[#8E92A4]">Security Posture</span>
+            <span className="text-[12px] font-bold text-[#10B981]">Shield Active</span>
+          </div>
+
+          <div className="my-2">
+            <h3 className="text-[36px] font-extrabold text-white">82k</h3>
+            <p className="text-[12px] text-[#8E92A4]">+12% threat isolation score</p>
+          </div>
+
+          {/* Semi-circular gauge ring matching reference image */}
+          <div className="relative flex justify-center pt-2">
+            <svg width="220" height="120" viewBox="0 0 220 120">
+              <path d="M 20 100 A 90 90 0 0 1 200 100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="18" strokeLinecap="round" />
+              <path d="M 20 100 A 90 90 0 0 1 170 40" fill="none" stroke="#5B50E6" strokeWidth="18" strokeLinecap="round" />
+            </svg>
+            <div className="absolute bottom-1 text-center">
+              <span className="text-[28px] font-extrabold text-white">75%</span>
+              <span className="block text-[11px] font-semibold text-[#8E92A4]">TRUST SCORE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 5: Gradient Featured Action Banner Card (Row 2 Right) */}
+        <div className="panel lg:col-span-4 p-6 bg-gradient-to-br from-[#5B50E6] via-[#7B2CBF] to-[#9D4EDD] rounded-3xl flex flex-col justify-between text-white shadow-xl shadow-[#5B50E6]/30">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full">ThirdEye Shield</span>
+            <h3 className="text-[24px] font-extrabold mt-3 leading-snug">Connect New Project</h3>
+            <p className="text-[13px] text-white/80 mt-2 leading-relaxed">
+              Link your e-commerce store or backend application to ThirdEye Gateway proxy for instant zero-trust protection.
+            </p>
+          </div>
+
+          <button
+            onClick={() => router.push('/integrations')}
+            className="mt-6 w-full rounded-2xl bg-[#FF2A6D] py-3.5 text-[14px] font-bold text-white shadow-lg shadow-[#FF2A6D]/40 transition-transform active:scale-95 hover:brightness-110"
+          >
+            Connect Project Now →
+          </button>
         </div>
       </div>
     </div>

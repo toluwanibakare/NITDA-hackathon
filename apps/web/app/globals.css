@@ -3,18 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --bg: #071426;
-  --bg-deep: #040B16;
-  --panel: #0A172E;
-  --panel-2: #0E1E3A;
-  --line: rgba(245, 249, 255, 0.08);
-  --line-strong: rgba(245, 249, 255, 0.14);
-  --ink: #F2F6FC;
-  --muted: #93A1B8;
-  --brand: #1677FF;
-  --brand-glow: rgba(22, 119, 255, 0.22);
-  --accent: #00C8D7;
-  --success: #19D98A;
+  --bg: #12131C;
+  --bg-deep: #0D0E15;
+  --panel: #1C1D2A;
+  --panel-2: #222334;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --ink: #F2F4F8;
+  --muted: #8E92A4;
+  --brand: #5B50E6;
+  --brand-glow: rgba(91, 80, 230, 0.35);
+  --pink-accent: #FF2A6D;
+  --accent: #00CEC9;
+  --success: #10B981;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, "Segoe UI", Roboto, sans-serif;
