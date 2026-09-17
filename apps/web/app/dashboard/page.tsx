@@ -102,7 +102,7 @@ export default function Dashboard() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="chip !border-[#3B82F6]/30 !bg-[#3B82F6]/10 !text-[#5B9CFF] !py-0.5 !text-[10.5px]">
-                CLOUDFLARE-GRADE PROTECTION FOR THIRD-PARTY APIS
+                ZERO-TRUST THIRD-PARTY API SHIELD
               </span>
               <span className="chip !border-[#10B981]/30 !bg-[#10B981]/10 !text-[#10B981] !py-0.5 !text-[10.5px]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" /> GATEWAY PROTECTED

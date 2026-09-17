@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { CodeTypingPreview } from '@/components/CodeTypingPreview';
 import { IntegrationMap } from '@/components/IntegrationMap';
 import { Icon, paths } from '@/components/icons';
 import { apiSafe, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
@@ -268,36 +269,8 @@ export default function LandingPage() {
               <span className="chip">pip install thirdeye-sdk</span>
             </div>
           </div>
-          <div className="panel lg:col-span-7 overflow-hidden p-5 sm:p-6" style={{ background: '#071426' }}>
-            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#1677FF]" />
-                <span className="mono-num text-[12px] font-bold text-white">shopx-integration.ts</span>
-              </div>
-              <span className="chip !text-[10.5px]">TYPESCRIPT / NODE.JS</span>
-            </div>
-            <pre className="mono-num mt-4 overflow-x-auto text-[12px] leading-relaxed text-[#00C8D7]">
-              {`import { ThirdEye } from '@thirdeye/sdk';
-
-// Initialize ShopX integration via ThirdEye Custom Gateway
-const thirdeye = new ThirdEye({
-  apiKey: 'te_live_98a7b6c5d4e3',
-  gatewayUrl: 'https://gateway.thirdeye.sec',
-  integrationId: 'analytics_001'
-});
-
-// Verify request before passing to ShopX backend
-const decision = await thirdeye.verifyRequest({
-  endpoint: '/analytics/events',
-  method: 'GET',
-  dataRequested: ['event_type', 'session_id'],
-  requestCount: 95
-});
-
-if (decision.action === 'BLOCK') {
-  throw new Error('ThirdEye Security Block: Unauthorized scope breach');
-}`}
-            </pre>
+          <div className="lg:col-span-7">
+            <CodeTypingPreview />
           </div>
         </div>
       </section>
