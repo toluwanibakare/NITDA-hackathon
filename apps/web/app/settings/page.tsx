@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [context, setContext] = useState<'none' | 'black_friday' | 'campaign_launch' | 'known_spike'>('none');
   const [saved, setSaved] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     try {
@@ -27,11 +28,14 @@ export default function SettingsPage() {
   }
 
   async function proveNoFalseAlarm() {
+    setTesting(true);
     setTestResult('Checking Black Friday spike…');
     try {
+      // Backend: POST /api/check-request with contextEvent → risk -20, volume alone never blocks.
       const r = await apiSafe<{ riskScore: number; action: string; reason: string }>('/api/check-request', { riskScore: 0, action: 'ALLOW', reason: 'demo' }, { method: 'POST', body: JSON.stringify({ integrationId: 'payment_001', method: 'GET', endpoint: '/payments', dataRequested: ['order_id', 'amount'], requestCount: 900, contextEvent: 'black_friday' }) });
       setTestResult(r.live ? `Engine replied: risk ${r.data.riskScore} → ${r.data.action}. High traffic + expected event = reduced risk. No false alarm.` : 'Engine offline — 900/min on Black Friday would score ~0 (volume forgiven with context). No false alarm by design.');
     } catch { setTestResult('Engine unreachable. Context subtracts 20 and volume alone never auto-blocks.'); }
+    finally { setTesting(false); }
   }
 
   return (
@@ -55,13 +59,13 @@ export default function SettingsPage() {
         <div className="section-card">
           <div className="section-label-soft mb-5">Risk thresholds</div>
           {( [
-            ['Suspicious at', suspicious, setSuspicious, '#D9930D'],
-            ['High risk at', high, setHigh, '#F59E0B'],
-            ['Critical at', critical, setCritical, '#E5484D'],
+            ['Suspicious at', suspicious, setSuspicious, '#FFC42E'],
+            ['High risk at', high, setHigh, '#FF9F2E'],
+            ['Critical at', critical, setCritical, '#FF4D5E'],
           ] as [string, number, (n: number) => void, string][] ).map(([label, v, set, col]) => (
             <div key={label} className="mb-5 last:mb-0">
               <div className="flex items-center justify-between text-[13.5px]">
-                <span className="text-[#5A6B82]">{label}</span>
+                <span style={{ color: '#94A3B8' }}>{label}</span>
                 <span className="font-mono text-[14px] font-bold" style={{ color: col }}>{v}</span>
               </div>
               <input
@@ -71,13 +75,13 @@ export default function SettingsPage() {
               />
             </div>
           ))}
-          <div className="mb-3 flex h-2.5 overflow-hidden rounded-full bg-[#EAF0F5]">
-            <div className="bg-[#0E9F6E]/70" style={{ width: `${suspicious}%` }} />
-            <div className="bg-[#D9930D]/70" style={{ width: `${high - suspicious}%` }} />
-            <div className="bg-[#F59E0B]/70" style={{ width: `${critical - high}%` }} />
-            <div className="bg-[#E5484D]/80" style={{ width: `${100 - critical}%` }} />
+          <div className="mb-3 flex h-2.5 overflow-hidden rounded-full" style={{ background: 'rgba(245,249,255,0.08)' }}>
+            <div style={{ width: `${suspicious}%`, background: 'rgba(25,217,138,0.7)' }} />
+            <div style={{ width: `${Math.max(0, high - suspicious)}%`, background: 'rgba(255,196,46,0.7)' }} />
+            <div style={{ width: `${Math.max(0, critical - high)}%`, background: 'rgba(255,159,46,0.7)' }} />
+            <div style={{ width: `${Math.max(0, 100 - critical)}%`, background: 'rgba(255,77,94,0.8)' }} />
           </div>
-          <p className="section-sub-soft text-[12px]">Stored locally (v1). Backend defaults are 30 / 60 / 80 per TECH_PRD §4.</p>
+          <p className="section-sub-soft text-[12px]">Stored locally (v1). Backend defaults are 30 / 60 / 80 per TECH_PRD §4. Thresholds tune display bands; enforcement stays server-side.</p>
         </div>
 
         {/* ═══ Context ═══ */}
@@ -88,9 +92,10 @@ export default function SettingsPage() {
               <button
                 key={c}
                 onClick={() => setContext(c)}
-                className={`rounded-xl border px-4 py-3 font-mono text-[11.5px] font-semibold tracking-wide transition-all ${context === c ? 'border-brand bg-brand text-white shadow-[0_2px_8px_rgba(10,101,255,0.3)]' : 'border-[#D1DBE8] bg-[#FFFFFF] text-[#5A6B82] hover:border-brand/40 hover:bg-brand/[0.04] hover:text-[#0A1830]'}`}
+                className="rounded-xl border px-4 py-3 text-[13px] font-semibold transition-[border-color,background,color,transform] duration-150 active:scale-[0.97]"
+                style={context === c ? { borderColor: '#1677FF', background: '#1677FF', color: 'white', boxShadow: '0 2px 8px rgba(22,119,255,0.35)', letterSpacing: '-0.006em' } : { borderColor: 'rgba(245,249,255,0.16)', background: 'rgba(245,249,255,0.04)', color: '#94A3B8', letterSpacing: '-0.006em' }}
               >
-                {c.replace('_', ' ').toUpperCase()}
+                {c === 'none' ? 'None' : c.split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')}
               </button>
             ))}
           </div>
@@ -99,9 +104,9 @@ export default function SettingsPage() {
           </p>
           <div className="mt-5 flex gap-3">
             <button onClick={save} className="btn-primary flex-1">{saved ? 'Saved' : 'Save configuration'}</button>
-            <button onClick={proveNoFalseAlarm} className="btn-ghost flex-1">Prove sales-day safety</button>
+            <button onClick={proveNoFalseAlarm} disabled={testing} className="btn-ghost flex-1 disabled:opacity-60">{testing ? 'Proving…' : 'Prove sales-day safety'}</button>
           </div>
-          {testResult && <div className="mt-4 rounded-xl border border-[#0E9F6E22] bg-[#F0F9F5] px-4 py-3 text-[13px] leading-relaxed text-[#0A1830]">{testResult}</div>}
+          {testResult && <div className="mt-4 rounded-xl border px-4 py-3 text-[13px] leading-relaxed text-[#F5F9FF]" style={{ borderColor: 'rgba(25,217,138,0.25)', background: 'rgba(25,217,138,0.06)' }}>{testResult}</div>}
         </div>
       </div>
 

@@ -1,8 +1,8 @@
-import { riskColor } from '@/lib/api';
+import { levelFor, riskColor } from '@/lib/api';
 
 export function RiskBadge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }) {
   const c = riskColor(score);
-  const label = score >= 81 ? 'CRITICAL' : score >= 61 ? 'HIGH' : score >= 31 ? 'WATCH' : 'TRUSTED';
+  const label = levelFor(score);
   const pad = size === 'sm' ? 'px-2 py-[3px] text-[10.5px]' : 'px-2.5 py-1 text-[11.5px]';
   return (
     <span
@@ -20,9 +20,9 @@ export function RiskBadge({ score, size = 'md' }: { score: number; size?: 'sm' |
 }
 
 export function StatusDot({ status }: { status: string }) {
-  const c = status === 'QUARANTINED' ? '#E5484D' : status === 'RATE_LIMITED' ? '#F59E0B' : status === 'MONITORED' ? '#D9930D' : '#0E9F6E';
+  const c = status === 'QUARANTINED' ? '#FF4D5E' : status === 'RATE_LIMITED' ? '#FF9F2E' : status === 'MONITORED' ? '#FFC42E' : '#19D98A';
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-line bg-[#F8FAFD] px-2.5 py-1">
+    <span className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)' }}>
       <span className="relative flex h-2 w-2">
         <span className="absolute h-full w-full rounded-full animate-pingRing" style={{ background: c }} />
         <span className="relative h-2 w-2 rounded-full animate-pulseDot" style={{ background: c }} />
@@ -38,10 +38,10 @@ export function RiskRing({ score, size = 96 }: { score: number; size?: number })
   const circ = 2 * Math.PI * r;
   const off = circ * (1 - Math.min(100, Math.max(0, score)) / 100);
   return (
-    <div className="relative shrink-0 rounded-3xl border border-line bg-[#F8FAFD] p-2" style={{ width: size + 16, height: size + 16 }}>
+    <div className="relative shrink-0 rounded-3xl border p-2" style={{ width: size + 16, height: size + 16, borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}>
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="#E7EDF5" strokeWidth={7} fill="none" />
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(245,249,255,0.12)" strokeWidth={7} fill="none" />
           <circle
             cx={size / 2}
             cy={size / 2}

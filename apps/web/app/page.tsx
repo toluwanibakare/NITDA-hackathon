@@ -1,349 +1,304 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { IntegrationMap } from '@/components/IntegrationMap';
 import { Icon, paths } from '@/components/icons';
+import { apiSafe, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
 import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
+const TIERS = [
+  { range: '0–30', tier: 'Trusted', action: 'Allow', color: '#19D98A', desc: 'Matches declared purpose, endpoint scope and method.' },
+  { range: '31–60', tier: 'Suspicious', action: 'Allow + monitor', color: '#FFC42E', desc: 'Endpoint or purpose drift. Logged for review.' },
+  { range: '61–80', tier: 'High risk', action: 'Rate limit + monitor', color: '#FF9F2E', desc: 'Restricted data or volume anomaly.' },
+  { range: '81–100', tier: 'Critical', action: 'Block + quarantine', color: '#FF4D5E', desc: 'Sustained abuse. Isolated until review.' },
+];
+
+const NAV_LINKS: [string, string][] = [
+  ['#how', 'How it works'],
+  ['#architecture', 'Topology'],
+  ['#response', 'Response'],
+  ['#audit', 'Audit'],
+];
+
 export default function LandingPage() {
+  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
+  const [live, setLive] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
+      setLive(r.live);
+    });
+  }, []);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const critical = [...items].sort((a, b) => getRiskScore(b) - getRiskScore(a))[0];
+
   return (
-    <div className="min-h-screen bg-[#070D18] text-white selection:bg-brand selection:text-white font-sans overflow-x-hidden">
-      {/* Background Radial Glow & Ambient Particles */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-gradient-to-tr from-brand/20 via-purple-600/20 to-cyan-500/10 blur-[130px]" />
-        <div className="absolute top-[40%] -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/15 blur-[140px]" />
-        <div className="absolute top-[70%] -right-40 h-[500px] w-[500px] rounded-full bg-cyan-600/10 blur-[140px]" />
-      </div>
-
-      {/* ═══ TOP NAVBAR ═══ */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070D18]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-brand to-purple-600 p-[1px] shadow-lg shadow-brand/20 group-hover:scale-105 transition-transform">
-              <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-[#070D18]">
-                <Image src="/logo.jpeg" alt="ThirdEye" width={32} height={32} className="rounded-md object-contain" />
-              </div>
-            </div>
-            <div>
-              <span className="block text-[20px] font-extrabold tracking-tight text-white leading-none">ThirdEye</span>
-              <span className="block text-[10px] font-mono tracking-widest text-brand uppercase mt-0.5">Risk Engine · Track G</span>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 md:flex">
-            <a href="#features" className="text-[13.5px] font-medium text-slate-300 transition-colors hover:text-white">
-              Features
-            </a>
-            <a href="#graded-response" className="text-[13.5px] font-medium text-slate-300 transition-colors hover:text-white">
-              Graded Response
-            </a>
-            <a href="#architecture" className="text-[13.5px] font-medium text-slate-300 transition-colors hover:text-white">
-              Architecture Map
-            </a>
-            <a href="#audit-trail" className="text-[13.5px] font-medium text-slate-300 transition-colors hover:text-white">
-              Tamper-Evident Audit
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/simulator"
-              className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-white/10 hover:border-white/25"
-            >
-              <Icon d={paths.play} size={14} className="text-cyan-400" />
-              Attack Demo
+    <div className="min-h-screen bg-[#040B16] font-sans text-[#F2F6FC] antialiased overflow-x-clip">
+      {/* ── Nav: glassy layer that stays put while content slides under ── */}
+      <header className="sticky top-0 z-50">
+        <div
+          className="transition-[background,box-shadow,border-color] duration-200"
+          style={scrolled
+            ? {
+                background: 'rgba(4, 11, 22, 0.78)',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                borderBottom: '1px solid rgba(245,249,255,0.09)',
+                boxShadow: '0 12px 40px -18px rgba(0,0,0,0.85)',
+              }
+            : {
+                background: 'rgba(4, 11, 22, 0.55)',
+                backdropFilter: 'blur(20px) saturate(160%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                borderBottom: '1px solid rgba(245,249,255,0.06)',
+                boxShadow: 'none',
+              }}
+        >
+          <div className="console-full flex h-16 items-center gap-4">
+            <Link href="/" className="group flex shrink-0 items-center gap-3" aria-label="ThirdEye home">
+              <Image src="/logo.jpeg" alt="ThirdEye" width={48} height={48} className="h-12 w-12 rounded-xl object-contain transition-transform duration-150 group-active:scale-95" priority />
+              <span className="leading-none">
+                <span className="block text-[17px] font-bold text-white" style={{ letterSpacing: '-0.02em' }}>ThirdEye</span>
+                <span className="mt-0.5 block text-[11px] font-medium" style={{ letterSpacing: '0.06em', color: '#6E7E99' }}>TRACK G · ICSC 2026</span>
+              </span>
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand to-purple-600 px-5 py-2.5 text-[13.5px] font-bold text-white shadow-lg shadow-brand/30 transition-all hover:scale-[1.02] hover:shadow-brand/40"
-            >
-              Console Login
-              <Icon d={paths.arrow} size={14} />
-            </Link>
+            <nav className="mx-auto hidden items-center gap-1 lg:flex" aria-label="Product">
+              {NAV_LINKS.map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="rounded-full px-3.5 py-1.5 text-[13.5px] font-medium transition-colors duration-150 hover:text-white"
+                  style={{ color: '#93A1B8', letterSpacing: '-0.006em' }}
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+            <div className="ml-auto flex shrink-0 items-center gap-2.5 lg:ml-0">
+              <span className="chip hidden !text-[11px] md:inline-flex" style={{ color: live ? '#19D98A' : '#8B9BB4' }}>
+                <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#5B6B85]'}`} />
+                {live ? 'Live' : 'Demo'}
+              </span>
+              <Link href="/simulator" className="btn-ghost hidden !px-4 !py-2 !text-[13px] sm:inline-flex">Attack demo</Link>
+              <Link href="/dashboard" className="btn-accent group !px-4 !py-2 !text-[13px]">
+                Open console
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5"><Icon d={paths.arrow} size={14} /></span>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* ═══ HERO SECTION ═══ */}
-      <section className="relative pt-12 pb-20 md:pt-20 md:pb-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-            {/* Left Column Text */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand/10 px-4 py-1.5 backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulseDot" />
-                <span className="text-[12px] font-mono font-bold uppercase tracking-wider text-cyan-300">
-                  Track G · Commerce & Consumer Protection
+      {/* ── Hero: eyebrow, display, proof, story visual ── */}
+      <section className="console-full relative overflow-hidden pb-14 pt-14 md:pb-20 md:pt-[76px]">
+        <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" />
+        <div className="pointer-events-none absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full blur-[120px]" style={{ background: 'rgba(22,119,255,0.13)' }} />
+        <div className="relative grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-7">
+            <p className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold" style={{ borderColor: 'rgba(22,119,255,0.35)', background: 'rgba(22,119,255,0.08)', color: '#8FBFFF', letterSpacing: '0.04em' }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#5B9CFF] animate-pulseDot" />
+              COMMERCE & CONSUMER PROTECTION
+            </p>
+            <h1 className="mt-5 max-w-[15ch] text-white" style={{ fontSize: 'clamp(2.5rem, 5.2vw, 4.1rem)', lineHeight: 1.03, letterSpacing: '-0.032em', fontWeight: 750 }}>
+              Know what your third parties <span style={{ color: '#5B9CFF' }}>actually</span> do.
+            </h1>
+            <p className="mt-5 max-w-[54ch]" style={{ fontSize: '17px', lineHeight: 1.65, color: '#A9B6CC', letterSpacing: '-0.006em' }}>
+              ThirdEye verifies every authorised integration against its declared purpose and scope —
+              then grades the response, so a busy sales day never stops revenue and a real breach gets isolated.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/dashboard" className="btn-accent group !px-6 !py-3 !text-[14px]" style={{ boxShadow: '0 8px 28px -10px rgba(22,119,255,0.6)' }}>
+                Open live console
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5"><Icon d={paths.arrow} size={15} /></span>
+              </Link>
+              <Link href="/simulator" className="btn-ghost group !px-6 !py-3 !text-[14px]">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: 'rgba(0,200,215,0.14)', color: '#00C8D7' }}>
+                  <Icon d={paths.play} size={12} />
                 </span>
-              </div>
-
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.12]">
-                Middleware Solutions Enhancing Privacy for{' '}
-                <span className="bg-gradient-to-r from-cyan-400 via-brand to-purple-400 bg-clip-text text-transparent">
-                  E-Commerce & Merchants
-                </span>
-              </h1>
-
-              <p className="max-w-2xl text-[16px] leading-relaxed text-slate-300 md:text-[17.5px]">
-                ThirdEye continuously verifies authorized third-party integrations against declared purpose and scope.
-                Protects customer data, payment details, and operational APIs from credential compromise, scope drift, and unauthorized exfiltration.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 pt-4">
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brand via-purple-600 to-indigo-600 px-7 py-4 text-[15px] font-bold text-white shadow-xl shadow-brand/25 transition-all hover:scale-[1.02] hover:shadow-brand/40"
-                >
-                  Launch Live Console
-                  <Icon d={paths.arrow} size={16} />
-                </Link>
-                <Link
-                  href="/simulator"
-                  className="inline-flex items-center gap-3 rounded-2xl border border-white/20 bg-white/5 px-6 py-4 text-[15px] font-semibold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/30"
-                >
-                  <Icon d={paths.play} size={16} className="text-cyan-400" />
-                  Run Attack Simulator
-                </Link>
-              </div>
-
-              {/* Key Specs Bar */}
-              <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-8 sm:grid-cols-4">
-                <div>
-                  <div className="text-[22px] font-mono font-bold text-white">&lt; 1ms</div>
-                  <div className="text-[12px] text-slate-400 font-medium mt-0.5">Latency Overhead</div>
-                </div>
-                <div>
-                  <div className="text-[22px] font-mono font-bold text-cyan-400">100% SHA-256</div>
-                  <div className="text-[12px] text-slate-400 font-medium mt-0.5">Tamper-Evident Audit</div>
-                </div>
-                <div>
-                  <div className="text-[22px] font-mono font-bold text-purple-400">4 Tiers</div>
-                  <div className="text-[12px] text-slate-400 font-medium mt-0.5">Graded Escalation</div>
-                </div>
-                <div>
-                  <div className="text-[22px] font-mono font-bold text-emerald-400">Zero</div>
-                  <div className="text-[12px] text-slate-400 font-medium mt-0.5">False Alarms</div>
-                </div>
-              </div>
+                Run attack simulator
+              </Link>
             </div>
+            <dl className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border sm:grid-cols-4" style={{ borderColor: 'rgba(245,249,255,0.09)', background: 'rgba(245,249,255,0.09)' }}>
+              {[
+                ['<1ms', 'Request overhead'],
+                ['SHA-256', 'Tamper-evident log'],
+                ['4 tiers', 'Graded response'],
+                ['−20', 'Context relief'],
+              ].map(([v, l]) => (
+                <div key={l} className="px-5 py-4" style={{ background: '#071426' }}>
+                  <dt className="mono-num text-[20px] font-semibold text-white" style={{ letterSpacing: '-0.015em' }}>{v}</dt>
+                  <dd className="mt-0.5 text-[12px]" style={{ color: '#8494AD' }}>{l}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
 
-            {/* Right Column 3D Shield Hero Image */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-[460px] aspect-square rounded-3xl overflow-hidden border border-white/15 bg-gradient-to-b from-white/10 via-white/5 to-transparent p-3 shadow-2xl backdrop-blur-2xl group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand/20 via-purple-500/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                <Image
-                  src="/hero_shield.jpg"
-                  alt="ThirdEye 3D Shield Security"
-                  width={460}
-                  height={460}
-                  className="h-full w-full object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
-                  priority
-                />
-                {/* Floating Live Badge */}
-                <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-[#070D18]/85 p-4 backdrop-blur-xl shadow-xl">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-3 w-3 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="text-[13px] font-bold text-white">Active Engine Sentinel</span>
+          {/* Story visual: product snapshot + live risk overlay */}
+          <div className="lg:col-span-5">
+            <div className="panel relative overflow-hidden">
+              <div className="flex items-center gap-1.5 border-b px-4 py-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#FF5F57' }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#28C840' }} />
+                <span className="mono-num ml-2 text-[11px]" style={{ color: '#6E7E99' }}>thirdeye / overview</span>
+                <span className="chip ml-auto !py-0.5 !text-[10px]" style={{ color: '#19D98A' }}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#19D98A] animate-pulseDot" /> LIVE
+                </span>
+              </div>
+              <Image src="/hero_shield.jpg" alt="ThirdEye monitoring console" width={520} height={380} className="h-auto w-full object-cover" priority />
+              {critical && (
+                <div className="absolute inset-x-4 bottom-4 rounded-xl border p-3.5 backdrop-blur-xl" style={{ borderColor: 'rgba(245,249,255,0.12)', background: 'rgba(4,11,22,0.82)' }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="h-2 w-2 shrink-0 rounded-full animate-pulseDot" style={{ background: getRiskScore(critical) >= 81 ? '#FF4D5E' : '#19D98A' }} />
+                      <span className="truncate text-[13px] font-semibold text-white">{critical.name}</span>
                     </div>
-                    <span className="font-mono text-[11px] text-emerald-400 font-semibold">VERIFIED INTEL</span>
+                    <span className="mono-num shrink-0 text-[13px] font-semibold" style={{ color: getRiskScore(critical) >= 81 ? '#FF8090' : '#19D98A' }}>
+                      {getRiskScore(critical)}
+                    </span>
                   </div>
-                  <p className="mt-1 text-[11.5px] text-slate-300">
-                    Intercepted 1,420 requests today. 0 breach exposures.
+                  <p className="mt-1 truncate text-[12px]" style={{ color: '#8494AD' }}>
+                    {critical.purpose} · {critical.status}
                   </p>
                 </div>
-              </div>
+              )}
             </div>
+            <p className="mono-num mt-3 text-center text-[11.5px]" style={{ color: '#5B6B85' }}>
+              1,420 requests verified today · 0 breach exposures
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ═══ LIVE TOPOLOGY ARCHITECTURE SECTION ═══ */}
-      <section id="architecture" className="relative py-20 border-t border-white/10 bg-[#0B132B]/50">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-[11.5px] font-mono font-semibold text-cyan-300 uppercase tracking-widest">
-              Live Network Architecture
-            </div>
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-              Continuous Verification Topology Map
-            </h2>
-            <p className="text-[15.5px] text-slate-300 leading-relaxed">
-              ThirdEye sits between store applications and third-party partner integrations. Traffic flows through live verification ports with real-time risk scoring.
-            </p>
+      {/* ── How it works ── */}
+      <section id="how" className="console-full scroll-mt-20 border-t py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="section-label-soft">How it works</p>
+            <h2 className="mt-2 text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>Purpose, scope and behaviour — checked on every request.</h2>
+            <Link href="/dashboard" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">
+              See it on the overview <Icon d={paths.arrow} size={14} />
+            </Link>
           </div>
-
-          <div className="rounded-3xl border border-white/15 bg-white/5 p-4 shadow-2xl backdrop-blur-xl">
-            <IntegrationMap items={MOCK_INTEGRATIONS} />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ GRADED RESPONSE & FEATURES SECTION ═══ */}
-      <section id="graded-response" className="relative py-20 border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3.5 py-1 text-[11.5px] font-mono font-semibold text-purple-300 uppercase tracking-widest">
-              Graded Escalation Policy
-            </div>
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-              Why Binary On/Off Security Fails Retail
-            </h2>
-            <p className="text-[15.5px] text-slate-300 leading-relaxed">
-              Cutting off integrations completely during false alarms halts revenue. ThirdEye grades risk into 4 response tiers so business flows safely.
-            </p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-3 lg:col-span-8" style={{ borderColor: 'rgba(245,249,255,0.08)', background: 'rgba(245,249,255,0.08)' }}>
             {[
-              {
-                range: '0–30',
-                tier: 'TRUSTED',
-                action: 'ALLOW',
-                color: '#0E9F6E',
-                bg: 'bg-emerald-500/10 border-emerald-500/30',
-                text: 'text-emerald-400',
-                desc: 'Request matches declared purpose, endpoint scope, and expected method.',
-              },
-              {
-                range: '31–60',
-                tier: 'WATCH',
-                action: 'ALLOW + MONITOR',
-                color: '#D9930D',
-                bg: 'bg-amber-500/10 border-amber-500/30',
-                text: 'text-amber-400',
-                desc: 'Unusual endpoint or mild purpose drift detected. Logged for audit review.',
-              },
-              {
-                range: '61–80',
-                tier: 'HIGH RISK',
-                action: 'RATE LIMIT + MONITOR',
-                color: '#F59E0B',
-                bg: 'bg-orange-500/10 border-orange-500/30',
-                text: 'text-orange-400',
-                desc: 'Attempted access to restricted data fields or abnormal traffic surge.',
-              },
-              {
-                range: '81–100',
-                tier: 'CRITICAL',
-                action: 'BLOCK + QUARANTINE',
-                color: '#E5484D',
-                bg: 'bg-rose-500/10 border-rose-500/30',
-                text: 'text-rose-400',
-                desc: 'Sustained abuse or unauthorized sensitive payload exfiltration. Isolated immediately.',
-              },
-            ].map((f) => (
-              <div
-                key={f.tier}
-                className={`rounded-2xl border ${f.bg} p-6 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-xl`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`font-mono text-[11px] font-extrabold uppercase tracking-widest ${f.text}`}>
-                    Score {f.range}
-                  </span>
-                  <span className={`h-2.5 w-2.5 rounded-full`} style={{ background: f.color }} />
-                </div>
-                <h3 className="mt-4 text-[20px] font-extrabold text-white">{f.tier}</h3>
-                <div className={`mt-1 font-mono text-[12px] font-bold ${f.text}`}>{f.action}</div>
-                <p className="mt-3 text-[13px] leading-relaxed text-slate-300">{f.desc}</p>
+              ['Declare', 'Register each integration with its purpose, endpoints and allowed data.'],
+              ['Verify', 'Score every request 0–100 against purpose, scope, data and volume.'],
+              ['Grade', 'Allow, monitor, rate-limit or quarantine — with the reason shown.'],
+            ].map(([t, d], i) => (
+              <li key={t} className="group px-6 py-6 transition-colors duration-150 hover:bg-white/[0.02]" style={{ background: '#071426' }}>
+                <div className="mono-num text-[12px]" style={{ color: '#5B9CFF' }}>0{i + 1}</div>
+                <div className="mt-2 text-[15px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>{t}</div>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed" style={{ color: '#8494AD' }}>{d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ── Topology ── */}
+      <section id="architecture" className="console-full scroll-mt-20 border-t py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="section-label-soft">Topology</p>
+            <h2 className="mt-2 text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>One map of everything your partners can reach.</h2>
+            <p className="mt-2 text-[15px] leading-relaxed" style={{ color: '#A9B6CC' }}>Store → ThirdEye → partners. Select a node to open its trust profile.</p>
+          </div>
+          <Link href="/integrations" className="btn-ghost !px-4 !py-2 !text-[13px]">Open registry <Icon d={paths.arrow} size={14} /></Link>
+        </div>
+        <div className="panel mt-7 overflow-hidden">
+          <IntegrationMap items={items} />
+        </div>
+      </section>
+
+      {/* ── Response tiers ── */}
+      <section id="response" className="console-full scroll-mt-20 border-t py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="section-label-soft">Graded response</p>
+            <h2 className="mt-2 text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>Never just on or off.</h2>
+            <p className="mt-2 text-[15px] leading-relaxed" style={{ color: '#A9B6CC' }}>Cutting payments on a false alarm stops real money. Each tier shows its action and why.</p>
+            <Link href="/simulator" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">
+              Watch it escalate live <Icon d={paths.arrow} size={14} />
+            </Link>
+          </div>
+          <div className="overflow-hidden rounded-2xl border lg:col-span-8" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+            {TIERS.map((t, i) => (
+              <div key={t.tier} className="flex flex-wrap items-baseline gap-x-5 gap-y-1 px-6 py-5 transition-colors duration-150 hover:bg-white/[0.02]" style={{ background: i % 2 ? 'rgba(245,249,255,0.015)' : 'transparent', borderTop: i ? '1px solid rgba(245,249,255,0.06)' : 'none' }}>
+                <span className="mono-num w-14 text-[12px]" style={{ color: '#6E7E99' }}>{t.range}</span>
+                <span className="flex items-center gap-2 text-[15px] font-semibold text-white">
+                  <span className="h-2 w-2 rounded-full" style={{ background: t.color }} /> {t.tier}
+                </span>
+                <span className="text-[13px] font-medium" style={{ color: '#A9B6CC' }}>{t.action}</span>
+                <span className="ml-auto max-w-[38ch] text-[13px]" style={{ color: '#8494AD' }}>{t.desc}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ AUDIT & CONTEXT PILLARS SECTION ═══ */}
-      <section id="audit-trail" className="relative py-20 border-t border-white/10 bg-[#0B132B]/40">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            {/* Left Card: Audit Trail */}
-            <div className="rounded-3xl border border-white/15 bg-white/5 p-8 backdrop-blur-xl space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/20 text-brand">
-                  <Icon d={paths.shield} size={20} />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Cryptographic SHA-256 Audit Chain</h3>
-              </div>
-              <p className="text-[14.5px] leading-relaxed text-slate-300">
-                Every violation, quarantine action, and policy enforcement is recorded into a tamper-evident SHA-256 hash sequence log. Auditors and regulators can verify unbroken chain integrity in one click.
-              </p>
-              <div className="rounded-2xl border border-white/10 bg-[#070D18] p-4 font-mono text-[12px] text-cyan-300 space-y-2">
-                <div>genesisHash: 000000000000000000000000...</div>
-                <div>latestHash:  c5f886f4a86b5c3e7d991b1a7...</div>
-                <div className="text-emerald-400 font-bold">status: INTEGRITY_VERIFIED_INTACT</div>
-              </div>
-              <Link
-                href="/events"
-                className="inline-flex items-center gap-2 text-[14px] font-bold text-brand hover:text-cyan-400 transition-colors"
-              >
-                Inspect Audit Log Page <Icon d={paths.arrow} size={14} />
-              </Link>
+      {/* ── Audit + context ── */}
+      <section id="audit" className="console-full scroll-mt-20 border-t py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="panel p-7">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: 'rgba(22,119,255,0.12)', color: '#5B9CFF' }}>
+              <Icon d={paths.shield} size={18} />
             </div>
-
-            {/* Right Card: Business Context Engine */}
-            <div className="rounded-3xl border border-white/15 bg-white/5 p-8 backdrop-blur-xl space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400">
-                  <Icon d={paths.clock} size={20} />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Business Context Anti-False-Alarm</h3>
-              </div>
-              <p className="text-[14.5px] leading-relaxed text-slate-300">
-                Track G explicitly evaluates false-alarm safety: busy sales days like Black Friday trigger high volume. ThirdEye's context engine subtracts risk dynamically so high traffic alone never auto-blocks revenue.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {['BLACK FRIDAY', 'CAMPAIGN LAUNCH', 'KNOWN SPIKE'].map((tag) => (
-                  <span key={tag} className="rounded-xl border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 font-mono text-[11px] font-bold text-purple-300">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <Link
-                href="/settings"
-                className="inline-flex items-center gap-2 text-[14px] font-bold text-purple-400 hover:text-cyan-400 transition-colors"
-              >
-                Configure Context Engine <Icon d={paths.arrow} size={14} />
-              </Link>
+            <h3 className="mt-4 text-[19px] font-semibold text-white" style={{ letterSpacing: '-0.015em' }}>Tamper-evident audit</h3>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#A9B6CC' }}>Every violation and quarantine is hash-chained. Verify integrity in one click for auditors.</p>
+            <div className="mono-num mt-4 rounded-xl border p-4 text-[12px] leading-relaxed" style={{ borderColor: 'rgba(245,249,255,0.08)', background: 'rgba(4,11,22,0.6)', color: '#00C8D7' }}>
+              <div>genesis 000000…0000</div>
+              <div>latest&nbsp;&nbsp; c5f886…194c6f</div>
+              <div style={{ color: '#19D98A' }}>integrity INTACT</div>
             </div>
+            <Link href="/events" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">Inspect activity <Icon d={paths.arrow} size={14} /></Link>
+          </div>
+          <div className="panel p-7">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: 'rgba(0,200,215,0.1)', color: '#00C8D7' }}>
+              <Icon d={paths.clock} size={18} />
+            </div>
+            <h3 className="mt-4 text-[19px] font-semibold text-white" style={{ letterSpacing: '-0.015em' }}>Context prevents false alarms</h3>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#A9B6CC' }}>Black Friday traffic is expected. Context relieves 20 points so volume alone never blocks revenue.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {['Black Friday', 'Campaign launch', 'Known spike'].map((tag) => (
+                <span key={tag} className="chip">{tag}</span>
+              ))}
+            </div>
+            <Link href="/settings" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">Configure context <Icon d={paths.arrow} size={14} /></Link>
           </div>
         </div>
       </section>
 
-      {/* ═══ CALL TO ACTION FOOTER BANNER ═══ */}
-      <section className="relative py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-r from-brand via-purple-700 to-indigo-900 p-10 md:p-16 shadow-2xl text-center">
-            <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
-                Ready to Experience ThirdEye in Action?
-              </h2>
-              <p className="text-[16.5px] text-slate-200 leading-relaxed">
-                Explore the live security dashboard, test credential compromise simulations, or review the tamper-evident audit trail.
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-                <Link
-                  href="/dashboard"
-                  className="rounded-2xl bg-white px-8 py-4 text-[15px] font-extrabold text-[#070D18] shadow-xl hover:bg-slate-100 transition-all hover:scale-[1.03]"
-                >
-                  Enter Security Console
-                </Link>
-                <Link
-                  href="/simulator"
-                  className="rounded-2xl border border-white/30 bg-white/10 px-8 py-4 text-[15px] font-bold text-white backdrop-blur-md hover:bg-white/20 transition-all"
-                >
-                  Run Attack Simulator
-                </Link>
-              </div>
-            </div>
+      {/* ── CTA ── */}
+      <section className="console-full border-t py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="panel flex flex-col items-start justify-between gap-6 p-8 md:p-10 lg:flex-row lg:items-center" style={{ background: 'linear-gradient(180deg, rgba(22,119,255,0.08), rgba(22,119,255,0.02)), #0A172E' }}>
+          <div>
+            <p className="section-label-soft">Demo in one click</p>
+            <h2 className="mt-2 text-[26px] font-bold" style={{ letterSpacing: '-0.02em' }}>See the compromise happen live.</h2>
+            <p className="mt-2 text-[15px]" style={{ color: '#A9B6CC' }}>Four phases. Watch 8 → 45 → 75 → 95, then quarantine.</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <Link href="/dashboard" className="btn-accent !px-6 !py-3 !text-[14px]">Open console</Link>
+            <Link href="/simulator" className="btn-ghost !px-6 !py-3 !text-[14px]">Run simulator</Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#040810] py-8 text-slate-400 font-mono text-[12px]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 lg:px-10">
-          <span>THIRDEYE RISK ENGINE · ICSC 2026 · TRACK G</span>
-          <span>Synthetic Demo Data · Consumer & Merchant Protection</span>
+      <footer className="console-full border-t py-6" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="flex flex-wrap items-center gap-3 text-[12px]" style={{ color: '#6E7E99' }}>
+          <span className="flex items-center gap-2">
+            <Image src="/logo.jpeg" alt="" width={18} height={18} className="h-[18px] w-[18px] rounded object-cover" />
+            ThirdEye · ICSC 2026 · Track G
+          </span>
+          <span className="ml-auto">Synthetic demo data · No personal data</span>
         </div>
       </footer>
     </div>

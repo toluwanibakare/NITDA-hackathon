@@ -5,8 +5,8 @@ import { Icon, paths } from './icons';
 export function StatCard({ label, value, sub, tone = 'neutral', delta }: {
   label: string; value: string | number; sub: string; tone?: 'neutral' | 'good' | 'warn' | 'bad'; delta?: string;
 }) {
-  const accent = tone === 'good' ? '#0E9F6E' : tone === 'warn' ? '#D9930D' : tone === 'bad' ? '#E5484D' : '#0A65FF';
-  const bgTint = tone === 'good' ? '#F0F9F5' : tone === 'warn' ? '#FFF9F0' : tone === 'bad' ? '#FEF2F2' : '#EEF2FF';
+  const accent = tone === 'good' ? '#19D98A' : tone === 'warn' ? '#FFC42E' : tone === 'bad' ? '#FF4D5E' : '#1677FF';
+  const bgTint = tone === 'good' ? 'rgba(25,217,138,0.12)' : tone === 'warn' ? 'rgba(255,196,46,0.12)' : tone === 'bad' ? 'rgba(255,77,94,0.12)' : 'rgba(22,119,255,0.12)';
   const iconD = tone === 'good' ? paths.eye : tone === 'warn' ? paths.pulse : tone === 'bad' ? paths.alert : paths.layers;
   return (
     <div className="stat-card">
@@ -39,8 +39,8 @@ export function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="liquid-glass mono-num hidden items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-medium text-[#5A6B82] sm:inline-flex">
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#0E9F6E] animate-pulseDot" />
+    <span className="liquid-glass mono-num hidden items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-medium text-[#B8C4D8] sm:inline-flex">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#19D98A] animate-pulseDot" />
       {t} WAT
     </span>
   );
@@ -72,11 +72,11 @@ export function BootLoader({ done }: { done: boolean }) {
 export function EmptyState({ title, body, icon = 'grid' }: { title: string; body: string; icon?: keyof typeof paths }) {
   return (
     <div className="section-card flex flex-col items-center py-10">
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#0A65FF] shadow-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-xl shadow-sm" style={{ background: 'rgba(22,119,255,0.14)', color: '#5B9CFF' }}>
         <Icon d={paths[icon]} size={19} />
       </span>
       <div className="h-section mt-4">{title}</div>
-      <div className="section-sub-soft mt-1.5 max-w-sm">{body}</div>
+      <div className="section-sub-soft mt-1.5 max-w-sm text-center">{body}</div>
     </div>
   );
 }

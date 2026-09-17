@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, StatusDot } from '@/components/RiskBadge';
-import { apiSafe, getAllowedEndpoints, getExpectedRate, getRiskScore, type IntegrationRow } from '@/lib/api';
+import { apiSafe, getAllowedEndpoints, getExpectedRate, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
 import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 export default function IntegrationsPage() {
@@ -14,6 +14,8 @@ export default function IntegrationsPage() {
   const [sortKey, setSortKey] = useState<'risk' | 'rate' | 'name'>('risk');
   const [live, setLive] = useState(false);
 
+  // Backend: GET /api/integrations?status&search&sort → IntegrationRow[] dual-cased.
+  // We still filter/sort client-side for instant UX while backend also filters.
   useEffect(() => {
     const query = new URLSearchParams();
     if (statusFilter !== 'ALL') query.set('status', statusFilter);
@@ -21,7 +23,7 @@ export default function IntegrationsPage() {
     query.set('sort', sortKey);
 
     apiSafe<IntegrationRow[]>(`/api/integrations?${query.toString()}`, MOCK_INTEGRATIONS).then((r) => {
-      setItems(r.data.length ? r.data : MOCK_INTEGRATIONS);
+      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
       setLive(r.live);
     });
   }, [q, statusFilter, sortKey]);
@@ -29,7 +31,7 @@ export default function IntegrationsPage() {
   useEffect(() => {
     const id = setInterval(() => {
       apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
-        if (r.data.length) setItems(r.data);
+        if (r.data.length) setItems(r.data.map(normaliseIntegration));
         setLive(r.live);
       });
     }, 8000);
@@ -62,7 +64,7 @@ export default function IntegrationsPage() {
                 Declared purpose, approved scope and live risk — the exposure map the company could never produce before.
               </p>
             </div>
-            <span className="chip shrink-0 border-[#D1DBE8] bg-[#FFFFFF]">
+            <span className="chip shrink-0">
               {live ? 'ENGINE NOMINAL' : 'DEMO DATA'} · {filtered.length} SHOWN
             </span>
           </div>
@@ -72,17 +74,17 @@ export default function IntegrationsPage() {
       {/* ═══ Filter & Sort ═══ */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="panel flex flex-1 items-center gap-3 px-4 py-3 min-w-[280px]">
-          <span className="text-[#8B9BB4]">
+          <span style={{ color: '#64748B' }}>
             <Icon d={paths.grid} size={16} />
           </span>
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter by name, purpose or id…"
-            className="w-full bg-transparent text-[13.5px] text-[#0A1830] outline-none placeholder:text-[#A0AEC0]"
+            className="w-full bg-transparent text-[13.5px] text-[#F5F9FF] outline-none placeholder:text-[#5B6B85]"
           />
           {q && (
-            <button onClick={() => setQ('')} className="font-mono text-[11px] text-[#8B9BB4] hover:text-[#0A1830]">
+            <button onClick={() => setQ('')} className="font-mono text-[11px] hover:text-white" style={{ color: '#8B9BB4' }}>
               CLEAR
             </button>
           )}
@@ -107,8 +109,9 @@ export default function IntegrationsPage() {
           {/* Sort Selector */}
           <select
             value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as any)}
-            className="rounded-xl border border-[#D1DBE8] bg-white px-3 py-2 text-[12.5px] font-semibold text-[#0A1830] outline-none shadow-sm"
+            onChange={(e) => setSortKey(e.target.value as 'risk' | 'rate' | 'name')}
+            className="rounded-xl border px-3 py-2 text-[12.5px] font-semibold outline-none shadow-sm"
+            style={{ borderColor: 'rgba(245,249,255,0.16)', background: '#0E1A33', color: '#F5F9FF' }}
           >
             <option value="risk">Sort: Highest Risk</option>
             <option value="rate">Sort: Highest Rate</option>
@@ -121,7 +124,7 @@ export default function IntegrationsPage() {
       {filtered.length === 0 ? (
         <EmptyState title="No integrations match" body="Try a different search query or status filter." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((it) => {
             const score = getRiskScore(it);
             const endpoints = getAllowedEndpoints(it);
@@ -129,17 +132,18 @@ export default function IntegrationsPage() {
               <Link
                 key={it.id}
                 href={`/integrations/${it.id}`}
-                className="group relative overflow-hidden rounded-2xl border border-[#E4EAF3] bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_30px_-12px_rgba(10,101,255,0.18)]"
+                className="group relative overflow-hidden rounded-2xl border p-6 transition-[border-color,background] duration-150 active:scale-[0.99]"
+                style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'linear-gradient(180deg, rgba(245,249,255,0.03), rgba(245,249,255,0.01)), #0E1A33' }}
               >
-                <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-gradient-to-r from-transparent via-brand/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute inset-x-0 top-0 h-[2px] opacity-0 transition-opacity duration-150 group-hover:opacity-100" style={{ background: 'rgba(22,119,255,0.55)' }} />
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <div className="text-[16px] font-bold text-[#0A1830] group-hover:text-brand">{it.name}</div>
-                    <p className="mt-1 text-[13.5px] leading-relaxed text-[#5A6B82]">{it.purpose}</p>
+                    <div className="text-[16px] font-semibold text-[#F5F9FF] transition-colors duration-150 group-hover:text-[#5B9CFF]" style={{ letterSpacing: '-0.01em' }}>{it.name}</div>
+                    <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: '#94A3B8' }}>{it.purpose}</p>
                     <div className="mt-2.5 flex items-center gap-2">
-                      <span className="font-mono text-[11px] text-[#8B9BB4]">{it.id}</span>
-                      <span className="text-[#C4CDD9]">·</span>
-                      <span className="font-mono text-[11px] text-[#8B9BB4]">{endpoints.length} endpoints</span>
+                      <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>{it.id}</span>
+                      <span style={{ color: '#334155' }}>·</span>
+                      <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>{endpoints.length} endpoints</span>
                     </div>
                   </div>
                   <RiskBadge score={score} size="sm" />
@@ -148,16 +152,17 @@ export default function IntegrationsPage() {
                   {endpoints.slice(0, 4).map((e) => (
                     <span
                       key={e}
-                      className="rounded-full border border-[#E4EAF3] bg-[#F8FAFC] px-2 py-0.5 font-mono text-[10.5px] text-[#64748B]"
+                      className="rounded-full border px-2 py-0.5 font-mono text-[10.5px]"
+                      style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)', color: '#94A3B8' }}
                     >
                       {e}
                     </span>
                   ))}
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-[#EAF0F5] pt-3.5">
+                <div className="mt-4 flex items-center justify-between border-t pt-3.5" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
                   <StatusDot status={it.status} />
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold text-brand group-hover:gap-2">
-                    OPEN TRUST PROFILE <Icon d={paths.arrow} size={13} />
+                  <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#5B9CFF]">
+                    OPEN TRUST PROFILE <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5"><Icon d={paths.arrow} size={13} /></span>
                   </span>
                 </div>
               </Link>
@@ -168,4 +173,3 @@ export default function IntegrationsPage() {
     </div>
   );
 }
-

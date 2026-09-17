@@ -11,10 +11,17 @@ import {
   getAllowedData,
   getAllowedEndpoints,
   getAllowedMethods,
+  getBehaviourCurrent,
+  getBehaviourDeviation,
+  getBehaviourNormal,
   getExpectedRate,
   getForbiddenData,
+  getHistoryVolume,
   getRiskScore,
+  normaliseEvent,
   riskColor,
+  type HistoryResponse,
+  type IntegrationDetailResponse,
   type IntegrationRow,
   type SecEvent,
 } from '@/lib/api';
@@ -24,22 +31,40 @@ export default function IntegrationDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [profile, setProfile] = useState<IntegrationRow | null>(null);
+  const [behaviour, setBehaviour] = useState<IntegrationDetailResponse['behaviour'] | null>(null);
+  const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [events, setEvents] = useState<SecEvent[]>([]);
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState(false);
 
   const load = useCallback(async () => {
-    const [p, ev] = await Promise.all([
-      apiSafe<{ profile: IntegrationRow; recentViolations: SecEvent[] } | IntegrationRow>(
+    // Backend: GET /api/integrations/:id → {profile, behaviour:{normalRate,currentRate,deviationMultiple}, recentViolations[]}
+    // Backend: GET /api/integrations/:id/history → {normalRate,currentRate,currentRisk,history:[{t,volume,risk,normalRate}]}
+    // Backend: GET /api/security-events?integrationId=:id → SecEvent[] dual-cased + hash
+    const [p, h, ev] = await Promise.all([
+      apiSafe<IntegrationDetailResponse | IntegrationRow>(
         `/api/integrations/${id}`,
-        { profile: MOCK_INTEGRATIONS.find((m) => m.id === id) ?? MOCK_INTEGRATIONS[2], recentViolations: MOCK_EVENTS }
+        { profile: MOCK_INTEGRATIONS.find((m) => m.id === id) ?? MOCK_INTEGRATIONS[2], recentViolations: MOCK_EVENTS } as IntegrationDetailResponse,
       ),
+      apiSafe<HistoryResponse>(`/api/integrations/${id}/history`, {
+        integrationId: id as string,
+        normalRate: 100,
+        currentRate: 100,
+        currentRisk: 8,
+        history: [],
+      }),
       apiSafe<SecEvent[]>(`/api/security-events?integrationId=${id}&limit=10`, MOCK_EVENTS.filter((e) => e.integration_id === id)),
     ]);
     const prof = (p.data as { profile?: IntegrationRow }).profile ?? (p.data as IntegrationRow);
     setProfile(prof);
-    setEvents(ev.data.length ? ev.data : ((p.data as { recentViolations?: SecEvent[] }).recentViolations ?? []));
-    setLive(p.live || ev.live);
+    const beh = (p.data as IntegrationDetailResponse).behaviour ?? null;
+    setBehaviour(beh);
+    if (h.live && h.data.history?.length) setHistory(h.data);
+    else setHistory(null);
+    const fromDetail = (p.data as { recentViolations?: SecEvent[] }).recentViolations ?? [];
+    const merged = ev.data.length ? ev.data : fromDetail;
+    setEvents(merged.map(normaliseEvent));
+    setLive(p.live || ev.live || h.live);
   }, [id]);
 
   useEffect(() => {
@@ -54,7 +79,7 @@ export default function IntegrationDetail() {
       await apiSafe(
         `/api/integrations/${id}/${kind}`,
         {},
-        { method: 'POST', body: JSON.stringify(kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}) }
+        { method: 'POST', body: JSON.stringify(kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}) },
       );
       await load();
     } finally {
@@ -62,32 +87,36 @@ export default function IntegrationDetail() {
     }
   }
 
-  if (!profile) return <div className="section-card flex items-center justify-center py-20 text-[14px] text-[#64748B]">Loading trust profile…</div>;
+  if (!profile) return <div className="section-card flex items-center justify-center py-20 text-[14px]" style={{ color: '#8B9BB4' }}>Loading trust profile…</div>;
 
   const score = getRiskScore(profile);
   const c = riskColor(score);
-  const normal = getExpectedRate(profile);
-  const current = (profile.requestsPerMin ?? normal) as number;
-  const deviation = (current / Math.max(1, normal)).toFixed(1);
+  const fallbackNormal = getExpectedRate(profile);
+  const normal = behaviour ? getBehaviourNormal(behaviour, fallbackNormal) : fallbackNormal;
+  const currentFromProfile = (profile.requestsPerMin ?? profile.currentRequestRate ?? normal) as number;
+  const current = behaviour ? getBehaviourCurrent(behaviour, currentFromProfile) : currentFromProfile;
+  const deviation = behaviour ? getBehaviourDeviation(behaviour, normal, current) : Number((current / Math.max(1, normal)).toFixed(1));
 
-  const series = [
-    { t: '-50m', v: Math.round(normal * 0.94) },
-    { t: '-40m', v: Math.round(normal * 1.04) },
-    { t: '-30m', v: Math.round(normal * 0.9) },
-    { t: '-20m', v: Math.round(normal * 1.6) },
-    { t: '-10m', v: Math.round(normal * 4.2) },
-    { t: 'now', v: current },
-  ];
+  const series = history?.history?.length
+    ? history.history.map((p) => ({ t: p.t, v: getHistoryVolume(p) }))
+    : [
+        { t: '-50m', v: Math.round(normal * 0.94) },
+        { t: '-40m', v: Math.round(normal * 1.04) },
+        { t: '-30m', v: Math.round(normal * 0.9) },
+        { t: '-20m', v: Math.round(normal * 1.6) },
+        { t: '-10m', v: Math.round(normal * 4.2) },
+        { t: 'now', v: current },
+      ];
 
   return (
     <div className="stagger space-y-6">
       {/* Back button */}
-      <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-mono text-[12.5px] font-medium text-[#8B9BB4] transition-colors hover:text-[#0A1830]">
+      <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-mono text-[12.5px] font-medium transition-colors hover:text-white" style={{ color: '#7D8DA8' }}>
         <span className="rotate-180"><Icon d={paths.arrow} size={14} /></span> Back to registry
       </button>
 
       {/* ═══ Hero ═══ */}
-      <div className="relative overflow-hidden rounded-[24px] border border-[#E4EAF3] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(16,24,40,0.04)] md:p-8">
+      <div className="relative overflow-hidden rounded-[24px] border p-6 md:p-8" style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}>
         <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-[24px]" style={{ background: `linear-gradient(90deg, transparent, ${c}, transparent)` }} />
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
           <RiskRing score={score} />
@@ -114,8 +143,8 @@ export default function IntegrationDetail() {
           </div>
         </div>
         {profile.status === 'QUARANTINED' && (
-          <div className="mt-5 rounded-xl border border-[#F0B4BB] bg-[#FEF2F2] px-5 py-4">
-            <div className="flex items-center gap-2 text-[14px] font-bold text-[#E5484D]"><Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked</div>
+          <div className="mt-5 rounded-xl border px-5 py-4" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
+            <div className="flex items-center gap-2 text-[14px] font-bold" style={{ color: '#FF8090' }}><Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked</div>
             <p className="section-sub-soft mt-1.5 text-[13.5px]">
               Attempted data access outside registered purpose{events[0]?.reason ? `: ${events[0].reason}` : '.'} Review the violations below, then release or keep isolated.
             </p>
@@ -145,31 +174,31 @@ export default function IntegrationDetail() {
         <div className="space-y-5">
           <div className="section-card">
             <div className="flex items-baseline justify-between">
-              <div className="section-label-soft">Behaviour — normal vs current</div>
+              <div className="section-label-soft">Behaviour — normal vs current {history ? '· live' : '· baseline'}</div>
               <span className="mono-num text-[12px] font-bold" style={{ color: c }}>{deviation}x deviation</span>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2.5 text-center">
-              {[['Normal', `${normal}/min`, '#8B9BB4'], ['Current', `${current}/min`, c], ['Deviation', `${deviation}x`, c]].map(([l, v, col]) => (
-                <div key={l} className="rounded-xl border border-[#E4EAF3] bg-[#FAFBFC] px-3 py-3">
-                  <div className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#8B9BB4]">{l}</div>
-                  <div className="mono-num mt-1 text-[16px] font-bold" style={{ color: col }}>{v}</div>
+              {[['Normal', `${normal}/min`, '#7D8DA8'], ['Current', `${current}/min`, c], ['Deviation', `${deviation}x`, c]].map(([l, v, col]) => (
+                <div key={l} className="rounded-xl border px-3 py-3" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}>
+                  <div className="font-mono text-[9.5px] uppercase tracking-[0.16em]" style={{ color: '#7D8DA8' }}>{l}</div>
+                  <div className="mono-num mt-1 text-[16px] font-bold" style={{ color: col as string }}>{v}</div>
                 </div>
               ))}
             </div>
             <div className="mt-4 h-[150px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={series} margin={{ top: 5, right: 5, bottom: 0, left: -18 }}>
-                  <XAxis dataKey="t" tick={{ fill: '#8B9BB4', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#8B9BB4', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E4EAF3', borderRadius: 12, fontSize: 12, boxShadow: '0 4px 16px rgba(16,24,40,0.1)' }} />
-                  <Area type="monotone" dataKey="v" stroke={c} strokeWidth={2} fill={`${c}1E`} />
+                  <XAxis dataKey="t" tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: '#0E1A33', border: '1px solid rgba(245,249,255,0.14)', borderRadius: 12, fontSize: 12, color: '#F5F9FF' }} />
+                  <Area type="monotone" dataKey="v" stroke={c} strokeWidth={2} fill={`${c}22`} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <div className="section-card--numbered overflow-hidden">
-            <div className="relative z-10 border-b border-[#EAF0F5] px-5 py-4">
+            <div className="relative z-10 border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
               <div className="section-label-soft">Recent violations</div>
             </div>
             <EventTimeline events={events.slice(0, 5)} />
@@ -181,15 +210,15 @@ export default function IntegrationDetail() {
 }
 
 function ScopeList({ title, items, tone }: { title: string; items: string[]; tone: 'good' | 'bad' | 'neutral' }) {
-  const col = tone === 'good' ? '#0E9F6E' : tone === 'bad' ? '#E5484D' : '#8B9BB4';
+  const col = tone === 'good' ? '#19D98A' : tone === 'bad' ? '#FF4D5E' : '#7D8DA8';
   const mark = tone === 'bad' ? paths.cross : paths.check;
   return (
     <div>
-      <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8B9BB4]">{title}</div>
+      <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: '#7D8DA8' }}>{title}</div>
       <div className="mt-2 flex flex-wrap gap-1.5">
-        {items.length === 0 && <span className="text-[12.5px] text-[#64748B]">—</span>}
+        {items.length === 0 && <span className="text-[12.5px]" style={{ color: '#8B9BB4' }}>—</span>}
         {items.map((x) => (
-          <span key={x} className="inline-flex items-center gap-1.5 rounded-full border border-[#E4EAF3] bg-[#FAFBFC] px-2.5 py-1 font-mono text-[11px] text-[#5A6B82]">
+          <span key={x} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px]" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)', color: '#B8C4D8' }}>
             <span style={{ color: col }}><Icon d={mark} size={12} /></span>{x}
           </span>
         ))}

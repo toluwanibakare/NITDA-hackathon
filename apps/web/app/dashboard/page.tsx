@@ -7,9 +7,24 @@ import { IntegrationMap } from '@/components/IntegrationMap';
 import { StatCard } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, StatusDot } from '@/components/RiskBadge';
-import { apiSafe, getRiskScore, type DashboardStats, type IntegrationRow, type SecEvent } from '@/lib/api';
-import { MOCK_EVENTS, MOCK_INTEGRATIONS, MOCK_STATS, timeAgo } from '@/lib/mock';
-import { supabaseBrowser } from '@/lib/supabaseClient';
+import {
+  activityToEvent,
+  apiSafe,
+  getRiskScore,
+  getStatsActive,
+  getStatsIntegrations,
+  getStatsQuarantined,
+  getStatsRequests,
+  getStatsThreats,
+  normaliseEvent,
+  normaliseIntegration,
+  type ActivityItem,
+  type DashboardStats,
+  type IntegrationRow,
+  type SecEvent,
+} from '@/lib/api';
+import { MOCK_EVENTS, MOCK_INTEGRATIONS, MOCK_STATS } from '@/lib/mock';
+import { isSupabaseEnvConfigured, supabaseBrowser } from '@/lib/supabaseClient';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -20,15 +35,21 @@ export default function Dashboard() {
   const [quarantining, setQuarantining] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [s, list, ev] = await Promise.all([
+    const [s, list, act, ev] = await Promise.all([
       apiSafe<DashboardStats>('/api/dashboard/stats', MOCK_STATS),
       apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS),
+      apiSafe<ActivityItem[] | { activities: ActivityItem[] }>('/api/dashboard/activity?limit=20', []),
       apiSafe<SecEvent[]>('/api/security-events?limit=8', MOCK_EVENTS),
     ]);
     setStats(s.data);
-    setItems(list.data.length ? list.data.map(normalise) : MOCK_INTEGRATIONS);
-    setEvents(ev.data.length ? ev.data : MOCK_EVENTS);
-    setLive(s.live || list.live || ev.live);
+    setItems(list.data.length ? list.data.map(normaliseIntegration) : MOCK_INTEGRATIONS);
+    const rawAct: ActivityItem[] = Array.isArray(act.data)
+      ? act.data
+      : (act.data as { activities?: ActivityItem[] })?.activities ?? [];
+    if (rawAct.length) setEvents(rawAct.map(activityToEvent));
+    else if (ev.data.length) setEvents(ev.data.map(normaliseEvent));
+    else setEvents(MOCK_EVENTS);
+    setLive(s.live || list.live || act.live || ev.live);
   }, []);
 
   useEffect(() => {
@@ -36,154 +57,141 @@ export default function Dashboard() {
     const id = setInterval(load, 5000);
     let chan: { unsubscribe: () => void } | null = null;
     try {
-      const sb = supabaseBrowser();
-      chan = sb.channel('te-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => load()).subscribe() as unknown as { unsubscribe: () => void };
-    } catch { /* realtime optional */ }
+      if (isSupabaseEnvConfigured()) {
+        const sb = supabaseBrowser();
+        chan = sb.channel('te-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => load()).subscribe() as unknown as { unsubscribe: () => void };
+      }
+    } catch { /* polling fallback */ }
     return () => { clearInterval(id); chan?.unsubscribe(); };
   }, [load]);
 
   async function quarantine(id: string) {
     setQuarantining(id);
     try {
-      await apiSafe(`/api/integrations/${id}/quarantine`, { status: 'QUARANTINED' }, { method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from dashboard' }) });
+      await apiSafe(`/api/integrations/${id}/quarantine`, { status: 'QUARANTINED' }, { method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from overview' }) });
     } finally { setQuarantining(null); load(); }
   }
 
-  const integrationsCount = stats.integrations ?? stats.totalIntegrations ?? 4;
-  const activeCount = stats.active ?? stats.activeIntegrations ?? 4;
-  const reqCount = stats.monitoredRequests ?? stats.totalRequestsToday ?? 1420;
-  const threatCount = stats.threats ?? stats.totalViolationsToday ?? 0;
-  const quarantineCount = stats.quarantined ?? stats.quarantinedIntegrations ?? 0;
+  const integrationsCount = getStatsIntegrations(stats);
+  const activeCount = getStatsActive(stats);
+  const reqCount = getStatsRequests(stats);
+  const threatCount = getStatsThreats(stats);
+  const quarantineCount = getStatsQuarantined(stats);
 
   return (
-    <div className="stagger space-y-6">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-[28px] border border-[#E4EAF3] bg-gradient-to-br from-[#FFFFFF] via-[#FAFBFC] to-[#F1F5F9] px-6 py-7 md:px-8 md:py-9">
-        <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-brand/[0.06] blur-3xl" />
-        <div className="absolute bottom-0 left-20 h-40 w-40 rounded-full bg-[#08B1C8]/[0.05] blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="section-label">Track G · Commerce & consumer protection</div>
-            <h1 className="section-heading mt-2.5 max-w-lg">Third parties, under continuous watch</h1>
-            <p className="section-sub mt-3">Every authorised integration is verified against its declared purpose and approved scope. Risk is scored live and the response is graded — never just on or off.</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-3">
-            <span className="chip" style={{ color: live ? '#0B7A55' : '#92600A', borderColor: live ? '#0E9F6E44' : '#D9930D44', background: live ? '#0E9F6E0F' : '#D9930D0F' }}>
-              <span className={`h-2 w-2 rounded-full ${live ? 'bg-[#0E9F6E] animate-pulseDot' : 'bg-[#D9930D] animate-blink'}`} />
-              {live ? 'ENGINE NOMINAL' : 'DEMO DATA · OFFLINE'}
-            </span>
-            <Link href="/simulator" className="btn-accent">
-              <Icon d={paths.play} size={15} /> Run attack demo
-            </Link>
-          </div>
+    <div className="stagger space-y-5">
+      {/* Quiet header — wayfinding first, no gradient hero */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="section-label-soft">Overview · {live ? 'live' : 'demo data'}</p>
+          <h1 className="section-heading mt-1.5">Third parties under watch</h1>
+          <p className="section-sub mt-1.5">Purpose, scope and behaviour checked on every request. Graded response, never just on or off.</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2.5">
+          <span className="chip" style={live ? { color: '#19D98A', borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.07)' } : { color: '#FFC42E', borderColor: 'rgba(255,196,46,0.3)', background: 'rgba(255,196,46,0.07)' }}>
+            <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#FFC42E] animate-blink'}`} />
+            {live ? 'Live' : 'Offline'}
+          </span>
+          <Link href="/simulator" className="btn-accent !px-4 !py-2 !text-[13px]">
+            <Icon d={paths.play} size={14} /> Attack demo
+          </Link>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-        <StatCard label="Integrations" value={String(integrationsCount)} sub="Registered third parties" />
-        <StatCard label="Active" value={String(activeCount)} sub="Within purpose" tone="good" delta="up" />
+      {/* Four key numbers — active folds into integrations sub */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatCard label="Integrations" value={String(integrationsCount)} sub={`${activeCount} within purpose`} />
         <StatCard label="Requests" value={Number(reqCount).toLocaleString()} sub="Verified by middleware" />
-        <StatCard label="Threats" value={String(threatCount)} sub="Graded responses issued" tone={threatCount > 0 ? 'warn' : 'neutral'} />
+        <StatCard label="Threats" value={String(threatCount)} sub="Graded responses" tone={threatCount > 0 ? 'warn' : 'neutral'} />
         <StatCard label="Quarantined" value={String(quarantineCount)} sub="Blocked + isolated" tone={quarantineCount > 0 ? 'bad' : 'neutral'} />
       </div>
 
-      {/* Map */}
-      <IntegrationMap items={items} onSelect={(id) => router.push(`/integrations/${id}`)} />
+      {/* Main 12-col: map + registry left, live rail right — blends full width */}
+      <div className="grid items-start gap-5 xl:grid-cols-12">
+        <div className="space-y-5 xl:col-span-8">
+          <IntegrationMap items={items} onSelect={(id) => router.push(`/integrations/${id}`)} />
 
-      {/* Table + Timeline */}
-      <div className="grid gap-5 lg:grid-cols-[1.65fr_1fr]">
-        <div className="section-card--numbered overflow-hidden">
-          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
-            <div>
-              <div className="section-label-soft">Integration registry</div>
-              <div className="h-section mt-0.5">Declared purpose vs live behaviour</div>
-            </div>
-            <Link href="/integrations" className="hidden shrink-0 font-mono text-[11px] font-semibold tracking-wide text-brand hover:underline md:block">View all →</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr className="data-table__head">
-                  <th className="data-table__cell font-medium md:px-6">Integration</th>
-                  <th className="data-table__cell font-medium">Req/min</th>
-                  <th className="data-table__cell font-medium">Risk</th>
-                  <th className="data-table__cell font-medium">Status</th>
-                  <th className="data-table__cell font-medium">Activity</th>
-                  <th className="data-table__cell text-right font-medium md:px-6">Action</th>
-                </tr>
-              </thead>
-              <tbody className="data-table__divider">
-                {items.map((it) => {
-                  const score = getRiskScore(it);
-                  return (
-                    <tr key={it.id} className="data-table__row">
-                      <td className="data-table__cell">
-                        <Link href={`/integrations/${it.id}`} className="block">
-                          <span className="font-semibold text-[#0A1830]">{it.name}</span>
-                          <span className="block max-w-[220px] truncate text-[12px] text-[#64748B]">{it.purpose}</span>
-                        </Link>
-                      </td>
-                      <td className="data-table__cell mono-num font-medium text-[#0A1830]">{it.requestsPerMin ?? '—'}</td>
-                      <td className="data-table__cell"><RiskBadge score={score} size="sm" /></td>
-                      <td className="data-table__cell"><StatusDot status={it.status} /></td>
-                      <td className="data-table__cell mono-num text-[11px] text-[#8B9BB4]">{it.lastActivity ?? '—'}</td>
-                      <td className="data-table__cell text-right md:px-6">
-                        {score >= 61 && it.status !== 'QUARANTINED' ? (
-                          <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
-                            {quarantining === it.id ? '…' : 'Quarantine'}
-                          </button>
-                        ) : (
-                          <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="section-card--numbered overflow-hidden">
-          <div className="relative z-10 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
-            <div className="section-label-soft">Security timeline</div>
-            <div className="h-section mt-0.5">Graded response as it happened</div>
-          </div>
-          <EventTimeline events={events.slice(0, 6)} compact />
-        </div>
-      </div>
-
-      {/* Graded Response */}
-      <div className="section-card--numbered overflow-hidden">
-        <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#EAF0F5] px-5 py-4 md:px-6">
-          <div className="section-label-soft">Graded response — why not just block</div>
-          <span className="font-mono text-[10.5px] tracking-[0.16em] text-[#8B9BB4]">ALLOW → MONITOR → THROTTLE → ISOLATE</span>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 px-5 pb-5 pt-4 md:px-6">
-          {[
-            ['0-30', 'TRUSTED', 'Allow', '#0E9F6E', 'Matches declared purpose and scope'],
-            ['31-60', 'WATCH', 'Allow + Monitor', '#D9930D', 'Endpoint or purpose drift detected'],
-            ['61-80', 'HIGH RISK', 'Rate limit + Monitor', '#F59E0B', 'Forbidden data or volume anomaly'],
-            ['81-100', 'CRITICAL', 'Block + Quarantine', '#E5484D', 'Sustained abuse, isolated until review'],
-          ].map(([range, tier, action, color, desc]) => (
-            <div key={tier} className="rounded-xl border border-[#E4EAF3] bg-[#FAFBFC] p-4 transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_20px_-12px_rgba(0,0,0,0.12)]">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full" style={{ background: color }} />
-                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: color }}>{range}</span>
+          <div className="section-card--numbered overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b px-5 py-4 md:px-6" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+              <div>
+                <p className="section-label-soft">Registry</p>
+                <p className="h-section mt-0.5">Declared purpose vs live behaviour</p>
               </div>
-              <div className="mt-1.5 font-bold text-[14px] text-[#0A1830]">{tier}</div>
-              <div className="mt-0.5 text-[12px] font-semibold text-[#374151]">{action}</div>
-              <div className="mt-2 text-[12px] leading-relaxed text-[#64748B]">{desc}</div>
+              <Link href="/integrations" className="shrink-0 text-[12.5px] font-semibold text-[#5B9CFF]">View all →</Link>
             </div>
-          ))}
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr className="data-table__head">
+                    <th className="data-table__cell font-medium md:px-6">Integration</th>
+                    <th className="data-table__cell font-medium">Req/min</th>
+                    <th className="data-table__cell font-medium">Risk</th>
+                    <th className="data-table__cell font-medium">Status</th>
+                    <th className="data-table__cell font-medium">Activity</th>
+                    <th className="data-table__cell text-right font-medium md:px-6">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="data-table__divider">
+                  {items.map((it) => {
+                    const score = getRiskScore(it);
+                    return (
+                      <tr key={it.id} className="data-table__row">
+                        <td className="data-table__cell">
+                          <Link href={`/integrations/${it.id}`} className="block">
+                            <span className="font-semibold text-[#F2F6FC]" style={{ letterSpacing: '-0.006em' }}>{it.name}</span>
+                            <span className="block max-w-[240px] truncate text-[12px]" style={{ color: '#8494AD' }}>{it.purpose}</span>
+                          </Link>
+                        </td>
+                        <td className="data-table__cell mono-num font-medium text-[#F2F6FC]">{it.requestsPerMin ?? '—'}</td>
+                        <td className="data-table__cell"><RiskBadge score={score} size="sm" /></td>
+                        <td className="data-table__cell"><StatusDot status={it.status} /></td>
+                        <td className="data-table__cell mono-num text-[11px]" style={{ color: '#6E7E99' }}>{it.lastActivity ?? '—'}</td>
+                        <td className="data-table__cell text-right md:px-6">
+                          {score >= 61 && it.status !== 'QUARANTINED' ? (
+                            <button onClick={() => quarantine(it.id)} disabled={quarantining === it.id} className="btn-danger !px-3 !py-1.5 !text-[12px]">
+                              {quarantining === it.id ? '…' : 'Quarantine'}
+                            </button>
+                          ) : (
+                            <Link href={`/integrations/${it.id}`} className="btn-ghost !px-3 !py-1.5 !text-[12px]">Inspect</Link>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-5 xl:col-span-4">
+          <div className="section-card--numbered overflow-hidden">
+            <div className="border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+              <p className="section-label-soft">Live activity</p>
+              <p className="h-section mt-0.5">Response as it happened</p>
+            </div>
+            <EventTimeline events={events.slice(0, 7)} compact />
+          </div>
+
+          <div className="panel overflow-hidden">
+            <div className="border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+              <p className="section-label-soft">Graded response</p>
+            </div>
+            {[
+              ['0–30', 'Trusted · Allow', '#19D98A'],
+              ['31–60', 'Suspicious · Monitor', '#FFC42E'],
+              ['61–80', 'High risk · Rate limit', '#FF9F2E'],
+              ['81–100', 'Critical · Quarantine', '#FF4D5E'],
+            ].map(([range, label, color]) => (
+              <div key={range} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: '1px solid rgba(245,249,255,0.05)' }}>
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                <span className="mono-num text-[11.5px]" style={{ color: '#6E7E99' }}>{range}</span>
+                <span className="text-[13px] font-medium text-[#E6EDF7]">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-function normalise(r: IntegrationRow): IntegrationRow {
-  return { ...r, requestsPerMin: r.requestsPerMin ?? r.expected_request_rate ?? r.expectedRequestRate ?? 90, lastActivity: r.lastActivity ?? (r.updated_at ? timeAgo(r.updated_at) : 'just now') };
-}
-

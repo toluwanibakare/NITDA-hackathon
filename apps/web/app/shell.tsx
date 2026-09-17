@@ -8,9 +8,9 @@ import { Icon, paths } from '@/components/icons';
 import { checkEngineHealth } from '@/lib/api';
 
 const NAV = [
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard', label: 'Overview' },
   { href: '/integrations', label: 'Integrations' },
-  { href: '/events', label: 'Events' },
+  { href: '/events', label: 'Activity' },
   { href: '/simulator', label: 'Simulator' },
   { href: '/settings', label: 'Settings' },
 ];
@@ -20,6 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [booted, setBooted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [engineOnline, setEngineOnline] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => setBooted(true), 1400);
@@ -36,133 +37,128 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [path]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Landing owns its nav and full-bleed layout — no console chrome here.
+  if (path === '/') {
+    return (
+      <>
+        <BootLoader done={booted} />
+        {children}
+      </>
+    );
+  }
+
   return (
     <>
       <BootLoader done={booted} />
-      <div className="bg-grid pointer-events-none fixed inset-0" />
 
-      {/* liquid-glass nav bar — floats edge-to-edge */}
-      <header className="sticky top-0 z-40 backdrop-blur-md">
-        <div className="liquid-glass mx-auto flex h-[64px] w-full items-center justify-between gap-4 px-5 md:px-8">
-          <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5">
-            <Image
-              src="/logo.jpeg"
-              alt="ThirdEye"
-              width={44}
-              height={44}
-              className="h-10 w-10 object-contain rounded-lg"
-              priority
-            />
-            <span className="leading-none">
-              <span className="block text-[18px] font-bold tracking-[-0.02em] text-ink">ThirdEye</span>
-              <span className="block text-[9.5px] font-mono tracking-widest text-muted uppercase">Risk Engine</span>
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="liquid-segment hidden mx-auto items-center gap-0.5 rounded-full p-[3px] md:flex">
-            {NAV.map((n) => {
-              const active = path === n.href || (n.href === '/dashboard' && path === '/');
-              return (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className={`relative rounded-full px-4 py-1.5 text-[13px] font-medium transition-all ${
-                    active
-                      ? 'liquid-active text-ink font-semibold shadow-sm'
-                      : 'text-muted hover:bg-white/60 hover:text-ink'
-                  }`}
-                >
-                  {n.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-2.5">
-            <span
-              className={`chip hidden !text-[11px] font-semibold lg:inline-flex ${
-                engineOnline
-                  ? '!border-trust/25 !bg-trust/[0.07] !text-[#0B7A55]'
-                  : '!border-[#D9930D]/25 !bg-[#D9930D]/[0.07] !text-[#92600A]'
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  engineOnline ? 'bg-trust animate-pulseDot' : 'bg-[#D9930D] animate-blink'
-                }`}
+      {/* Translucent console bar — content scrolls underneath, edge fades instead of a hard rule */}
+      <header className="sticky top-0 z-40">
+        <div
+          className="liquid-glass scroll-edge transition-shadow duration-200"
+          style={scrolled ? { boxShadow: '0 12px 32px -20px rgba(0,0,0,0.8)' } : undefined}
+        >
+          <div className="console-full flex h-[60px] w-full items-center justify-between gap-4">
+            <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="ThirdEye overview">
+              <Image
+                src="/logo.jpeg"
+                alt="ThirdEye"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain rounded-lg"
+                priority
               />
-              {engineOnline ? 'ENGINE NOMINAL' : 'DEMO MODE'}
-            </span>
-            <LiveClock />
+              <span className="leading-none">
+                <span className="block text-[16px] font-semibold text-[#F2F6FC]" style={{ letterSpacing: '-0.01em' }}>ThirdEye</span>
+                <span className="block text-[11px]" style={{ color: '#6E7E99' }}>Third-party trust</span>
+              </span>
+            </Link>
 
-            {/* Mobile Menu Toggle Button */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white/80 text-ink shadow-sm md:hidden hover:bg-white"
-              aria-label="Toggle Navigation Menu"
-            >
-              <Icon d={mobileOpen ? paths.cross : paths.grid} size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Dropdown */}
-        {mobileOpen && (
-          <div className="border-b border-line bg-white/95 px-5 py-4 shadow-lg backdrop-blur-xl md:hidden animate-rise">
-            <nav className="flex flex-col gap-1.5">
+            <nav className="liquid-segment hidden mx-auto items-center gap-0.5 rounded-full p-[3px] md:flex" aria-label="Console">
               {NAV.map((n) => {
-                const active = path === n.href || (n.href === '/dashboard' && path === '/');
+                const active = path === n.href || (n.href === '/dashboard' && path === '/dashboard');
                 return (
                   <Link
                     key={n.href}
                     href={n.href}
-                    className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[14px] font-medium transition-all ${
-                      active
-                        ? 'bg-brand/10 font-bold text-brand'
-                        : 'text-[#5A6B82] hover:bg-[#F1F5F9] hover:text-[#0A1830]'
-                    }`}
+                    aria-current={active ? 'page' : undefined}
+                    className="relative rounded-full px-4 py-1.5 text-[13.5px] font-medium"
+                    style={active
+                      ? { background: 'rgba(22,119,255,0.16)', color: '#F2F6FC', fontWeight: 600 }
+                      : { color: '#93A1B8' }}
                   >
-                    <span>{n.label}</span>
-                    {active && <span className="h-2 w-2 rounded-full bg-brand" />}
+                    {n.label}
                   </Link>
                 );
               })}
             </nav>
-            <div className="mt-4 flex items-center justify-between border-t border-line/60 pt-3">
+
+            <div className="flex shrink-0 items-center gap-2.5">
               <span
-                className={`chip !text-[11px] font-semibold ${
+                className="chip hidden !text-[11px] lg:inline-flex"
+                style={
                   engineOnline
-                    ? '!border-trust/25 !bg-trust/[0.07] !text-[#0B7A55]'
-                    : '!border-[#D9930D]/25 !bg-[#D9930D]/[0.07] !text-[#92600A]'
-                }`}
+                    ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.07)', color: '#19D98A' }
+                    : { borderColor: 'rgba(255,196,46,0.3)', background: 'rgba(255,196,46,0.07)', color: '#FFC42E' }
+                }
               >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    engineOnline ? 'bg-trust animate-pulseDot' : 'bg-[#D9930D] animate-blink'
-                  }`}
-                />
-                {engineOnline ? 'ENGINE NOMINAL' : 'DEMO MODE'}
+                <span className={`h-1.5 w-1.5 rounded-full ${engineOnline ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#FFC42E] animate-blink'}`} />
+                {engineOnline ? 'Live' : 'Offline'}
               </span>
+              <LiveClock />
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border md:hidden"
+                style={{ borderColor: 'rgba(245,249,255,0.12)', background: 'rgba(245,249,255,0.05)', color: '#F2F6FC' }}
+                aria-label="Toggle navigation"
+                aria-expanded={mobileOpen}
+              >
+                <Icon d={mobileOpen ? paths.cross : paths.grid} size={18} />
+              </button>
             </div>
           </div>
-        )}
+
+          {mobileOpen && (
+            <div className="border-t px-5 py-3 md:hidden" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+              <nav className="flex flex-col gap-1" aria-label="Console mobile">
+                {NAV.map((n) => {
+                  const active = path === n.href;
+                  return (
+                    <Link
+                      key={n.href}
+                      href={n.href}
+                      className="flex items-center justify-between rounded-lg px-3 py-2.5 text-[14px]"
+                      style={active ? { background: 'rgba(22,119,255,0.14)', color: '#fff', fontWeight: 600 } : { color: '#93A1B8' }}
+                    >
+                      <span>{n.label}</span>
+                      {active && <span className="h-1.5 w-1.5 rounded-full bg-[#1677FF]" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
+        </div>
       </header>
 
-      <main className="relative mx-auto w-full max-w-6xl px-5 md:px-6 pb-16 pt-6 md:pt-8">{children}</main>
+      <main className="console-full relative w-full pb-16 pt-6 md:pt-8">{children}</main>
 
-      <footer className="border-t border-line bg-white/70">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-2 py-5 px-5 font-mono text-[11px] tracking-wide text-faint md:px-6">
-          <span className="font-semibold text-muted">THIRDEYE · ICSC 2026 · TRACK G</span>
-          <span className="ml-auto">Synthetic demo data only · No personal data</span>
+      <footer className="border-t" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="console-full flex w-full flex-wrap items-center gap-2 py-4 text-[12px]" style={{ color: '#6E7E99' }}>
+          <span>ThirdEye · ICSC 2026 · Track G</span>
+          <span className="ml-auto">Synthetic demo data · No personal data</span>
         </div>
       </footer>
     </>
   );
 }
-
