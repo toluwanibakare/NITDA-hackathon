@@ -102,9 +102,9 @@ export default function SettingsPage() {
           <p className="section-sub-soft mt-4 text-[13px] leading-relaxed">
             When context is set, the engine subtracts 20 risk and never auto-blocks on volume alone. Cutting off payments by mistake stops real money — so context matters more than raw counts.
           </p>
-          <div className="mt-5 flex gap-3">
-            <button onClick={save} className="btn-primary flex-1">{saved ? 'Saved' : 'Save configuration'}</button>
-            <button onClick={proveNoFalseAlarm} disabled={testing} className="btn-ghost flex-1 disabled:opacity-60">{testing ? 'Proving…' : 'Prove sales-day safety'}</button>
+          <div className="mt-5 flex flex-col sm:flex-row gap-3">
+            <button onClick={save} className="btn-primary flex-1 justify-center">{saved ? 'Saved' : 'Save configuration'}</button>
+            <button onClick={proveNoFalseAlarm} disabled={testing} className="btn-ghost flex-1 justify-center disabled:opacity-60">{testing ? 'Proving…' : 'Prove sales-day safety'}</button>
           </div>
           {testResult && <div className="mt-4 rounded-xl border px-4 py-3 text-[13px] leading-relaxed text-[#F5F9FF]" style={{ borderColor: 'rgba(25,217,138,0.25)', background: 'rgba(25,217,138,0.06)' }}>{testResult}</div>}
         </div>

@@ -68,19 +68,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className="liquid-glass scroll-edge transition-shadow duration-200"
           style={scrolled ? { boxShadow: '0 12px 32px -20px rgba(0,0,0,0.8)' } : undefined}
         >
-          <div className="console-full flex h-[60px] w-full items-center justify-between gap-4">
-            <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="ThirdEye overview">
+          <div className="console-full flex h-[60px] w-full items-center justify-between gap-3">
+            <Link href="/dashboard" className="flex shrink-0 items-center gap-3" aria-label="ThirdEye overview">
               <Image
                 src="/logo.jpeg"
                 alt="ThirdEye"
-                width={36}
-                height={36}
-                className="h-9 w-9 object-contain rounded-lg"
+                width={48}
+                height={48}
+                className="h-11 w-11 sm:h-12 sm:w-12 object-contain rounded-xl shadow-sm"
                 priority
               />
               <span className="leading-none">
-                <span className="block text-[16px] font-semibold text-[#F2F6FC]" style={{ letterSpacing: '-0.01em' }}>ThirdEye</span>
-                <span className="block text-[11px]" style={{ color: '#6E7E99' }}>Third-party trust</span>
+                <span className="block text-[16px] sm:text-[17px] font-bold text-[#F2F6FC]" style={{ letterSpacing: '-0.015em' }}>ThirdEye</span>
+                <span className="block text-[10.5px] sm:text-[11px] font-medium" style={{ color: '#6E7E99' }}>Third-party trust</span>
               </span>
             </Link>
 
@@ -92,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     key={n.href}
                     href={n.href}
                     aria-current={active ? 'page' : undefined}
-                    className="relative rounded-full px-4 py-1.5 text-[13.5px] font-medium"
+                    className="relative rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors"
                     style={active
                       ? { background: 'rgba(22,119,255,0.16)', color: '#F2F6FC', fontWeight: 600 }
                       : { color: '#93A1B8' }}
@@ -103,7 +103,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               })}
             </nav>
 
-            <div className="flex shrink-0 items-center gap-2.5">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
               <span
                 className="chip hidden !text-[11px] lg:inline-flex"
                 style={
@@ -118,8 +118,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <LiveClock />
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border md:hidden"
-                style={{ borderColor: 'rgba(245,249,255,0.12)', background: 'rgba(245,249,255,0.05)', color: '#F2F6FC' }}
+                className="flex h-10 w-10 items-center justify-center rounded-full border md:hidden active:scale-95 transition-transform"
+                style={{ borderColor: 'rgba(245,249,255,0.14)', background: 'rgba(245,249,255,0.06)', color: '#F2F6FC' }}
                 aria-label="Toggle navigation"
                 aria-expanded={mobileOpen}
               >
@@ -129,34 +129,50 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {mobileOpen && (
-            <div className="border-t px-5 py-3 md:hidden" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
-              <nav className="flex flex-col gap-1" aria-label="Console mobile">
+            <div className="border-t px-4 py-3 md:hidden animate-rise" style={{ borderColor: 'rgba(245,249,255,0.08)', background: 'rgba(7,20,38,0.96)' }}>
+              <nav className="flex flex-col gap-1.5" aria-label="Console mobile">
                 {NAV.map((n) => {
                   const active = path === n.href;
                   return (
                     <Link
                       key={n.href}
                       href={n.href}
-                      className="flex items-center justify-between rounded-lg px-3 py-2.5 text-[14px]"
-                      style={active ? { background: 'rgba(22,119,255,0.14)', color: '#fff', fontWeight: 600 } : { color: '#93A1B8' }}
+                      className="flex items-center justify-between rounded-xl px-3.5 py-3 text-[14.5px] font-medium transition-colors"
+                      style={active ? { background: 'rgba(22,119,255,0.18)', color: '#fff', fontWeight: 600 } : { color: '#93A1B8' }}
                     >
                       <span>{n.label}</span>
-                      {active && <span className="h-1.5 w-1.5 rounded-full bg-[#1677FF]" />}
+                      {active && <span className="h-2 w-2 rounded-full bg-[#1677FF]" />}
                     </Link>
                   );
                 })}
               </nav>
+              <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+                <span
+                  className="chip !text-[11px]"
+                  style={
+                    engineOnline
+                      ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.07)', color: '#19D98A' }
+                      : { borderColor: 'rgba(255,196,46,0.3)', background: 'rgba(255,196,46,0.07)', color: '#FFC42E' }
+                  }
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${engineOnline ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#FFC42E] animate-blink'}`} />
+                  {engineOnline ? 'Engine nominal' : 'Demo data'}
+                </span>
+                <Link href="/simulator" className="btn-accent !px-3.5 !py-2 !text-[12.5px]">
+                  <Icon d={paths.play} size={13} /> Attack demo
+                </Link>
+              </div>
             </div>
           )}
         </div>
       </header>
 
-      <main className="console-full relative w-full pb-16 pt-6 md:pt-8">{children}</main>
+      <main className="console-full relative w-full pb-16 pt-5 md:pt-8 overflow-x-clip">{children}</main>
 
       <footer className="border-t" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
-        <div className="console-full flex w-full flex-wrap items-center gap-2 py-4 text-[12px]" style={{ color: '#6E7E99' }}>
+        <div className="console-full flex w-full flex-col sm:flex-row sm:items-center justify-between gap-2 py-4 text-[12px]" style={{ color: '#6E7E99' }}>
           <span>ThirdEye · ICSC 2026 · Track G</span>
-          <span className="ml-auto">Synthetic demo data · No personal data</span>
+          <span>Synthetic demo data · No personal data</span>
         </div>
       </footer>
     </>

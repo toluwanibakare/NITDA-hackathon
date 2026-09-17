@@ -72,8 +72,8 @@ export default function IntegrationsPage() {
       </div>
 
       {/* ═══ Filter & Sort ═══ */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="panel flex flex-1 items-center gap-3 px-4 py-3 min-w-[280px]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="panel flex items-center gap-3 px-4 py-3 w-full sm:flex-1 min-w-0">
           <span style={{ color: '#64748B' }}>
             <Icon d={paths.grid} size={16} />
           </span>
@@ -90,14 +90,14 @@ export default function IntegrationsPage() {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           {/* Status Filter Buttons */}
-          <div className="pill-nav !p-1">
+          <div className="pill-nav !p-1 flex-nowrap overflow-x-auto max-w-full">
             {['ALL', 'ACTIVE', 'QUARANTINED', 'MONITORED'].map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`pill-nav__item !px-3 !py-1 !text-[11px] ${
+                className={`pill-nav__item shrink-0 !px-3 !py-1 !text-[11px] ${
                   statusFilter === st ? 'pill-nav__item--active' : ''
                 }`}
               >
@@ -110,7 +110,7 @@ export default function IntegrationsPage() {
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as 'risk' | 'rate' | 'name')}
-            className="rounded-xl border px-3 py-2 text-[12.5px] font-semibold outline-none shadow-sm"
+            className="rounded-xl border px-3 py-2 text-[12.5px] font-semibold outline-none shadow-sm w-full sm:w-auto"
             style={{ borderColor: 'rgba(245,249,255,0.16)', background: '#0E1A33', color: '#F5F9FF' }}
           >
             <option value="risk">Sort: Highest Risk</option>

@@ -313,15 +313,52 @@ export async function checkEngineHealth(): Promise<boolean> {
   }
 }
 
-export async function downloadAuditExport(format: 'csv' | 'json' = 'json') {
-  const url = `${API_URL}/api/security-events/export?format=${format}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to export audit report');
-  const blob = await res.blob();
+export async function downloadAuditExport(format: 'csv' | 'json' = 'json', fallbackEvents?: SecEvent[]) {
+  try {
+    const url = `${API_URL}/api/security-events/export?format=${format}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const blob = await res.blob();
+      triggerBlobDownload(blob, `thirdeye-audit-log.${format}`);
+      return;
+    }
+  } catch {
+    /* Fallback to local client-side export */
+  }
+
+  const list = fallbackEvents ?? [];
+  let content = '';
+  let mimeType = 'application/json';
+
+  if (format === 'json') {
+    content = JSON.stringify(list, null, 2);
+    mimeType = 'application/json';
+  } else {
+    const headers = ['id', 'timestamp', 'integration_id', 'event_type', 'risk_score', 'action', 'endpoint', 'reason', 'hash'];
+    const rows = list.map((e) => [
+      e.id,
+      getEventCreatedAt(e),
+      getEventIntegrationId(e),
+      getEventType(e),
+      getEventRiskScore(e),
+      e.action ?? '',
+      e.endpoint ?? '',
+      `"${(e.reason ?? '').replace(/"/g, '""')}"`,
+      e.hash ?? '',
+    ].join(','));
+    content = [headers.join(','), ...rows].join('\n');
+    mimeType = 'text/csv;charset=utf-8;';
+  }
+
+  const blob = new Blob([content], { type: mimeType });
+  triggerBlobDownload(blob, `thirdeye-audit-log.${format}`);
+}
+
+function triggerBlobDownload(blob: Blob, filename: string) {
   const downloadUrl = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = downloadUrl;
-  a.download = `thirdeye-audit-log.${format}`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();

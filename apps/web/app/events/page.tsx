@@ -76,9 +76,9 @@ export default function EventsPage() {
     setExporting(format);
     setExportError(null);
     try {
-      await downloadAuditExport(format);
+      await downloadAuditExport(format, shown);
     } catch {
-      setExportError('Export needs the backend online (GET /api/security-events/export). Reconnect and retry.');
+      setExportError('Failed to generate export file. Please try again.');
     } finally {
       setExporting(null);
     }
@@ -106,19 +106,19 @@ export default function EventsPage() {
                 Tamper-evident SHA-256 chain log detailing what happened, to which data, and why the engine responded that way.
               </p>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
               <button
                 onClick={verifyChain}
                 disabled={verifying}
-                className="btn-ghost !px-3.5 !py-2 !text-[12.5px] font-semibold"
+                className="btn-ghost flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold"
               >
                 <Icon d={paths.check} size={15} />
-                {verifying ? 'Verifying SHA-256…' : 'Verify SHA-256 chain'}
+                {verifying ? 'Verifying…' : 'Verify SHA-256'}
               </button>
               <button
                 onClick={() => doExport('csv')}
                 disabled={exporting !== null}
-                className="btn-accent !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
+                className="btn-accent flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
               >
                 <Icon d={paths.arrow} size={14} className="rotate-90" />
                 {exporting === 'csv' ? 'Exporting…' : 'Export CSV'}
@@ -126,7 +126,7 @@ export default function EventsPage() {
               <button
                 onClick={() => doExport('json')}
                 disabled={exporting !== null}
-                className="btn-primary !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
+                className="btn-primary flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
               >
                 {exporting === 'json' ? 'Exporting…' : 'Export JSON'}
               </button>
@@ -143,35 +143,35 @@ export default function EventsPage() {
 
       {/* Verification Card */}
       {verifyResult && (
-        <div className="rounded-2xl border p-5 transition-[border-color,background] duration-150 animate-rise" style={verified ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.06)' } : { borderColor: 'rgba(255,196,46,0.35)', background: 'rgba(255,196,46,0.06)' }}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full text-white" style={{ background: verified ? '#19D98A' : '#FFC42E' }}>
+        <div className="rounded-2xl border p-4 sm:p-5 transition-[border-color,background] duration-150 animate-rise" style={verified ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.06)' } : { borderColor: 'rgba(255,196,46,0.35)', background: 'rgba(255,196,46,0.06)' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white" style={{ background: verified ? '#19D98A' : '#FFC42E' }}>
                 <Icon d={verified ? paths.check : paths.alert} size={16} />
               </span>
-              <div>
-                <div className="text-[14px] font-bold text-[#F5F9FF]">
+              <div className="min-w-0">
+                <div className="text-[13.5px] sm:text-[14px] font-bold text-[#F5F9FF] truncate">
                   Cryptographic Audit Chain: {verifyResult.integrity}
                 </div>
-                <div className="text-[12px]" style={{ color: '#8B9BB4' }}>
+                <div className="text-[12px] leading-snug" style={{ color: '#8B9BB4' }}>
                   {verified ? `Verified ${verifyResult.verifiedRecordsCount} records · SHA-256 hash sequence unbroken.` : 'Offline — showing last known state. Reconnect to verify live chain.'}
                 </div>
               </div>
             </div>
-            <span className="font-mono text-[11px]" style={{ color: verified ? '#19D98A' : '#FFC42E' }}>
-              Latest Hash: {verifyResult.latestHash.slice(0, 12)}…
+            <span className="font-mono text-[11px] shrink-0" style={{ color: verified ? '#19D98A' : '#FFC42E' }}>
+              Latest: {verifyResult.latestHash.slice(0, 14)}…
             </span>
           </div>
         </div>
       )}
 
       {/* ═══ Filters ═══ */}
-      <div className="pill-nav">
+      <div className="pill-nav flex-nowrap sm:flex-wrap overflow-x-auto pb-1 max-w-full">
         {ids.map((id) => (
           <button
             key={id}
             onClick={() => setFilter(id)}
-            className={`pill-nav__item ${filter === id ? 'pill-nav__item--active' : ''}`}
+            className={`pill-nav__item shrink-0 ${filter === id ? 'pill-nav__item--active' : ''}`}
           >
             {id === 'all' ? 'ALL INTEGRATIONS' : id.toUpperCase().replace('_001', '')}
           </button>

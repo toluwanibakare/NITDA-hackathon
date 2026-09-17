@@ -92,13 +92,13 @@ export default function SimulatorPage() {
               <h1 className="section-heading mt-2">Credential compromise, live</h1>
               <p className="section-sub mt-2">Starts clean, drifts, then floods. Watch risk move 8 → 45 → 75 → 95 and the response graduate from allow to quarantine.</p>
             </div>
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
               {!running ? (
-                <button onClick={run} className="btn-accent"><Icon d={paths.play} size={15} /> Start attack</button>
+                <button onClick={run} className="btn-accent flex-1 sm:flex-none justify-center"><Icon d={paths.play} size={15} /> Start attack</button>
               ) : (
-                <button onClick={stop} className="btn-ghost"><Icon d={paths.stop} size={15} /> Stop</button>
+                <button onClick={stop} className="btn-ghost flex-1 sm:flex-none justify-center"><Icon d={paths.stop} size={15} /> Stop</button>
               )}
-              <button onClick={reset} className="btn-ghost">Reset</button>
+              <button onClick={reset} className="btn-ghost flex-1 sm:flex-none justify-center">Reset</button>
             </div>
           </div>
         </div>
@@ -160,25 +160,25 @@ export default function SimulatorPage() {
         <div className="space-y-5">
           <div className="section-card relative overflow-hidden">
             <div className="section-label-soft">Live risk {liveEngine ? '' : '(offline estimate)'}</div>
-            <div className="mt-2 flex flex-wrap items-center gap-5">
-              <span className="mono-num text-[48px] font-bold tabular-nums leading-none md:text-[52px]" style={{ color: last ? riskColor(last.riskScore) : '#3A4A63' }}>
+            <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+              <span className="mono-num text-[38px] sm:text-[48px] md:text-[52px] font-bold tabular-nums leading-none" style={{ color: last ? riskColor(last.riskScore) : '#3A4A63' }}>
                 {last ? last.riskScore : '—'}
               </span>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {last ? <RiskBadge score={last.riskScore} /> : <span className="chip">AWAITING ATTACK</span>}
                 <div className="section-sub-soft mt-1.5 max-w-sm">{last ? last.reason : 'Press start. Phase 1 should stay green.'}</div>
                 {last && (
                   <div className="mono-num mt-1 text-[11px]" style={{ color: '#64748B' }}>level {last.level} · action {last.action}{last.violations?.length ? ` · ${last.violations.length} violations` : ''}</div>
                 )}
               </div>
-              <div className="ml-auto h-2 w-full max-w-[200px] overflow-hidden rounded-full sm:max-w-[280px]" style={{ background: 'rgba(245,249,255,0.08)' }}>
+              <div className="h-2 w-full sm:max-w-[200px] overflow-hidden rounded-full" style={{ background: 'rgba(245,249,255,0.08)' }}>
                 <div className="risk-fill h-full rounded-full" style={{ width: `${last ? last.riskScore : 0}%`, background: last ? riskColor(last.riskScore) : 'transparent' }} />
               </div>
             </div>
             {last && last.riskScore >= 81 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
                 <span className="text-[13px] font-bold" style={{ color: '#FF8090' }}>BLOCK + QUARANTINE + ALERT</span>
-                <Link href={`/integrations/${integrationId}`} className="btn-danger ml-auto !py-1.5 !text-[12px]">Open trust profile</Link>
+                <Link href={`/integrations/${integrationId}`} className="btn-danger w-full sm:w-auto justify-center !py-1.5 !text-[12px]">Open trust profile</Link>
               </div>
             )}
           </div>
@@ -192,14 +192,16 @@ export default function SimulatorPage() {
             ) : (
               <ul className="divide-y" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
                 {log.map((l, i) => (
-                  <li key={i} className="flex flex-wrap items-center gap-2 px-5 py-3" style={{ animation: 'rise 0.18s cubic-bezier(0.23,1,0.32,1) both' }}>
-                    <span className="chip">{l.phase.split('·')[0].trim().toUpperCase()}</span>
-                    <span className="font-mono text-[12px] text-[#F5F9FF]">{l.endpoint}</span>
-                    <span className="mono-num text-[11px]" style={{ color: '#7D8DA8' }}>{l.count}/min</span>
-                    <span className="ml-auto flex items-center gap-2">
+                  <li key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-5 py-3" style={{ animation: 'rise 0.18s cubic-bezier(0.23,1,0.32,1) both' }}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="chip">{l.phase.split('·')[0].trim().toUpperCase()}</span>
+                      <span className="font-mono text-[12px] text-[#F5F9FF]">{l.endpoint}</span>
+                      <span className="mono-num text-[11px]" style={{ color: '#7D8DA8' }}>{l.count}/min</span>
+                    </div>
+                    <div className="flex items-center gap-2 sm:ml-auto">
                       <span className="mono-num text-[13px] font-bold" style={{ color: riskColor(l.riskScore) }}>{l.riskScore}</span>
                       <span className="rounded-md border px-1.5 py-0.5 font-mono text-[10px]" style={{ borderColor: 'rgba(245,249,255,0.12)', background: 'rgba(245,249,255,0.04)', color: '#94A3B8' }}>{l.action}</span>
-                    </span>
+                    </div>
                     <p className="section-sub-soft w-full">{l.reason}</p>
                   </li>
                 ))}

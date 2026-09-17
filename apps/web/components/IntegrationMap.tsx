@@ -94,33 +94,34 @@ export function IntegrationMap({
               </linearGradient>
             </defs>
 
-            {/* 1. STORE APPLICATION NODE (Width: 250, Height: 50) */}
-            <g transform={`translate(${cx - 125}, ${appY - 25})`}>
+            {/* 1. STORE APPLICATION NODE (Width: 280, Height: 52) */}
+            <g transform={`translate(${cx - 140}, ${appY - 26})`}>
               <rect
-                width={250}
-                height={50}
-                rx={12}
+                width={280}
+                height={52}
+                rx={14}
                 fill="url(#appGrad)"
                 stroke="rgba(22,119,255,0.45)"
                 strokeWidth={1.5}
                 className="shadow-sm"
               />
               {/* App Icon Circle */}
-              <circle cx={26} cy={25} r={13} fill="#1677FF" opacity={0.25} />
+              <circle cx={26} cy={26} r={13} fill="#1677FF" opacity={0.25} />
               <path
-                d="M20 25h12 M26 19v12"
+                d="M20 26h12 M26 20v12"
                 stroke="#5B9CFF"
                 strokeWidth={2}
                 strokeLinecap="round"
               />
-              {/* Title & Subtitle - Start aligned to avoid any overlap */}
-              <text x={50} y={22} fill="#F5F9FF" fontSize={12.5} fontWeight={800} fontFamily="Inter, system-ui">
+              {/* Title & Subtitle - Start aligned with clean right margin */}
+              <text x={52} y={23} fill="#F5F9FF" fontSize={13} fontWeight={800} fontFamily="Inter, system-ui">
                 STORE APPLICATION
               </text>
-              <text x={50} y={37} fill="#8B9BB4" fontSize={10} fontFamily="monospace" letterSpacing={0.8}>
+              <text x={52} y={38} fill="#8B9BB4" fontSize={9.5} fontFamily="monospace" letterSpacing={0.5}>
                 checkout · payments · delivery
               </text>
             </g>
+
 
             {/* Connection: App -> ThirdEye Core */}
             <line

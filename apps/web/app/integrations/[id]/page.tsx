@@ -116,36 +116,36 @@ export default function IntegrationDetail() {
       </button>
 
       {/* ═══ Hero ═══ */}
-      <div className="relative overflow-hidden rounded-[24px] border p-6 md:p-8" style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}>
+      <div className="relative overflow-hidden rounded-[24px] border p-5 sm:p-6 md:p-8" style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}>
         <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-[24px]" style={{ background: `linear-gradient(90deg, transparent, ${c}, transparent)` }} />
-        <div className="flex flex-col gap-6 md:flex-row md:items-start">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start">
           <RiskRing score={score} />
           <div className="min-w-0 flex-1">
             <div className="section-label">{profile.id} · {live ? 'live' : 'demo data'}</div>
-            <h1 className="section-heading mt-2">{profile.name}</h1>
-            <p className="section-sub mt-2">{profile.purpose}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            <h1 className="section-heading mt-1.5">{profile.name}</h1>
+            <p className="section-sub mt-1.5">{profile.purpose}</p>
+            <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
               <StatusDot status={profile.status} />
               <RiskBadge score={score} />
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
             {profile.status === 'QUARANTINED' ? (
-              <button onClick={() => act('release')} disabled={busy} className="btn-primary">
+              <button onClick={() => act('release')} disabled={busy} className="btn-primary w-full sm:w-auto justify-center">
                 <Icon d={paths.check} size={15} /> {busy ? '…' : 'Release integration'}
               </button>
             ) : (
-              <button onClick={() => act('quarantine')} disabled={busy} className="btn-danger">
+              <button onClick={() => act('quarantine')} disabled={busy} className="btn-danger w-full sm:w-auto justify-center">
                 <Icon d={paths.lock} size={15} /> {busy ? '…' : 'Quarantine'}
               </button>
             )}
-            <Link href="/simulator" className="btn-ghost"><Icon d={paths.play} size={15} /> Simulate</Link>
+            <Link href="/simulator" className="btn-ghost w-full sm:w-auto justify-center"><Icon d={paths.play} size={15} /> Simulate</Link>
           </div>
         </div>
         {profile.status === 'QUARANTINED' && (
-          <div className="mt-5 rounded-xl border px-5 py-4" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
-            <div className="flex items-center gap-2 text-[14px] font-bold" style={{ color: '#FF8090' }}><Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked</div>
-            <p className="section-sub-soft mt-1.5 text-[13.5px]">
+          <div className="mt-5 rounded-xl border px-4 py-3.5 sm:px-5 sm:py-4" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
+            <div className="flex items-center gap-2 text-[13.5px] sm:text-[14px] font-bold" style={{ color: '#FF8090' }}><Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked</div>
+            <p className="section-sub-soft mt-1.5 text-[13px] sm:text-[13.5px]">
               Attempted data access outside registered purpose{events[0]?.reason ? `: ${events[0].reason}` : '.'} Review the violations below, then release or keep isolated.
             </p>
           </div>
@@ -175,13 +175,13 @@ export default function IntegrationDetail() {
           <div className="section-card">
             <div className="flex items-baseline justify-between">
               <div className="section-label-soft">Behaviour — normal vs current {history ? '· live' : '· baseline'}</div>
-              <span className="mono-num text-[12px] font-bold" style={{ color: c }}>{deviation}x deviation</span>
+              <span className="mono-num text-[11.5px] sm:text-[12px] font-bold" style={{ color: c }}>{deviation}x deviation</span>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2.5 text-center">
+            <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2.5 text-center">
               {[['Normal', `${normal}/min`, '#7D8DA8'], ['Current', `${current}/min`, c], ['Deviation', `${deviation}x`, c]].map(([l, v, col]) => (
-                <div key={l} className="rounded-xl border px-3 py-3" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}>
-                  <div className="font-mono text-[9.5px] uppercase tracking-[0.16em]" style={{ color: '#7D8DA8' }}>{l}</div>
-                  <div className="mono-num mt-1 text-[16px] font-bold" style={{ color: col as string }}>{v}</div>
+                <div key={l} className="rounded-xl border px-2 py-2.5 sm:px-3 sm:py-3 min-w-0" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}>
+                  <div className="font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.12em]" style={{ color: '#7D8DA8' }}>{l}</div>
+                  <div className="mono-num mt-1 text-[13px] sm:text-[16px] font-bold truncate" style={{ color: col as string }}>{v}</div>
                 </div>
               ))}
             </div>
