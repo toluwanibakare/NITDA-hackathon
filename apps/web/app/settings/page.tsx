@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { Icon, paths } from '@/components/icons';
+import { showToast } from '@/components/NotificationToast';
 import { apiSafe } from '@/lib/api';
 
 export default function SettingsPage() {
@@ -10,6 +12,11 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState('https://hooks.slack.com/services/T00/B00/X00000');
+  const [apiKeys, setApiKeys] = useState([
+    { id: 'key_1', name: 'ShopX Production Gateway Key', key: 'te_live_shopx_98a7b6c5d4e3', status: 'ACTIVE', created: '2026-09-01' },
+    { id: 'key_2', name: 'Analytics API SDK Key', key: 'te_live_analytics_44c2d1e0f9', status: 'ACTIVE', created: '2026-09-10' },
+  ]);
 
   useEffect(() => {
     try {
@@ -24,14 +31,27 @@ export default function SettingsPage() {
     localStorage.setItem('te-thresholds', JSON.stringify({ suspicious, high, critical }));
     localStorage.setItem('te-context', context);
     setSaved(true);
+    showToast('Settings Saved', 'Risk thresholds and context configuration updated.', 'success');
     setTimeout(() => setSaved(false), 1800);
+  }
+
+  function generateKey() {
+    const randomHex = Math.random().toString(36).substring(2, 10);
+    const newKey = {
+      id: `key_${Date.now()}`,
+      name: `Developer SDK Key (${randomHex})`,
+      key: `te_live_prod_${randomHex}`,
+      status: 'ACTIVE',
+      created: new Date().toISOString().split('T')[0],
+    };
+    setApiKeys((prev) => [newKey, ...prev]);
+    showToast('API Key Generated', `New production key: ${newKey.key}`, 'success');
   }
 
   async function proveNoFalseAlarm() {
     setTesting(true);
     setTestResult('Checking Black Friday spike…');
     try {
-      // Backend: POST /api/check-request with contextEvent → risk -20, volume alone never blocks.
       const r = await apiSafe<{ riskScore: number; action: string; reason: string }>('/api/check-request', { riskScore: 0, action: 'ALLOW', reason: 'demo' }, { method: 'POST', body: JSON.stringify({ integrationId: 'payment_001', method: 'GET', endpoint: '/payments', dataRequested: ['order_id', 'amount'], requestCount: 900, contextEvent: 'black_friday' }) });
       setTestResult(r.live ? `Engine replied: risk ${r.data.riskScore} → ${r.data.action}. High traffic + expected event = reduced risk. No false alarm.` : 'Engine offline — 900/min on Black Friday would score ~0 (volume forgiven with context). No false alarm by design.');
     } catch { setTestResult('Engine unreachable. Context subtracts 20 and volume alone never auto-blocks.'); }
@@ -46,9 +66,9 @@ export default function SettingsPage() {
         <div className="page-header">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="section-label">Tuning · thresholds + context</div>
-              <h1 className="section-heading mt-2">Calm on sales day, strict on abuse</h1>
-              <p className="section-sub mt-2">Track G explicitly grades this: a busy sales day must not trigger a false alarm. Context is the proof.</p>
+              <div className="section-label">Tuning · thresholds, context & developer API keys</div>
+              <h1 className="section-heading mt-2">Platform Settings & SDK Keys</h1>
+              <p className="section-sub mt-2">Configure false-alarm business context, manage ShopX API keys, and tune enforcement thresholds.</p>
             </div>
           </div>
         </div>
@@ -110,6 +130,54 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* ═══ API Keys & SDK Integration ═══ */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="section-card">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="section-label-soft">Developer API Keys</p>
+              <h3 className="h-section mt-0.5">ShopX Integration Credentials</h3>
+            </div>
+            <button onClick={generateKey} className="btn-accent !px-3.5 !py-1.5 !text-[12px]">
+              + Generate Key
+            </button>
+          </div>
+          <div className="space-y-3">
+            {apiKeys.map((k) => (
+              <div key={k.id} className="rounded-xl border p-3.5 border-white/10 bg-black/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-bold text-white">{k.name}</span>
+                  <span className="chip !text-[10px]" style={{ color: '#19D98A' }}>{k.status}</span>
+                </div>
+                <div className="mono-num mt-2 flex items-center justify-between text-[11.5px] text-[#00C8D7]">
+                  <span>{k.key}</span>
+                  <span className="text-[10.5px] text-[#6E7E99]">Created {k.created}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="section-card">
+          <div className="section-label-soft mb-3">Webhook Alert Delivery</div>
+          <h3 className="h-section">Real-time Security Event Webhook</h3>
+          <p className="section-sub-soft mt-1 text-[13px]">
+            Receive automated HTTP POST notifications when ThirdEye detects a scope violation or auto-quarantines an integration.
+          </p>
+          <input
+            value={webhookUrl}
+            onChange={(e) => setWebhookUrl(e.target.value)}
+            className="input mt-3 font-mono text-[12px]"
+          />
+          <button
+            onClick={() => showToast('Webhook Saved', `Alert destination updated to ${webhookUrl}`, 'success')}
+            className="btn-ghost mt-3 !px-4 !py-2 !text-[12.5px]"
+          >
+            Save Webhook URL
+          </button>
+        </div>
+      </div>
+
       {/* ═══ Offline ═══ */}
       <div className="section-card">
         <div className="section-label-soft mb-3">Offline + power-cut behaviour (judges ask this)</div>
@@ -120,3 +188,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

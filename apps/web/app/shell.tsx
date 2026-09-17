@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BootLoader, LiveClock } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
+import { NotificationToastContainer, showToast } from '@/components/NotificationToast';
 import { checkEngineHealth } from '@/lib/api';
 
 const NAV = [
@@ -15,12 +16,56 @@ const NAV = [
   { href: '/settings', label: 'Settings' },
 ];
 
+export function useDevMode() {
+  const [devMode, setDevModeState] = useState(false);
+  useEffect(() => {
+    try {
+      setDevModeState(localStorage.getItem('te-dev-mode') === 'true');
+    } catch { /* SSR */ }
+    const onStorage = () => {
+      try {
+        setDevModeState(localStorage.getItem('te-dev-mode') === 'true');
+      } catch { /* SSR */ }
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('te-dev-mode-change', onStorage);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('te-dev-mode-change', onStorage);
+    };
+  }, []);
+  return devMode;
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const [booted, setBooted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [engineOnline, setEngineOnline] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [devMode, setDevMode] = useState(false);
+
+  useEffect(() => {
+    try {
+      setDevMode(localStorage.getItem('te-dev-mode') === 'true');
+    } catch { /* SSR */ }
+  }, []);
+
+  const toggleDevMode = () => {
+    const next = !devMode;
+    setDevMode(next);
+    try {
+      localStorage.setItem('te-dev-mode', String(next));
+      window.dispatchEvent(new Event('te-dev-mode-change'));
+    } catch { /* SSR */ }
+    showToast(
+      next ? 'Developer Mode Active' : 'Standard Mode Active',
+      next
+        ? 'cURL inspectors, SDK snippets, raw payloads & API key tools unlocked.'
+        : 'Clean executive overview mode active.',
+      next ? 'info' : 'success'
+    );
+  };
 
   useEffect(() => {
     const id = setTimeout(() => setBooted(true), 1400);
@@ -53,6 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <BootLoader done={booted} />
+        <NotificationToastContainer />
         {children}
       </>
     );
@@ -61,6 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <BootLoader done={booted} />
+      <NotificationToastContainer />
 
       {/* Translucent console bar — content scrolls underneath, edge fades instead of a hard rule */}
       <header className="sticky top-0 z-40">
@@ -104,6 +151,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+              {/* Developer Mode Toggle Button */}
+              <button
+                onClick={toggleDevMode}
+                className="rounded-full border px-3 py-1 text-[11.5px] font-semibold transition-all duration-150 active:scale-95 flex items-center gap-1.5"
+                style={
+                  devMode
+                    ? { borderColor: '#1677FF', background: 'rgba(22,119,255,0.18)', color: '#8FBFFF' }
+                    : { borderColor: 'rgba(245,249,255,0.14)', background: 'rgba(245,249,255,0.04)', color: '#93A1B8' }
+                }
+                title="Toggle Developer Mode (unlocks SDK snippets, cURL commands, raw payloads)"
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${devMode ? 'bg-[#5B9CFF]' : 'bg-[#6E7E99]'}`} />
+                Dev Mode: <span className="font-mono font-bold">{devMode ? 'ON' : 'OFF'}</span>
+              </button>
+
               <span
                 className="chip hidden !text-[11px] lg:inline-flex"
                 style={
@@ -147,17 +209,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 })}
               </nav>
               <div className="mt-3 flex items-center justify-between border-t pt-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
-                <span
-                  className="chip !text-[11px]"
+                <button
+                  onClick={toggleDevMode}
+                  className="rounded-full border px-3 py-1.5 text-[11.5px] font-semibold"
                   style={
-                    engineOnline
-                      ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.07)', color: '#19D98A' }
-                      : { borderColor: 'rgba(255,196,46,0.3)', background: 'rgba(255,196,46,0.07)', color: '#FFC42E' }
+                    devMode
+                      ? { borderColor: '#1677FF', background: 'rgba(22,119,255,0.18)', color: '#8FBFFF' }
+                      : { borderColor: 'rgba(245,249,255,0.14)', background: 'rgba(245,249,255,0.04)', color: '#93A1B8' }
                   }
                 >
-                  <span className={`h-1.5 w-1.5 rounded-full ${engineOnline ? 'bg-[#19D98A] animate-pulseDot' : 'bg-[#FFC42E] animate-blink'}`} />
-                  {engineOnline ? 'Engine nominal' : 'Demo data'}
-                </span>
+                  Dev Mode: {devMode ? 'ON' : 'OFF'}
+                </button>
                 <Link href="/simulator" className="btn-accent !px-3.5 !py-2 !text-[12.5px]">
                   <Icon d={paths.play} size={13} /> Attack demo
                 </Link>
@@ -178,3 +240,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
+

@@ -6,6 +6,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'rec
 import { EventTimeline } from '@/components/EventTimeline';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, RiskRing, StatusDot } from '@/components/RiskBadge';
+import { useDevMode } from '@/app/shell';
 import {
   apiSafe,
   getAllowedData,
@@ -30,6 +31,7 @@ import { MOCK_EVENTS, MOCK_INTEGRATIONS } from '@/lib/mock';
 export default function IntegrationDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const devMode = useDevMode();
   const [profile, setProfile] = useState<IntegrationRow | null>(null);
   const [behaviour, setBehaviour] = useState<IntegrationDetailResponse['behaviour'] | null>(null);
   const [history, setHistory] = useState<HistoryResponse | null>(null);
@@ -38,9 +40,6 @@ export default function IntegrationDetail() {
   const [live, setLive] = useState(false);
 
   const load = useCallback(async () => {
-    // Backend: GET /api/integrations/:id → {profile, behaviour:{normalRate,currentRate,deviationMultiple}, recentViolations[]}
-    // Backend: GET /api/integrations/:id/history → {normalRate,currentRate,currentRisk,history:[{t,volume,risk,normalRate}]}
-    // Backend: GET /api/security-events?integrationId=:id → SecEvent[] dual-cased + hash
     const [p, h, ev] = await Promise.all([
       apiSafe<IntegrationDetailResponse | IntegrationRow>(
         `/api/integrations/${id}`,
@@ -108,12 +107,50 @@ export default function IntegrationDetail() {
         { t: 'now', v: current },
       ];
 
+  const allowedEp = getAllowedEndpoints(profile)[0] || '/api/v1/resource';
+
   return (
     <div className="stagger space-y-6">
       {/* Back button */}
       <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-mono text-[12.5px] font-medium transition-colors hover:text-white" style={{ color: '#7D8DA8' }}>
         <span className="rotate-180"><Icon d={paths.arrow} size={14} /></span> Back to registry
       </button>
+
+      {/* ═══ Developer Mode Inspection Drawer ═══ */}
+      {devMode && (
+        <div className="section-card border-brand/40 bg-brand/5 p-5 animate-rise">
+          <div className="flex items-center justify-between border-b border-brand/20 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#5B9CFF] animate-pulseDot" />
+              <span className="font-mono text-[12px] font-bold text-[#5B9CFF] uppercase">Developer Inspection Mode Active</span>
+            </div>
+            <span className="chip !border-brand/40 !text-brand">cURL & SDK INSPECTOR</span>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">cURL Gateway Request Test:</span>
+              <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11px] leading-relaxed text-[#00C8D7]">
+                {`curl -X POST https://gateway.thirdeye.sec/api/v1/${profile.id} \\
+  -H "x-thirdeye-api-key: te_live_${profile.id}_98a7b6c5" \\
+  -H "Content-Type: application/json" \\
+  -d '{"endpoint":"${allowedEp}","dataRequested":["event_type"]}'`}
+              </pre>
+            </div>
+            <div>
+              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">ShopX @thirdeye/sdk Init:</span>
+              <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11px] leading-relaxed text-[#19D98A]">
+                {`import { ThirdEye } from '@thirdeye/sdk';
+
+const thirdeye = new ThirdEye({
+  apiKey: 'te_live_${profile.id}_98a7b6c5',
+  integrationId: '${profile.id}'
+});`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ Hero ═══ */}
       <div className="relative overflow-hidden rounded-[24px] border p-5 sm:p-6 md:p-8" style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}>

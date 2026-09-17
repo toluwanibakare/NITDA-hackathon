@@ -145,6 +145,7 @@ export default function LandingPage() {
       </header>
 
       {/* ── Hero: eyebrow, display, proof, story visual ── */}
+      {/* ── Hero: eyebrow, display, proof, story visual ── */}
       <section className="console-full relative overflow-hidden pb-12 pt-10 md:pb-20 md:pt-[76px]">
         <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" />
         <div className="pointer-events-none absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full blur-[120px]" style={{ background: 'rgba(22,119,255,0.13)' }} />
@@ -152,36 +153,32 @@ export default function LandingPage() {
           <div className="lg:col-span-7">
             <p className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11.5px] sm:text-[12px] font-semibold" style={{ borderColor: 'rgba(22,119,255,0.35)', background: 'rgba(22,119,255,0.08)', color: '#8FBFFF', letterSpacing: '0.04em' }}>
               <span className="h-1.5 w-1.5 rounded-full bg-[#5B9CFF] animate-pulseDot" />
-              COMMERCE & CONSUMER PROTECTION
+              SECURITY FOR THIRD-PARTY INTEGRATIONS
             </p>
-            <h1 className="mt-4 sm:mt-5 max-w-[15ch] text-white" style={{ fontSize: 'clamp(1.9rem, 7.5vw, 4.1rem)', lineHeight: 1.05, letterSpacing: '-0.032em', fontWeight: 750 }}>
-              Know what your third parties <span style={{ color: '#5B9CFF' }}>actually</span> do.
+            <h1 className="mt-4 sm:mt-5 max-w-[16ch] text-white" style={{ fontSize: 'clamp(1.9rem, 7.5vw, 4.1rem)', lineHeight: 1.05, letterSpacing: '-0.032em', fontWeight: 750 }}>
+              Protect <span style={{ color: '#5B9CFF' }}>ShopX</span> from rogue third-party APIs.
             </h1>
-            <p className="mt-4 sm:mt-5 max-w-[54ch]" style={{ fontSize: 'clamp(15px, 2vw, 17px)', lineHeight: 1.65, color: '#A9B6CC', letterSpacing: '-0.006em' }}>
-              ThirdEye verifies every authorised integration against its declared purpose and scope —
-              then grades the response, so a busy sales day never stops revenue and a real breach gets isolated.
+            <p className="mt-4 sm:mt-5 max-w-[56ch]" style={{ fontSize: 'clamp(15px, 2vw, 17px)', lineHeight: 1.65, color: '#A9B6CC', letterSpacing: '-0.006em' }}>
+              ThirdEye sits between store applications like <strong>ShopX</strong> and partner integrations (Payments, Delivery, Analytics, Marketing). Connect via our Custom API Gateway or <code>@thirdeye/sdk</code> to score every request against declared scope.
             </p>
             <div className="mt-7 sm:mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
               <Link href="/dashboard" className="btn-accent group w-full sm:w-auto justify-center !px-6 !py-3 !text-[14px]" style={{ boxShadow: '0 8px 28px -10px rgba(22,119,255,0.6)' }}>
                 Open live console
                 <span className="transition-transform duration-150 group-hover:translate-x-0.5"><Icon d={paths.arrow} size={15} /></span>
               </Link>
-              <Link href="/simulator" className="btn-ghost group w-full sm:w-auto justify-center !px-6 !py-3 !text-[14px]">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: 'rgba(0,200,215,0.14)', color: '#00C8D7' }}>
-                  <Icon d={paths.play} size={12} />
-                </span>
-                Run attack simulator
+              <Link href="/integrations" className="btn-ghost group w-full sm:w-auto justify-center !px-6 !py-3 !text-[14px]">
+                <Icon d={paths.grid} size={14} /> Connect ShopX integrations
               </Link>
             </div>
             <dl className="mt-8 sm:mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border sm:grid-cols-4" style={{ borderColor: 'rgba(245,249,255,0.09)', background: 'rgba(245,249,255,0.09)' }}>
               {[
-                ['<1ms', 'Request overhead'],
+                ['Custom Gateway', 'Intercept & route'],
+                ['@thirdeye/sdk', '3-line integration'],
+                ['4 Tiers', 'Graded response'],
                 ['SHA-256', 'Tamper-evident log'],
-                ['4 tiers', 'Graded response'],
-                ['−20', 'Context relief'],
               ].map(([v, l]) => (
                 <div key={l} className="px-3.5 py-3 sm:px-5 sm:py-4" style={{ background: '#071426' }}>
-                  <dt className="mono-num text-[18px] sm:text-[20px] font-semibold text-white" style={{ letterSpacing: '-0.015em' }}>{v}</dt>
+                  <dt className="mono-num text-[17px] sm:text-[19px] font-semibold text-white" style={{ letterSpacing: '-0.015em' }}>{v}</dt>
                   <dd className="mt-0.5 text-[11px] sm:text-[12px]" style={{ color: '#8494AD' }}>{l}</dd>
                 </div>
               ))}
@@ -195,9 +192,9 @@ export default function LandingPage() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#FF5F57' }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#28C840' }} />
-                <span className="mono-num ml-2 text-[11px]" style={{ color: '#6E7E99' }}>thirdeye / overview</span>
+                <span className="mono-num ml-2 text-[11px]" style={{ color: '#6E7E99' }}>thirdeye / gateway-flow</span>
                 <span className="chip ml-auto !py-0.5 !text-[10px]" style={{ color: '#19D98A' }}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#19D98A] animate-pulseDot" /> LIVE
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#19D98A] animate-pulseDot" /> LIVE GATEWAY
                 </span>
               </div>
               <Image src="/hero_shield.jpg" alt="ThirdEye monitoring console" width={520} height={380} className="h-auto w-full object-cover" priority />
@@ -219,35 +216,89 @@ export default function LandingPage() {
               )}
             </div>
             <p className="mono-num mt-3 text-center text-[11.5px]" style={{ color: '#5B6B85' }}>
-              1,420 requests verified today · 0 breach exposures
+              ShopX Gateway · 1,420 requests verified today · 0 breach exposures
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── How it works ── */}
+      {/* ── How it works: 3-step ShopX integration flow ── */}
       <section id="how" className="console-full scroll-mt-20 border-t py-12 md:py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-4">
             <p className="section-label-soft">How it works</p>
-            <h2 className="mt-2 text-[22px] sm:text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>Purpose, scope and behaviour — checked on every request.</h2>
-            <Link href="/dashboard" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">
-              See it on the overview <Icon d={paths.arrow} size={14} />
+            <h2 className="mt-2 text-[22px] sm:text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>ShopX Integration Journey</h2>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#8494AD' }}>
+              ShopX merchants connect partner integrations through our Marketplace or custom SDK. ThirdEye continuously verifies scope and intent on every request.
+            </p>
+            <Link href="/integrations" className="mt-4 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#5B9CFF]">
+              Browse Marketplace connectors <Icon d={paths.arrow} size={14} />
             </Link>
           </div>
           <ol className="grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-3 lg:col-span-8" style={{ borderColor: 'rgba(245,249,255,0.08)', background: 'rgba(245,249,255,0.08)' }}>
             {[
-              ['Declare', 'Register each integration with its purpose, endpoints and allowed data.'],
-              ['Verify', 'Score every request 0–100 against purpose, scope, data and volume.'],
-              ['Grade', 'Allow, monitor, rate-limit or quarantine — with the reason shown.'],
-            ].map(([t, d], i) => (
+              ['1. Select Partner', 'Browse Payments, Delivery, Analytics & Marketing in the ThirdEye Marketplace.', 'Marketplace'],
+              ['2. Route & Embed', 'Connect via Custom API Gateway or install lightweight @thirdeye/sdk with your API key.', 'SDK / Gateway'],
+              ['3. Protect & Grade', 'Score requests 0–100. Allow sales spikes (Black Friday), auto-block data leaks.', 'Graded Defense'],
+            ].map(([t, d, badge], i) => (
               <li key={t} className="group px-5 py-5 sm:px-6 sm:py-6 transition-colors duration-150 hover:bg-white/[0.02]" style={{ background: '#071426' }}>
-                <div className="mono-num text-[12px]" style={{ color: '#5B9CFF' }}>0{i + 1}</div>
-                <div className="mt-2 text-[15px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>{t}</div>
+                <div className="flex items-center justify-between">
+                  <div className="mono-num text-[12px]" style={{ color: '#5B9CFF' }}>STEP 0{i + 1}</div>
+                  <span className="chip !text-[10px]">{badge}</span>
+                </div>
+                <div className="mt-3 text-[15px] font-semibold text-white" style={{ letterSpacing: '-0.01em' }}>{t}</div>
                 <p className="mt-1.5 text-[13.5px] leading-relaxed" style={{ color: '#8494AD' }}>{d}</p>
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* ── SDK & Developer Code Snippet Section ── */}
+      <section className="console-full border-t py-12 md:py-14" style={{ borderColor: 'rgba(245,249,255,0.07)' }}>
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-10 items-center">
+          <div className="lg:col-span-5">
+            <p className="section-label-soft">Developer Experience</p>
+            <h2 className="mt-2 text-[22px] sm:text-[26px] font-bold" style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}>Zero-friction integration for developers.</h2>
+            <p className="mt-3 text-[14.5px] leading-relaxed" style={{ color: '#A9B6CC' }}>
+              Connect ShopX in 3 lines of code using <code>@thirdeye/sdk</code> or point your HTTP client to ThirdEye Custom API Gateway: <code>https://gateway.thirdeye.sec</code>.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="chip">npm install @thirdeye/sdk</span>
+              <span className="chip">pip install thirdeye-sdk</span>
+            </div>
+          </div>
+          <div className="panel lg:col-span-7 overflow-hidden p-5 sm:p-6" style={{ background: '#071426' }}>
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#1677FF]" />
+                <span className="mono-num text-[12px] font-bold text-white">shopx-integration.ts</span>
+              </div>
+              <span className="chip !text-[10.5px]">TYPESCRIPT / NODE.JS</span>
+            </div>
+            <pre className="mono-num mt-4 overflow-x-auto text-[12px] leading-relaxed text-[#00C8D7]">
+              {`import { ThirdEye } from '@thirdeye/sdk';
+
+// Initialize ShopX integration via ThirdEye Custom Gateway
+const thirdeye = new ThirdEye({
+  apiKey: 'te_live_98a7b6c5d4e3',
+  gatewayUrl: 'https://gateway.thirdeye.sec',
+  integrationId: 'analytics_001'
+});
+
+// Verify request before passing to ShopX backend
+const decision = await thirdeye.verifyRequest({
+  endpoint: '/analytics/events',
+  method: 'GET',
+  dataRequested: ['event_type', 'session_id'],
+  requestCount: 95
+});
+
+if (decision.action === 'BLOCK') {
+  throw new Error('ThirdEye Security Block: Unauthorized scope breach');
+}`}
+            </pre>
+          </div>
         </div>
       </section>
 
