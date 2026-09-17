@@ -5,65 +5,10 @@ import { demoEvents } from './events.js';
 
 export const integrationsRouter = Router();
 
-// In-memory fallback dataset for offline or unconfigured environments
-export const fallbackIntegrations: Record<string, any> = {
-  payment_001: {
-    id: 'payment_001',
-    name: 'Payment Provider',
-    purpose: 'Process payments and transactions',
-    status: 'ACTIVE',
-    risk_score: 8,
-    expected_request_rate: 120,
-    allowed_endpoints: ['/payments', '/payments/status'],
-    allowed_methods: ['POST', 'GET'],
-    allowed_data: ['order_id', 'amount', 'transaction_id'],
-    forbidden_data: ['password', 'customer_profile', 'marketing_data'],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  delivery_001: {
-    id: 'delivery_001',
-    name: 'Delivery Provider',
-    purpose: 'Deliver customer orders',
-    status: 'ACTIVE',
-    risk_score: 12,
-    expected_request_rate: 80,
-    allowed_endpoints: ['/orders', '/delivery', '/delivery/status'],
-    allowed_methods: ['GET', 'POST'],
-    allowed_data: ['order_id', 'delivery_address', 'customer_name', 'phone'],
-    forbidden_data: ['payment', 'password', 'marketing'],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  analytics_001: {
-    id: 'analytics_001',
-    name: 'Analytics Provider',
-    purpose: 'Collect anonymous usage statistics',
-    status: 'ACTIVE',
-    risk_score: 8,
-    expected_request_rate: 100,
-    allowed_endpoints: ['/analytics/events', '/analytics/metrics'],
-    allowed_methods: ['GET', 'POST'],
-    allowed_data: ['anonymous_user_id', 'page', 'event', 'timestamp'],
-    forbidden_data: ['payment', 'phone', 'address', 'password', 'customer'],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  marketing_001: {
-    id: 'marketing_001',
-    name: 'Marketing Provider',
-    purpose: 'Manage marketing campaigns',
-    status: 'ACTIVE',
-    risk_score: 22,
-    expected_request_rate: 95,
-    allowed_endpoints: ['/campaigns', '/campaigns/events'],
-    allowed_methods: ['GET', 'POST'],
-    allowed_data: ['campaign_id', 'anonymous_user_id', 'event'],
-    forbidden_data: ['payment', 'password'],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-};
+import { integrationRegistry } from '../integrations/registry.js';
+
+// Single source of truth integration registry
+export const fallbackIntegrations: Record<string, any> = integrationRegistry;
 
 /**
  * Format an integration row to be compatible with both camelCase and snake_case consumers

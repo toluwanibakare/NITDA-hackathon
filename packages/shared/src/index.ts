@@ -13,6 +13,9 @@ export type EventType =
   | 'QUARANTINED'
   | 'RELEASED';
 
+export type ScenarioName = 'normal' | 'busy' | 'probe' | 'exfiltration' | 'breach';
+export type DriftTrajectory = 'STABLE' | 'DEVIATING' | 'ESCALATING' | 'CRITICAL_BREACH';
+
 export interface TrustProfile {
   id: string;
   name: string;
@@ -24,6 +27,23 @@ export interface TrustProfile {
   expectedRequestRate: number;
 }
 
+export interface IntegrationProfile {
+  id: string;
+  name: string;
+  purpose: string;
+  status: IntegrationStatus;
+  riskScore: number;
+  expectedRequestRate: number;
+  currentRequestRate?: number;
+  allowedEndpoints: string[];
+  allowedMethods: string[];
+  allowedFields: string[];
+  forbiddenFields: string[];
+  testApiKey: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface CheckRequest {
   integrationId: string;
   method: string;
@@ -32,6 +52,8 @@ export interface CheckRequest {
   requestCount?: number;
   timestamp?: string;
   contextEvent?: 'none' | 'black_friday' | 'campaign_launch' | 'known_spike';
+  headers?: Record<string, string>;
+  sourceIp?: string;
 }
 
 export interface Violation {
@@ -46,6 +68,11 @@ export interface CheckResult {
   violations: Violation[];
   action: Action;
   reason: string;
+  explainableSummary?: string;
+  driftScore?: number;
+  driftTrajectory?: DriftTrajectory;
+  maskedFields?: string[];
+  evaluatedAt?: string;
 }
 
 export interface SecurityEvent {

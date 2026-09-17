@@ -8,6 +8,7 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { eventsRouter } from './routes/events.js';
 import { checkRouter } from './routes/check.js';
 import { simulatorRouter } from './routes/simulator.js';
+import { shopxRouter } from './shopx/router.js';
 
 const app = express();
 const serverStartTime = Date.now();
@@ -86,9 +87,15 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/security-events', eventsRouter);
 app.use('/api/check-request', checkRouter);
 app.use('/api/simulator', simulatorRouter);
+app.use('/api/shopx', shopxRouter);
+
+const isTestEnv =
+  process.env.NODE_ENV === 'test' ||
+  Boolean(process.env.NODE_TEST_CONTEXT) ||
+  process.argv.some((arg) => arg.includes('test'));
 
 const port = Number(process.env.PORT || 4000);
-if (process.env.NODE_ENV !== 'test') {
+if (!isTestEnv) {
   app.listen(port, () => {
     console.log(`[thirdeye-api] server running on port ${port}`);
   });
