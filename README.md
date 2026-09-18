@@ -14,7 +14,7 @@ lands, then allowed, throttled, or quarantined.
 [![Express](https://img.shields.io/badge/Express-5-lightgrey?logo=express)](https://expressjs.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase)](https://supabase.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-red.svg)](./LICENSE)
 
 **[The 90-second demo](#the-90-second-demo) · [How it works](#how-it-works) · [Quickstart](#quickstart) · [API reference](#api-reference) · [SDKs & Agent skill](#sdks--agent-skill)**
 
@@ -209,7 +209,7 @@ thirdeye/
 │   └── api/                  # Express — risk engine, CRUD, simulator, ShopX demo service
 ├── packages/
 │   ├── shared/               # Shared TS types — single source of truth
-│   ├── sdk-typescript/       # @thirdeye/sdk (guard client + Express middleware)
+│   ├── sdk-typescript/       # @the-third-eye/sdk (guard client + Express middleware)
 │   └── sdk-python/           # thirdeye-sdk (guard client + decorator)
 ├── supabase/                 # migrations.sql + seed.sql (4 demo integrations)
 ├── skills/thirdeye/          # Agent skill (open AgentSkills format)
@@ -332,7 +332,7 @@ Full payload contracts: [`docs/PAYLOADS.md`](./docs/PAYLOADS.md).
 
 ```ts
 // TypeScript
-import { ThirdEye } from '@thirdeye/sdk';
+import { ThirdEye } from '@the-third-eye/sdk';
 const thirdeye = new ThirdEye({ apiKey: process.env.THIRDEYE_KEY });
 await thirdeye.check({ integrationId: 'analytics_001', method: 'GET', endpoint: '/analytics/events' });
 ```
@@ -344,13 +344,15 @@ te = ThirdEye(api_key="te_live_...")
 te.check(integration_id="analytics_001", method="GET", endpoint="/analytics/events")
 ```
 
-**Agent skill** (`skills/thirdeye/SKILL.md`, open AgentSkills format) — install it into
-Claude Code, Cursor or Copilot and just say _“add ThirdEye scoring to my checkout
-API.”_ The agent registers the integration, routes calls through the gateway, and
-explains every risk score back in plain English. No security background needed.
+**Agent skill** (`skills/thirdeye/SKILL.md`, open AgentSkills format) — fully supports coding agents (**Antigravity**, **Claude Code**, **Cursor**, **Copilot**):
 
+- **Workspace Discovery**: Linked to `.agents/skills/thirdeye` (Antigravity) and `.claude/skills/thirdeye` (Claude Code).
+- **Codebase Auditing**: Run `python3 skills/thirdeye/scripts/audit_codebase.py` to scan project outbound APIs and sensitive parameters.
+- **Trust Profile Registration**: `python3 skills/thirdeye/scripts/register_integration.py` or programmatic SDK registration.
+- **Agentic AI & Tool Guarding**: Protect LLM agent tool dispatch (LangChain, OpenAI tools, MCP) with recipes in `references/coding-agent-recipes.md`.
+- **Golden Probes**: Verify guard behavior with `python3 skills/thirdeye/scripts/test_guard_probe.py` (ALLOW, MONITOR, BLOCK).
+- **Verify the full suite**: `bash skills/thirdeye/scripts/verify_skill.sh`
 - SDK docs: `packages/sdk-typescript/README.md` · `packages/sdk-python/README.md`
-- Verify the skill: `bash skills/thirdeye/scripts/verify_skill.sh`
 
 ---
 
@@ -397,7 +399,9 @@ recording — judges love live demos, but engineers keep receipts.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Built with paranoia and care by Team G1.
+All rights reserved — see [LICENSE](./LICENSE). No copying, modification, or
+distribution without prior written permission. Built with paranoia and care by
+Team G1.
 
 <div align="center">
 
