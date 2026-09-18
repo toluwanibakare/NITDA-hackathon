@@ -1,6 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import { checkRequestPure } from './riskEngine.js';
-import { normalizeTrustProfile, type CheckRequest, type CheckResult, type TrustProfile } from '@thirdeye/shared';
+import {
+  normalizeTrustProfile,
+  type CheckRequest,
+  type CheckResult,
+  type TrustProfile,
+} from '@thirdeye/shared';
 
 export interface IntegrationProxyOptions {
   profileResolver: (integrationId: string) => Promise<TrustProfile | null> | TrustProfile | null;
@@ -10,9 +15,7 @@ export interface IntegrationProxyOptions {
 
 function asArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map(item => String(item).trim())
-    .filter(Boolean);
+  return value.map(item => String(item).trim()).filter(Boolean);
 }
 
 export function createIntegrationProxy({
@@ -21,14 +24,13 @@ export function createIntegrationProxy({
   headerName = 'x-integration-id',
 }: IntegrationProxyOptions) {
   return async function integrationProxy(req: Request, res: Response, next: NextFunction) {
-    const integrationId =
-      String(
-        (req.headers[headerName] as string | undefined) ||
-          (req.headers['x-third-eye-integration-id'] as string | undefined) ||
-          (req.body?.integrationId as string | undefined) ||
-          (req.body?.integration_id as string | undefined) ||
-          ''
-      ).trim();
+    const integrationId = String(
+      (req.headers[headerName] as string | undefined) ||
+        (req.headers['x-third-eye-integration-id'] as string | undefined) ||
+        (req.body?.integrationId as string | undefined) ||
+        (req.body?.integration_id as string | undefined) ||
+        ''
+    ).trim();
 
     if (!integrationId) {
       return next();

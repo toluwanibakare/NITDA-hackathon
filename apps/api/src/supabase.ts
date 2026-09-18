@@ -2,13 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
 
 const url = process.env.SUPABASE_URL || 'https://placeholder-project.supabase.co';
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'placeholder-service-role-key';
+const key =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'placeholder-service-role-key';
 
 export const isSupabaseConfigured = Boolean(
-  url &&
-  key &&
-  !url.includes('placeholder') &&
-  !key.includes('placeholder')
+  url && key && !url.includes('placeholder') && !key.includes('placeholder')
 );
 
 export const runtimeMode = isSupabaseConfigured ? 'supabase' : 'demo';

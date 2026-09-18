@@ -50,13 +50,13 @@ export function normalizeTrustProfile(profile?: Partial<TrustProfile> | null): T
 
   const source = profile as Record<string, unknown>;
 
-  const allowedEndpoints = normalizeStringList(
-    source.allowedEndpoints ?? source.allowed_endpoints ?? []
-  ).map(endpoint => {
-    const value = String(endpoint).trim();
-    if (!value) return value;
-    return value.startsWith('/') ? value : `/${value}`;
-  });
+  const allowedEndpoints = normalizeStringList(source.allowedEndpoints ?? source.allowed_endpoints ?? []).map(
+    endpoint => {
+      const value = String(endpoint).trim();
+      if (!value) return value;
+      return value.startsWith('/') ? value : `/${value}`;
+    }
+  );
 
   const allowedMethods = normalizeStringList(
     source.allowedMethods ?? source.allowed_methods ?? ['GET', 'POST']

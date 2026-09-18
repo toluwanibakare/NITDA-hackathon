@@ -20,7 +20,9 @@ function toTrustProfile(row: any): TrustProfile | null {
 }
 
 function fallbackProfiles(): TrustProfile[] {
-  return Object.values(integrationRegistry).map(row => toTrustProfile(row)!).filter(Boolean);
+  return Object.values(integrationRegistry)
+    .map(row => toTrustProfile(row)!)
+    .filter(Boolean);
 }
 
 export async function getAllTrustProfiles(): Promise<TrustProfile[]> {
@@ -37,11 +39,7 @@ export async function getAllTrustProfiles(): Promise<TrustProfile[]> {
 
 export async function getTrustProfileById(id: string): Promise<TrustProfile | null> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase
-      .from('integrations')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const { data, error } = await supabase.from('integrations').select('*').eq('id', id).maybeSingle();
 
     if (!error && data) {
       return toTrustProfile(data);

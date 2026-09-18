@@ -27,7 +27,11 @@ checkRouter.post('/', async (req: Request, res: Response) => {
     let integration: any = null;
 
     if (isSupabaseConfigured) {
-      const { data } = await supabase.from('integrations').select('*').eq('id', body.integrationId).maybeSingle();
+      const { data } = await supabase
+        .from('integrations')
+        .select('*')
+        .eq('id', body.integrationId)
+        .maybeSingle();
       integration = data ?? null;
     }
 
