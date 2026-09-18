@@ -1,11 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { EmptyState } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
+import { IntegrationTable } from '@/components/IntegrationTable';
 import { showToast } from '@/components/NotificationToast';
 import { RiskBadge, StatusDot } from '@/components/RiskBadge';
-import { apiSafe, getAllowedEndpoints, getExpectedRate, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
+import { api, apiSafe, getAllowedEndpoints, getExpectedRate, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
 import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 const MARKETPLACE_CATALOG = [
@@ -66,14 +68,22 @@ const MARKETPLACE_CATALOG = [
   },
 ];
 
-export default function IntegrationsPage() {
+function IntegrationsInner() {
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(searchParams.get('q') ?? '');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortKey, setSortKey] = useState<'risk' | 'rate' | 'name'>('risk');
   const [live, setLive] = useState(false);
+  const [view, setView] = useState<'cards' | 'table'>('table');
   const [activeTab, setActiveTab] = useState<'registry' | 'marketplace'>('registry');
   const [connectModal, setConnectModal] = useState<typeof MARKETPLACE_CATALOG[0] | null>(null);
+  const [connecting, setConnecting] = useState(false);
+
+  useEffect(() => {
+    const urlQ = searchParams.get('q');
+    if (typeof urlQ === 'string') setQ(urlQ);
+  }, [searchParams]);
 
   useEffect(() => {
     const query = new URLSearchParams();
@@ -116,34 +126,51 @@ export default function IntegrationsPage() {
   const [showConnectProjectModal, setShowConnectProjectModal] = useState(false);
   const [projectStep, setProjectStep] = useState<1 | 2 | 3>(1);
 
-  function completeConnection(cat: typeof MARKETPLACE_CATALOG[0]) {
-    const newIntegration: IntegrationRow = {
+  async function completeConnection(cat: typeof MARKETPLACE_CATALOG[0]) {
+    setConnecting(true);
+    const payload = {
       id: `${cat.id}_001`,
       name: cat.name,
       purpose: cat.purpose,
-      status: 'ACTIVE',
-      riskScore: 8,
-      requestsPerMin: 12,
-      expected_request_rate: cat.expectedRate,
       expectedRequestRate: cat.expectedRate,
       allowedEndpoints: cat.allowedEndpoints,
-      allowed_endpoints: cat.allowedEndpoints,
       allowedMethods: cat.allowedMethods,
-      allowed_methods: cat.allowedMethods,
       allowedData: cat.allowedData,
-      allowed_data: cat.allowedData,
       forbiddenData: cat.forbiddenData,
-      forbidden_data: cat.forbiddenData,
-      lastActivity: 'Just connected to ShopX',
     };
-
-    setItems((prev) => [newIntegration, ...prev.filter((p) => p.id !== newIntegration.id)]);
+    let saved: IntegrationRow | null = null;
+    let engineLive = false;
+    try {
+      saved = await api<IntegrationRow>('/api/integrations', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      engineLive = true;
+    } catch {
+      saved = {
+        ...payload,
+        status: 'ACTIVE',
+        riskScore: 8,
+        requestsPerMin: 12,
+        expected_request_rate: cat.expectedRate,
+        allowed_endpoints: cat.allowedEndpoints,
+        allowed_methods: cat.allowedMethods,
+        allowed_data: cat.allowedData,
+        forbidden_data: cat.forbiddenData,
+        lastActivity: 'Just connected (offline)',
+      } as IntegrationRow;
+    } finally {
+      setConnecting(false);
+    }
+    if (saved) setItems((prev) => [normaliseIntegration(saved as IntegrationRow), ...prev.filter((p) => p.id !== (saved as IntegrationRow).id)]);
     setConnectModal(null);
     setActiveTab('registry');
     showToast(
-      `Integration Connected!`,
-      `Connected ${cat.name} to ${projectName}. Gateway route: https://gateway.thirdeye.sec/api/v1/${cat.id}`,
-      'success'
+      engineLive ? 'Integration Connected!' : 'Integration staged (offline)',
+      engineLive
+        ? `Connected ${cat.name} to ${projectName}. Gateway route: https://gateway.thirdeye.sec/api/v1/${cat.id}`
+        : `Engine offline — ${cat.name} staged locally and will sync on reconnect.`,
+      engineLive ? 'success' : 'warn',
     );
   }
 
@@ -169,7 +196,10 @@ export default function IntegrationsPage() {
         <div className="page-header">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="section-label">ThirdEye Platform Hub · {items.length} active connectors</div>
+              <div className="section-label">
+                ThirdEye Platform Hub · {items.length} active connectors ·{' '}
+                <span className={live ? 'text-[#19D98A]' : 'text-[#FFC42E]'}>{live ? 'live' : 'demo data'}</span>
+              </div>
               <h1 className="section-heading mt-2">Integrations & Marketplace</h1>
               <p className="section-sub mt-2">
                 Connect your merchant project (like ShopX) to ThirdEye, browse pre-verified partner integrations, generate gateway routing keys, and monitor compliance in real time.
@@ -354,12 +384,26 @@ export default function IntegrationsPage() {
                 <option value="rate">Sort: Highest Rate</option>
                 <option value="name">Sort: Alphabetical</option>
               </select>
+              <div className="pill-nav !p-1">
+                {(['table', 'cards'] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`pill-nav__item !px-3 !py-1 !text-[11px] uppercase ${view === v ? 'pill-nav__item--active' : ''}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* ═══ Cards ═══ */}
           {filtered.length === 0 ? (
             <EmptyState title="No integrations match" body="Try a different search query or status filter." />
+          ) : view === 'table' ? (
+            <div className="section-card overflow-hidden !p-0">
+              <IntegrationTable items={filtered} />
+            </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filtered.map((it) => {
@@ -555,15 +599,24 @@ const thirdeye = new ThirdEye({
               </button>
               <button
                 onClick={() => completeConnection(connectModal)}
-                className="btn-accent !px-5 !py-2 !text-[13px]"
+                disabled={connecting}
+                className="btn-accent !px-5 !py-2 !text-[13px] disabled:opacity-50"
               >
-                Complete Connection & Connect to {projectName} →
+                {connecting ? 'Connecting…' : `Complete Connection & Connect to ${projectName} →`}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function IntegrationsPage() {
+  return (
+    <Suspense fallback={<div className="section-card py-10 text-center text-[13px] text-[#8B9BB4]">Loading registry…</div>}>
+      <IntegrationsInner />
+    </Suspense>
   );
 }
 

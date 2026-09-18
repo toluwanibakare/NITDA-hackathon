@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BootLoader, LiveClock } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
@@ -39,11 +39,14 @@ export function useDevMode() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const router = useRouter();
   const [booted, setBooted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [engineOnline, setEngineOnline] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [devMode, setDevMode] = useState(false);
+  const [search, setSearch] = useState('');
+  const [logoOk, setLogoOk] = useState(true);
 
   useEffect(() => {
     try {
@@ -109,26 +112,54 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <BootLoader done={booted} />
       <NotificationToastContainer />
 
-      <div className="min-h-screen bg-[#12131C] text-[#F2F4F8] flex flex-col md:flex-row">
-        {/* ═══ LEFT VERTICAL SIDEBAR (Matching Reference Image) ═══ */}
-        <aside className="w-full md:w-64 shrink-0 bg-[#161726] border-r border-white/5 flex flex-col justify-between p-5 z-30">
-          <div>
-            {/* Top Brand Logo */}
-            <Link href="/dashboard" className="flex items-center gap-3 px-2 py-2 mb-8">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#5B50E6] to-[#FF2A6D] text-white shadow-lg shadow-[#5B50E6]/30">
-                <Icon d={paths.shield} size={20} />
-              </div>
-              <span className="text-[18px] font-bold text-white tracking-tight">ThirdEye</span>
+      <div className="min-h-screen w-full max-w-[100vw] overflow-x-clip bg-[#12131C] text-[#F2F4F8] md:flex">
+        {/* Mobile overlay */}
+        {mobileOpen && (
+          <button
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+          />
+        )}
+        {/* ═══ LEFT VERTICAL SIDEBAR — fixed full-height, no horizontal scroll ═══ */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-40 flex h-screen max-h-screen w-64 shrink-0 flex-col justify-between overflow-y-auto overflow-x-hidden border-r border-white/5 bg-[#161726] p-5 transition-transform duration-200 md:translate-x-0 ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="min-h-0">
+            {/* Top Brand Logo — raw ThirdEye mark, no container */}
+            <Link href="/dashboard" className="group mb-8 flex items-center gap-3 px-2 py-2" aria-label="ThirdEye dashboard">
+              {logoOk ? (
+                <Image
+                  src="/logo.jpeg"
+                  alt="ThirdEye"
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto object-contain transition-transform group-active:scale-95"
+                  onError={() => setLogoOk(false)}
+                  priority
+                />
+              ) : (
+                <span className="text-white">
+                  <Icon d={paths.shield} size={28} />
+                </span>
+              )}
+              <span className="leading-none">
+                <span className="block text-[18px] font-bold tracking-tight text-white">ThirdEye</span>
+                <span className="mt-0.5 block text-[10px] font-medium tracking-[0.08em] text-[#8E92A4]">TRUST LAYER</span>
+              </span>
             </Link>
 
             {/* Vertical Navigation Links */}
             <nav className="space-y-1.5" aria-label="Sidebar console navigation">
               {NAV.map((n) => {
-                const active = path === n.href || (n.href === '/dashboard' && path === '/dashboard');
+                const active = path === n.href || path?.startsWith(`${n.href}/`);
                 return (
                   <Link
                     key={n.href}
                     href={n.href}
+                    aria-current={active ? 'page' : undefined}
                     className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-[14px] font-medium transition-all ${
                       active
                         ? 'bg-[#5B50E6] text-white font-semibold shadow-lg shadow-[#5B50E6]/40'
@@ -150,6 +181,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       size={18}
                     />
                     <span>{n.label}</span>
+                    {n.href === '/events' && !engineOnline && (
+                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#FFC42E]" title="Offline — demo data" />
+                    )}
                   </Link>
                 );
               })}
@@ -162,7 +196,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={toggleDevMode}
               className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[12px] font-semibold border transition-all ${
                 devMode
-                  ? 'border-[#5B50E6] bg-[#5B50E6]/20 text-[#8E92A4]'
+                  ? 'border-[#5B50E6] bg-[#5B50E6]/20 text-white'
                   : 'border-white/10 bg-white/5 text-[#8E92A4]'
               }`}
             >
@@ -173,55 +207,97 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
 
             <div className="flex items-center gap-3 px-2 py-1">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#5B50E6] to-[#00CEC9] flex items-center justify-center text-white font-bold text-[13px]">
+              <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-tr from-[#5B50E6] to-[#00CEC9] flex items-center justify-center text-white font-bold text-[13px]">
                 SX
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[13px] font-semibold text-white truncate">ShopX Admin</div>
                 <div className="text-[11px] text-[#8E92A4] truncate">shopx@thirdeye.sec</div>
               </div>
+              <span className={`h-2 w-2 shrink-0 rounded-full ${engineOnline ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`} title={engineOnline ? 'Engine online' : 'Engine offline'} />
             </div>
           </div>
         </aside>
 
-        {/* ═══ MAIN CONTENT AREA + TOP HEADER BAR ═══ */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* ═══ MAIN CONTENT AREA + TOP HEADER BAR — offset for fixed sidebar ═══ */}
+        <div className="flex min-h-screen w-full min-w-0 max-w-full flex-1 flex-col overflow-x-clip md:pl-64">
           {/* Top Header Bar */}
-          <header className="sticky top-0 z-20 bg-[#161726]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center justify-between gap-4">
-            <h1 className="text-[24px] font-bold text-white tracking-tight">
-              {path === '/dashboard'
-                ? 'Dashboard'
-                : path === '/integrations'
-                ? 'Integrations Marketplace'
-                : path === '/events'
-                ? 'Security Events Stream'
-                : path === '/simulator'
-                ? 'Attack Simulator'
-                : 'Settings & Gateway Policies'}
-            </h1>
-
-            <div className="flex items-center gap-3">
-              {/* Top Search Pill matching image */}
-              <div className="relative hidden sm:block w-64">
-                <input
-                  type="text"
-                  placeholder="Search APIs or logs…"
-                  className="w-full rounded-full border border-white/10 bg-[#1C1D2A] px-4 py-2 pl-9 text-[13px] text-white outline-none placeholder:text-[#8E92A4] focus:border-[#5B50E6]"
-                />
-                <span className="absolute left-3 top-2.5 text-[#8E92A4]">
-                  <Icon d={paths.grid} size={14} />
-                </span>
+          <header className={`sticky top-0 z-20 border-b border-white/5 bg-[#161726]/80 px-4 py-3 backdrop-blur-md transition-shadow sm:px-6 sm:py-4 ${scrolled ? 'shadow-[0_12px_32px_-16px_rgba(0,0,0,0.8)]' : ''}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <button
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Open menu"
+                  className="rounded-xl border border-white/10 bg-white/5 p-2 text-[#B8C4D8] md:hidden"
+                >
+                  <Icon d={paths.grid} size={16} />
+                </button>
+                <h1 className="truncate text-[20px] font-bold tracking-tight text-white sm:text-[24px]">
+                  {path === '/dashboard'
+                    ? 'Dashboard'
+                    : path === '/integrations'
+                    ? 'Integrations Marketplace'
+                    : path?.startsWith('/integrations/')
+                    ? 'Trust Profile'
+                    : path === '/events'
+                    ? 'Security Events Stream'
+                    : path === '/simulator'
+                    ? 'Attack Simulator'
+                    : 'Settings & Gateway Policies'}
+                </h1>
               </div>
 
-              <span className="chip !text-[11px] !border-[#10B981]/30 !bg-[#10B981]/10 !text-[#10B981]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                {engineOnline ? 'Shield Active' : 'Offline'}
-              </span>
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                <form
+                  className="relative hidden w-56 sm:block lg:w-64"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const q = search.trim();
+                    router.push(q ? `/integrations?q=${encodeURIComponent(q)}` : '/integrations');
+                    setMobileOpen(false);
+                  }}
+                >
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    type="text"
+                    placeholder="Search APIs or logs…"
+                    aria-label="Search integrations"
+                    className="w-full rounded-full border border-white/10 bg-[#1C1D2A] px-4 py-2 pl-9 text-[13px] text-white outline-none placeholder:text-[#8E92A4] focus:border-[#5B50E6]"
+                  />
+                  <span className="absolute left-3 top-2.5 text-[#8E92A4]">
+                    <Icon d={paths.grid} size={14} />
+                  </span>
+                </form>
+                <span className="hidden lg:inline-flex"><LiveClock /></span>
+                <span className={`chip !text-[11px] ${engineOnline ? '!border-[#10B981]/30 !bg-[#10B981]/10 !text-[#10B981]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${engineOnline ? 'bg-[#10B981]' : 'bg-[#FFC42E]'}`} />
+                  {engineOnline ? 'Shield Active' : 'Demo'}
+                </span>
+              </div>
             </div>
+            {/* Mobile search */}
+            <form
+              className="mt-3 sm:hidden"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = search.trim();
+                router.push(q ? `/integrations?q=${encodeURIComponent(q)}` : '/integrations');
+              }}
+            >
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                type="text"
+                placeholder="Search APIs or logs…"
+                aria-label="Search integrations"
+                className="w-full rounded-xl border border-white/10 bg-[#1C1D2A] px-4 py-2 text-[13px] text-white outline-none placeholder:text-[#8E92A4] focus:border-[#5B50E6]"
+              />
+            </form>
           </header>
 
           {/* Main Dashboard / Page Viewport */}
-          <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
+          <main className="w-full min-w-0 max-w-full flex-1 overflow-x-clip p-4 sm:p-6 md:p-8">{children}</main>
         </div>
       </div>
     </>

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { EventTimeline } from '@/components/EventTimeline';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, RiskRing, StatusDot } from '@/components/RiskBadge';
@@ -222,16 +222,29 @@ const thirdeye = new ThirdEye({
                 </div>
               ))}
             </div>
-            <div className="mt-4 h-[150px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={series} margin={{ top: 5, right: 5, bottom: 0, left: -18 }}>
-                  <XAxis dataKey="t" tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: '#0E1A33', border: '1px solid rgba(245,249,255,0.14)', borderRadius: 12, fontSize: 12, color: '#F5F9FF' }} />
-                  <Area type="monotone" dataKey="v" stroke={c} strokeWidth={2} fill={`${c}22`} />
+            <div className="mt-4 h-[220px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <AreaChart data={series} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+                  <defs>
+                    <linearGradient id="riskVol" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={c} stopOpacity={0.45} />
+                      <stop offset="100%" stopColor={c} stopOpacity={0.04} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="rgba(245,249,255,0.06)" vertical={false} />
+                  <XAxis dataKey="t" tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} width={44} />
+                  <Tooltip
+                    contentStyle={{ background: '#0E1A33', border: '1px solid rgba(245,249,255,0.14)', borderRadius: 12, fontSize: 12, color: '#F5F9FF' }}
+                    labelStyle={{ color: '#8B9BB4' }}
+                    formatter={(v: unknown) => [`${v}/min`, 'Volume']}
+                  />
+                  <ReferenceLine y={normal} stroke="#19D98A" strokeDasharray="4 4" strokeOpacity={0.6} label={{ value: 'normal', fill: '#19D98A', fontSize: 10, position: 'insideTopRight' }} />
+                  <Area type="monotone" dataKey="v" stroke={c} strokeWidth={2.5} fill="url(#riskVol)" dot={false} activeDot={{ r: 4, fill: c, stroke: '#fff', strokeWidth: 1 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+            {!series.length && <div className="body-muted mt-2 text-center text-[12px]">No traffic history yet — showing baseline.</div>}
           </div>
 
           <div className="section-card--numbered overflow-hidden">

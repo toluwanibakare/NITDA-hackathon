@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { EventTimeline } from '@/components/EventTimeline';
+import { IntegrationMap } from '@/components/IntegrationMap';
 import { EmptyState } from '@/components/chrome';
 import { Icon, paths } from '@/components/icons';
 import {
@@ -8,14 +9,17 @@ import {
   downloadAuditExport,
   getEventIntegrationId,
   normaliseEvent,
+  normaliseIntegration,
   type AuditVerifyResult,
+  type IntegrationRow,
   type SecEvent,
 } from '@/lib/api';
-import { MOCK_EVENTS } from '@/lib/mock';
+import { MOCK_EVENTS, MOCK_INTEGRATIONS } from '@/lib/mock';
 import { isSupabaseEnvConfigured, supabaseBrowser } from '@/lib/supabaseClient';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<SecEvent[]>(MOCK_EVENTS);
+  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
   const [filter, setFilter] = useState('all');
   const [live, setLive] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -29,9 +33,15 @@ export default function EventsPage() {
       setEvents((r.data.length ? r.data : MOCK_EVENTS).map(normaliseEvent));
       setLive(r.live);
     });
+    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
+    });
     const poll = setInterval(() => {
       apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then((r) => {
         if (r.data.length) setEvents(r.data.map(normaliseEvent));
+      });
+      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+        if (r.data.length) setItems(r.data.map(normaliseIntegration));
       });
     }, 5000);
     let chan: { unsubscribe: () => void } | null = null;
@@ -107,29 +117,10 @@ export default function EventsPage() {
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-              <button
-                onClick={verifyChain}
-                disabled={verifying}
-                className="btn-ghost flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold"
-              >
-                <Icon d={paths.check} size={15} />
-                {verifying ? 'Verifying…' : 'Verify SHA-256'}
-              </button>
-              <button
-                onClick={() => doExport('csv')}
-                disabled={exporting !== null}
-                className="btn-accent flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
-              >
-                <Icon d={paths.arrow} size={14} className="rotate-90" />
-                {exporting === 'csv' ? 'Exporting…' : 'Export CSV'}
-              </button>
-              <button
-                onClick={() => doExport('json')}
-                disabled={exporting !== null}
-                className="btn-primary flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
-              >
-                {exporting === 'json' ? 'Exporting…' : 'Export JSON'}
-              </button>
+              <span className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}>
+                <span className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`} />
+                {live ? 'LIVE' : 'DEMO'}
+              </span>
             </div>
           </div>
         </div>
@@ -164,6 +155,39 @@ export default function EventsPage() {
           </div>
         </div>
       )}
+
+      {/* ═══ Live Integration Topology ═══ */}
+      <IntegrationMap
+        items={items}
+        onSelect={(id) => setFilter((prev) => (prev === id ? 'all' : id))}
+      />
+
+      {/* ═══ Audit actions ═══ */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <button
+          onClick={verifyChain}
+          disabled={verifying}
+          className="btn-ghost flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold"
+        >
+          <Icon d={paths.check} size={15} />
+          {verifying ? 'Verifying…' : 'Verify SHA-256'}
+        </button>
+        <button
+          onClick={() => doExport('csv')}
+          disabled={exporting !== null}
+          className="btn-accent flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
+        >
+          <Icon d={paths.arrow} size={14} className="rotate-90" />
+          {exporting === 'csv' ? 'Exporting…' : 'Export CSV'}
+        </button>
+        <button
+          onClick={() => doExport('json')}
+          disabled={exporting !== null}
+          className="btn-primary flex-1 sm:flex-none justify-center !px-3.5 !py-2 !text-[12.5px] font-semibold disabled:opacity-60"
+        >
+          {exporting === 'json' ? 'Exporting…' : 'Export JSON'}
+        </button>
+      </div>
 
       {/* ═══ Filters ═══ */}
       <div className="pill-nav flex-nowrap sm:flex-wrap overflow-x-auto pb-1 max-w-full">

@@ -31,18 +31,22 @@ export default function SimulatorPage() {
     setLog([]);
     setStep(-1);
     // Backend: POST /api/simulator/start {integrationId, attack} → {sessionId, integrationId, status, phases}
+    let activePhases: SimulatorPhase[] = FALLBACK_PHASES;
     try {
       const started = await api<SimulatorStartResponse>('/api/simulator/start', { method: 'POST', body: JSON.stringify({ integrationId, attack: 'credential_compromise' }) });
-      if (started.phases?.length) setPhases(started.phases);
+      if (started.phases?.length) {
+        activePhases = started.phases;
+        setPhases(started.phases);
+      }
       setSessionId(started.sessionId ?? null);
       setLiveEngine(true);
       void getSimulatorTarget(started, integrationId);
     } catch {
+      activePhases = FALLBACK_PHASES;
       setPhases(FALLBACK_PHASES);
       setSessionId(null);
       setLiveEngine(false);
     }
-    const activePhases = phases.length ? phases : FALLBACK_PHASES;
     for (let i = 0; i < activePhases.length; i++) {
       if (stopRef.current) break;
       setStep(i);
