@@ -27,21 +27,59 @@ export interface TrustProfile {
   expectedRequestRate: number;
 }
 
-export interface IntegrationProfile {
-  id: string;
-  name: string;
-  purpose: string;
+export interface IntegrationProfile extends TrustProfile {
   status: IntegrationStatus;
   riskScore: number;
-  expectedRequestRate: number;
   currentRequestRate?: number;
-  allowedEndpoints: string[];
-  allowedMethods: string[];
-  allowedFields: string[];
-  forbiddenFields: string[];
-  testApiKey: string;
+  allowedFields?: string[];
+  forbiddenFields?: string[];
+  testApiKey?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+function normalizeStringList(value: unknown): string[] {
+  const items = Array.isArray(value) ? value : [];
+  return [...new Set(items.map(item => String(item).trim()).filter(Boolean))];
+}
+
+export function normalizeTrustProfile(profile?: Partial<TrustProfile> | null): TrustProfile {
+  if (!profile) {
+    throw new Error('Trust profile is required');
+  }
+
+  const source = profile as Record<string, unknown>;
+
+  const allowedEndpoints = normalizeStringList(
+    source.allowedEndpoints ?? source.allowed_endpoints ?? []
+  ).map(endpoint => {
+    const value = String(endpoint).trim();
+    if (!value) return value;
+    return value.startsWith('/') ? value : `/${value}`;
+  });
+
+  const allowedMethods = normalizeStringList(
+    source.allowedMethods ?? source.allowed_methods ?? ['GET', 'POST']
+  ).map(method => String(method).trim().toUpperCase());
+
+  const allowedData = normalizeStringList(source.allowedData ?? source.allowed_data ?? []).map(value =>
+    String(value).trim().toLowerCase()
+  );
+
+  const forbiddenData = normalizeStringList(source.forbiddenData ?? source.forbidden_data ?? []).map(value =>
+    String(value).trim().toLowerCase()
+  );
+
+  return {
+    id: String(source.id ?? source.integration_id ?? '').trim(),
+    name: String(source.name ?? 'Untitled Integration').trim(),
+    purpose: String(source.purpose ?? '').trim(),
+    allowedEndpoints,
+    allowedMethods,
+    allowedData,
+    forbiddenData,
+    expectedRequestRate: Number(source.expectedRequestRate ?? source.expected_request_rate ?? 100),
+  };
 }
 
 export interface CheckRequest {

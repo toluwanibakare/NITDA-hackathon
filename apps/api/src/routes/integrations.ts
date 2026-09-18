@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { supabase, isSupabaseConfigured } from '../supabase.js';
 import { demoEvents } from './events.js';
+import { getAllTrustProfiles, getTrustProfileById } from '../lib/trustProfileStore.js';
 
 export const integrationsRouter = Router();
 
@@ -78,7 +79,30 @@ integrationsRouter.get('/', async (req: Request, res: Response) => {
     }
 
     if (list.length === 0) {
-      list = Object.values(fallbackIntegrations).map(formatIntegration);
+      const profiles = await getAllTrustProfiles();
+      list = profiles.map(profile => ({
+        id: profile.id,
+        name: profile.name,
+        purpose: profile.purpose,
+        status: fallbackIntegrations[profile.id]?.status || 'ACTIVE',
+        risk_score: fallbackIntegrations[profile.id]?.risk_score ?? 0,
+        riskScore: fallbackIntegrations[profile.id]?.riskScore ?? 0,
+        expected_request_rate: profile.expectedRequestRate,
+        expectedRequestRate: profile.expectedRequestRate,
+        currentRequestRate: profile.expectedRequestRate,
+        requestsPerMin: profile.expectedRequestRate,
+        allowed_endpoints: profile.allowedEndpoints,
+        allowedEndpoints: profile.allowedEndpoints,
+        allowed_methods: profile.allowedMethods,
+        allowedMethods: profile.allowedMethods,
+        allowed_data: profile.allowedData,
+        allowedData: profile.allowedData,
+        forbidden_data: profile.forbiddenData,
+        forbiddenData: profile.forbiddenData,
+        created_at: fallbackIntegrations[profile.id]?.created_at || new Date().toISOString(),
+        updated_at: fallbackIntegrations[profile.id]?.updated_at || new Date().toISOString(),
+        lastActivity: fallbackIntegrations[profile.id]?.updated_at || new Date().toISOString(),
+      }));
       if (status) {
         const filterStatus = String(status).toUpperCase();
         list = list.filter(i => i.status === filterStatus);
@@ -120,7 +144,7 @@ integrationsRouter.get('/:id', async (req: Request, res: Response) => {
     let recentViolations: any[] = [];
 
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('integrations').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('integrations').select('*').eq('id', id).maybeSingle();
       if (!error && data) {
         integration = data;
         const { data: events } = await supabase
@@ -134,7 +158,23 @@ integrationsRouter.get('/:id', async (req: Request, res: Response) => {
     }
 
     if (!integration) {
-      integration = fallbackIntegrations[id];
+      integration = fallbackIntegrations[id] ?? null;
+    }
+
+    if (!integration) {
+      const storedProfile = await getTrustProfileById(id);
+      if (storedProfile) {
+        integration = {
+          ...fallbackIntegrations[id],
+          ...storedProfile,
+          id,
+          allowed_endpoints: storedProfile.allowedEndpoints,
+          allowed_methods: storedProfile.allowedMethods,
+          allowed_data: storedProfile.allowedData,
+          forbidden_data: storedProfile.forbiddenData,
+          expected_request_rate: storedProfile.expectedRequestRate,
+        };
+      }
     }
 
     if (!integration) {

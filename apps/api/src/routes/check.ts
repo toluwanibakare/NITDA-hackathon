@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from '../supabase.js';
 import { CheckRequest } from '@thirdeye/shared';
 import { fallbackIntegrations } from './integrations.js';
 import { demoEvents } from './events.js';
+import { getTrustProfileById } from '../lib/trustProfileStore.js';
 
 export const checkRouter = Router();
 
@@ -26,13 +27,15 @@ checkRouter.post('/', async (req: Request, res: Response) => {
     let integration: any = null;
 
     if (isSupabaseConfigured) {
-      const { data } = await supabase.from('integrations').select('*').eq('id', body.integrationId).single();
-      integration = data;
+      const { data } = await supabase.from('integrations').select('*').eq('id', body.integrationId).maybeSingle();
+      integration = data ?? null;
     }
 
-    if (!integration && fallbackIntegrations[body.integrationId]) {
-      integration = fallbackIntegrations[body.integrationId];
+    if (!integration) {
+      integration = fallbackIntegrations[body.integrationId] ?? null;
     }
+
+    const profile = await getTrustProfileById(body.integrationId);
 
     // Direct block if integration is explicitly quarantined
     if (integration?.status === 'QUARANTINED') {
@@ -50,19 +53,6 @@ checkRouter.post('/', async (req: Request, res: Response) => {
         reason: `Integration ${body.integrationId} is currently quarantined. Outbound requests blocked.`,
       });
     }
-
-    const profile = integration
-      ? {
-          id: integration.id,
-          name: integration.name,
-          purpose: integration.purpose,
-          allowedEndpoints: integration.allowed_endpoints || [],
-          allowedMethods: integration.allowed_methods || ['GET', 'POST'],
-          allowedData: integration.allowed_data || [],
-          forbiddenData: integration.forbidden_data || [],
-          expectedRequestRate: integration.expected_request_rate || 100,
-        }
-      : null;
 
     const result = checkRequestPure(body, profile);
 
