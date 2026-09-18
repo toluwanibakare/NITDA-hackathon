@@ -88,8 +88,8 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-[#071426] text-[#F5F9FF] selection:bg-[#5B50E6]/40 selection:text-white">
       {/* ── Top Header Bar ── */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#071426]/90 px-4 py-3 backdrop-blur-xl sm:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#071426]/90 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-6 xl:px-8">
+        <div className="flex w-full items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="group flex items-center gap-3">
               <Image
@@ -157,10 +157,10 @@ export default function DocsPage() {
       </header>
 
       {/* ── Main Layout: Sidebar + Content ── */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
+      <div className="w-full px-4 py-8 sm:px-6 lg:pl-5 lg:pr-8 xl:pl-6 xl:pr-10">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[250px_1fr] xl:grid-cols-[270px_1fr] lg:gap-10 xl:gap-12">
           {/* Left Navigation Sidebar */}
-          <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] overflow-y-auto lg:block">
+          <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] overflow-y-auto lg:block pr-3">
             <div className="mb-4">
               <div className="relative">
                 <input
@@ -214,7 +214,7 @@ export default function DocsPage() {
           </aside>
 
           {/* Right Main Content Stream */}
-          <main className="min-w-0 max-w-4xl space-y-16 pb-24">
+          <main className="min-w-0 max-w-4xl xl:max-w-5xl space-y-16 pb-24">
             {/* Hero / Intro Banner */}
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0E1A33] via-[#071426] to-[#12233F] p-6 sm:p-8 shadow-2xl">
               <div className="relative z-10">
