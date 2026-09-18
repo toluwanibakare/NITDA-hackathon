@@ -10,10 +10,7 @@ export const supabaseBrowser = (): SupabaseClient => {
     throw new Error('Supabase env not configured');
   }
   if (!cached) {
-    cached = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
+    cached = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
   }
   return cached;
 };

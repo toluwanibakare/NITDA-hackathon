@@ -8,7 +8,7 @@ const CODE_SAMPLES = {
   ts: {
     filename: 'shopx-integration.ts',
     lang: 'TYPESCRIPT / NODE.JS',
-    code: `import { ThirdEye } from '@thirdeye/sdk';
+    code: `import { ThirdEye } from '@the-third-eye/sdk';
 
 // Initialize ShopX integration via ThirdEye Custom Gateway
 const thirdeye = new ThirdEye({
@@ -83,7 +83,7 @@ export function CodeTypingPreview() {
     if (!el) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const entry = entries[0];
         if (entry.isIntersecting && !hasStartedRef.current) {
           hasStartedRef.current = true;
@@ -108,7 +108,7 @@ export function CodeTypingPreview() {
 
     if (displayedLength < fullCode.length) {
       const timeout = setTimeout(() => {
-        setDisplayedLength((prev) => prev + Math.floor(Math.random() * 3) + 1);
+        setDisplayedLength(prev => prev + Math.floor(Math.random() * 3) + 1);
       }, 16);
       return () => clearTimeout(timeout);
     } else {
@@ -133,7 +133,10 @@ export function CodeTypingPreview() {
   };
 
   return (
-    <div ref={containerRef} className="panel relative overflow-hidden rounded-2xl border border-white/15 bg-[#060D1A] shadow-2xl">
+    <div
+      ref={containerRef}
+      className="panel relative overflow-hidden rounded-2xl border border-white/15 bg-[#060D1A] shadow-2xl"
+    >
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#0A1324] px-4 py-3">
         {/* Language Tabs */}
@@ -141,7 +144,9 @@ export function CodeTypingPreview() {
           <button
             onClick={() => handleTabChange('ts')}
             className={`rounded-lg px-3 py-1 text-[12px] font-semibold transition-all ${
-              activeTab === 'ts' ? 'bg-[#1677FF] text-white shadow-md' : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
+              activeTab === 'ts'
+                ? 'bg-[#1677FF] text-white shadow-md'
+                : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
             }`}
           >
             TypeScript / Node
@@ -149,7 +154,9 @@ export function CodeTypingPreview() {
           <button
             onClick={() => handleTabChange('py')}
             className={`rounded-lg px-3 py-1 text-[12px] font-semibold transition-all ${
-              activeTab === 'py' ? 'bg-[#1677FF] text-white shadow-md' : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
+              activeTab === 'py'
+                ? 'bg-[#1677FF] text-white shadow-md'
+                : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
             }`}
           >
             Python SDK
@@ -157,7 +164,9 @@ export function CodeTypingPreview() {
           <button
             onClick={() => handleTabChange('curl')}
             className={`rounded-lg px-3 py-1 text-[12px] font-semibold transition-all ${
-              activeTab === 'curl' ? 'bg-[#1677FF] text-white shadow-md' : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
+              activeTab === 'curl'
+                ? 'bg-[#1677FF] text-white shadow-md'
+                : 'text-[#8494AD] hover:bg-white/5 hover:text-white'
             }`}
           >
             cURL / Gateway
@@ -197,7 +206,9 @@ export function CodeTypingPreview() {
 
         {/* Progress indicator */}
         <div className="absolute bottom-3 right-4 flex items-center gap-2 text-[10.5px] font-mono text-[#6E7E99]">
-          <span className={`h-1.5 w-1.5 rounded-full ${isTyping ? 'bg-[#5B9CFF] animate-ping' : 'bg-[#10B981]'}`} />
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${isTyping ? 'bg-[#5B9CFF] animate-ping' : 'bg-[#10B981]'}`}
+          />
           <span>{isTyping ? 'TYPING...' : 'READY'}</span>
         </div>
       </div>

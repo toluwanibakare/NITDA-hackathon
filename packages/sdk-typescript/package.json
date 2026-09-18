@@ -1,0 +1,43 @@
+{
+  "name": "@the-third-eye/sdk",
+  "version": "0.1.0",
+  "description": "ThirdEye SDK — guard third-party integrations with continuous trust scoring",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test dist/test/*.test.js",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "keywords": [
+    "thirdeye",
+    "security",
+    "third-party",
+    "trust",
+    "risk-engine"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toluwanibakare/thirdeye.git",
+    "directory": "packages/sdk-typescript"
+  }
+}

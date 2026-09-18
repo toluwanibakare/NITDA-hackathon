@@ -69,12 +69,67 @@ export const MOCK_INTEGRATIONS: IntegrationRow[] = [
 
 const now = Date.now();
 export const MOCK_EVENTS: SecEvent[] = [
-  { id: 'e1', integration_id: 'analytics_001', event_type: 'QUARANTINED', endpoint: '/customers/payment-details', risk_score: 95, action: 'QUARANTINE', reason: 'Analytics integration attempted to access payment information outside registered purpose. 17.8x normal traffic.', created_at: new Date(now - 40 * 1000).toISOString() },
-  { id: 'e2', integration_id: 'analytics_001', event_type: 'ABNORMAL_VOLUME', endpoint: '/customers/payment-details', risk_score: 88, action: 'BLOCK', reason: '1780 req/min vs normal 100 req/min', created_at: new Date(now - 90 * 1000).toISOString() },
-  { id: 'e3', integration_id: 'analytics_001', event_type: 'FORBIDDEN_DATA', endpoint: '/customers/payment-details', risk_score: 72, action: 'RATE_LIMIT', reason: 'Forbidden data requested: payment, phone, address', created_at: new Date(now - 140 * 1000).toISOString() },
-  { id: 'e4', integration_id: 'analytics_001', event_type: 'PURPOSE_VIOLATION', endpoint: '/customers/profile', risk_score: 45, action: 'MONITOR', reason: 'Endpoint outside allowed scope for purpose "Collect anonymous usage statistics"', created_at: new Date(now - 200 * 1000).toISOString() },
-  { id: 'e5', integration_id: 'marketing_001', event_type: 'UNKNOWN_ENDPOINT', endpoint: '/campaigns/draft', risk_score: 22, action: 'ALLOW', reason: 'Endpoint drift within tolerance', created_at: new Date(now - 320 * 1000).toISOString() },
-  { id: 'e6', integration_id: 'delivery_001', event_type: 'ABNORMAL_VOLUME', endpoint: '/delivery/status', risk_score: 12, action: 'ALLOW', reason: 'Minor burst, within seasonal tolerance', created_at: new Date(now - 500 * 1000).toISOString() },
+  {
+    id: 'e1',
+    integration_id: 'analytics_001',
+    event_type: 'QUARANTINED',
+    endpoint: '/customers/payment-details',
+    risk_score: 95,
+    action: 'QUARANTINE',
+    reason:
+      'Analytics integration attempted to access payment information outside registered purpose. 17.8x normal traffic.',
+    created_at: new Date(now - 40 * 1000).toISOString(),
+  },
+  {
+    id: 'e2',
+    integration_id: 'analytics_001',
+    event_type: 'ABNORMAL_VOLUME',
+    endpoint: '/customers/payment-details',
+    risk_score: 88,
+    action: 'BLOCK',
+    reason: '1780 req/min vs normal 100 req/min',
+    created_at: new Date(now - 90 * 1000).toISOString(),
+  },
+  {
+    id: 'e3',
+    integration_id: 'analytics_001',
+    event_type: 'FORBIDDEN_DATA',
+    endpoint: '/customers/payment-details',
+    risk_score: 72,
+    action: 'RATE_LIMIT',
+    reason: 'Forbidden data requested: payment, phone, address',
+    created_at: new Date(now - 140 * 1000).toISOString(),
+  },
+  {
+    id: 'e4',
+    integration_id: 'analytics_001',
+    event_type: 'PURPOSE_VIOLATION',
+    endpoint: '/customers/profile',
+    risk_score: 45,
+    action: 'MONITOR',
+    reason: 'Endpoint outside allowed scope for purpose "Collect anonymous usage statistics"',
+    created_at: new Date(now - 200 * 1000).toISOString(),
+  },
+  {
+    id: 'e5',
+    integration_id: 'marketing_001',
+    event_type: 'UNKNOWN_ENDPOINT',
+    endpoint: '/campaigns/draft',
+    risk_score: 22,
+    action: 'ALLOW',
+    reason: 'Endpoint drift within tolerance',
+    created_at: new Date(now - 320 * 1000).toISOString(),
+  },
+  {
+    id: 'e6',
+    integration_id: 'delivery_001',
+    event_type: 'ABNORMAL_VOLUME',
+    endpoint: '/delivery/status',
+    risk_score: 12,
+    action: 'ALLOW',
+    reason: 'Minor burst, within seasonal tolerance',
+    created_at: new Date(now - 500 * 1000).toISOString(),
+  },
 ];
 
 export function timeAgo(iso: string): string {

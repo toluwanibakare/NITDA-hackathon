@@ -2,7 +2,16 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { EventTimeline } from '@/components/EventTimeline';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge, RiskRing, StatusDot } from '@/components/RiskBadge';
@@ -41,10 +50,10 @@ export default function IntegrationDetail() {
 
   const load = useCallback(async () => {
     const [p, h, ev] = await Promise.all([
-      apiSafe<IntegrationDetailResponse | IntegrationRow>(
-        `/api/integrations/${id}`,
-        { profile: MOCK_INTEGRATIONS.find((m) => m.id === id) ?? MOCK_INTEGRATIONS[2], recentViolations: MOCK_EVENTS } as IntegrationDetailResponse,
-      ),
+      apiSafe<IntegrationDetailResponse | IntegrationRow>(`/api/integrations/${id}`, {
+        profile: MOCK_INTEGRATIONS.find(m => m.id === id) ?? MOCK_INTEGRATIONS[2],
+        recentViolations: MOCK_EVENTS,
+      } as IntegrationDetailResponse),
       apiSafe<HistoryResponse>(`/api/integrations/${id}/history`, {
         integrationId: id as string,
         normalRate: 100,
@@ -52,7 +61,10 @@ export default function IntegrationDetail() {
         currentRisk: 8,
         history: [],
       }),
-      apiSafe<SecEvent[]>(`/api/security-events?integrationId=${id}&limit=10`, MOCK_EVENTS.filter((e) => e.integration_id === id)),
+      apiSafe<SecEvent[]>(
+        `/api/security-events?integrationId=${id}&limit=10`,
+        MOCK_EVENTS.filter(e => e.integration_id === id)
+      ),
     ]);
     const prof = (p.data as { profile?: IntegrationRow }).profile ?? (p.data as IntegrationRow);
     setProfile(prof);
@@ -78,7 +90,12 @@ export default function IntegrationDetail() {
       await apiSafe(
         `/api/integrations/${id}/${kind}`,
         {},
-        { method: 'POST', body: JSON.stringify(kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}) },
+        {
+          method: 'POST',
+          body: JSON.stringify(
+            kind === 'quarantine' ? { reason: 'Manual quarantine from trust profile' } : {}
+          ),
+        }
       );
       await load();
     } finally {
@@ -86,7 +103,15 @@ export default function IntegrationDetail() {
     }
   }
 
-  if (!profile) return <div className="section-card flex items-center justify-center py-20 text-[14px]" style={{ color: '#8B9BB4' }}>Loading trust profile…</div>;
+  if (!profile)
+    return (
+      <div
+        className="section-card flex items-center justify-center py-20 text-[14px]"
+        style={{ color: '#8B9BB4' }}
+      >
+        Loading trust profile…
+      </div>
+    );
 
   const score = getRiskScore(profile);
   const c = riskColor(score);
@@ -94,10 +119,12 @@ export default function IntegrationDetail() {
   const normal = behaviour ? getBehaviourNormal(behaviour, fallbackNormal) : fallbackNormal;
   const currentFromProfile = (profile.requestsPerMin ?? profile.currentRequestRate ?? normal) as number;
   const current = behaviour ? getBehaviourCurrent(behaviour, currentFromProfile) : currentFromProfile;
-  const deviation = behaviour ? getBehaviourDeviation(behaviour, normal, current) : Number((current / Math.max(1, normal)).toFixed(1));
+  const deviation = behaviour
+    ? getBehaviourDeviation(behaviour, normal, current)
+    : Number((current / Math.max(1, normal)).toFixed(1));
 
   const series = history?.history?.length
-    ? history.history.map((p) => ({ t: p.t, v: getHistoryVolume(p) }))
+    ? history.history.map(p => ({ t: p.t, v: getHistoryVolume(p) }))
     : [
         { t: '-50m', v: Math.round(normal * 0.94) },
         { t: '-40m', v: Math.round(normal * 1.04) },
@@ -112,8 +139,15 @@ export default function IntegrationDetail() {
   return (
     <div className="stagger space-y-6">
       {/* Back button */}
-      <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-mono text-[12.5px] font-medium transition-colors hover:text-white" style={{ color: '#7D8DA8' }}>
-        <span className="rotate-180"><Icon d={paths.arrow} size={14} /></span> Back to registry
+      <button
+        onClick={() => router.back()}
+        className="inline-flex items-center gap-2 font-mono text-[12.5px] font-medium transition-colors hover:text-white"
+        style={{ color: '#7D8DA8' }}
+      >
+        <span className="rotate-180">
+          <Icon d={paths.arrow} size={14} />
+        </span>{' '}
+        Back to registry
       </button>
 
       {/* ═══ Developer Mode Inspection Drawer ═══ */}
@@ -122,14 +156,18 @@ export default function IntegrationDetail() {
           <div className="flex items-center justify-between border-b border-brand/20 pb-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#5B9CFF] animate-pulseDot" />
-              <span className="font-mono text-[12px] font-bold text-[#5B9CFF] uppercase">Developer Inspection Mode Active</span>
+              <span className="font-mono text-[12px] font-bold text-[#5B9CFF] uppercase">
+                Developer Inspection Mode Active
+              </span>
             </div>
             <span className="chip !border-brand/40 !text-brand">cURL & SDK INSPECTOR</span>
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
-              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">cURL Gateway Request Test:</span>
+              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">
+                cURL Gateway Request Test:
+              </span>
               <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11px] leading-relaxed text-[#00C8D7]">
                 {`curl -X POST https://gateway.thirdeye.sec/api/v1/${profile.id} \\
   -H "x-thirdeye-api-key: te_live_${profile.id}_98a7b6c5" \\
@@ -138,9 +176,11 @@ export default function IntegrationDetail() {
               </pre>
             </div>
             <div>
-              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">ShopX @thirdeye/sdk Init:</span>
+              <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">
+                ShopX @the-third-eye/sdk Init:
+              </span>
               <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11px] leading-relaxed text-[#19D98A]">
-                {`import { ThirdEye } from '@thirdeye/sdk';
+                {`import { ThirdEye } from '@the-third-eye/sdk';
 
 const thirdeye = new ThirdEye({
   apiKey: 'te_live_${profile.id}_98a7b6c5',
@@ -153,12 +193,20 @@ const thirdeye = new ThirdEye({
       )}
 
       {/* ═══ Hero ═══ */}
-      <div className="relative overflow-hidden rounded-[24px] border p-5 sm:p-6 md:p-8" style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}>
-        <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-[24px]" style={{ background: `linear-gradient(90deg, transparent, ${c}, transparent)` }} />
+      <div
+        className="relative overflow-hidden rounded-[24px] border p-5 sm:p-6 md:p-8"
+        style={{ borderColor: 'rgba(245,249,255,0.10)', background: '#0E1A33' }}
+      >
+        <div
+          className="absolute inset-x-0 top-0 h-[3px] rounded-t-[24px]"
+          style={{ background: `linear-gradient(90deg, transparent, ${c}, transparent)` }}
+        />
         <div className="flex flex-col gap-5 md:flex-row md:items-start">
           <RiskRing score={score} />
           <div className="min-w-0 flex-1">
-            <div className="section-label">{profile.id} · {live ? 'live' : 'demo data'}</div>
+            <div className="section-label">
+              {profile.id} · {live ? 'live' : 'demo data'}
+            </div>
             <h1 className="section-heading mt-1.5">{profile.name}</h1>
             <p className="section-sub mt-1.5">{profile.purpose}</p>
             <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
@@ -168,22 +216,42 @@ const thirdeye = new ThirdEye({
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
             {profile.status === 'QUARANTINED' ? (
-              <button onClick={() => act('release')} disabled={busy} className="btn-primary w-full sm:w-auto justify-center">
+              <button
+                onClick={() => act('release')}
+                disabled={busy}
+                className="btn-primary w-full sm:w-auto justify-center"
+              >
                 <Icon d={paths.check} size={15} /> {busy ? '…' : 'Release integration'}
               </button>
             ) : (
-              <button onClick={() => act('quarantine')} disabled={busy} className="btn-danger w-full sm:w-auto justify-center">
+              <button
+                onClick={() => act('quarantine')}
+                disabled={busy}
+                className="btn-danger w-full sm:w-auto justify-center"
+              >
                 <Icon d={paths.lock} size={15} /> {busy ? '…' : 'Quarantine'}
               </button>
             )}
-            <Link href="/simulator" className="btn-ghost w-full sm:w-auto justify-center"><Icon d={paths.play} size={15} /> Simulate</Link>
+            <Link href="/simulator" className="btn-ghost w-full sm:w-auto justify-center">
+              <Icon d={paths.play} size={15} /> Simulate
+            </Link>
           </div>
         </div>
         {profile.status === 'QUARANTINED' && (
-          <div className="mt-5 rounded-xl border px-4 py-3.5 sm:px-5 sm:py-4" style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}>
-            <div className="flex items-center gap-2 text-[13.5px] sm:text-[14px] font-bold" style={{ color: '#FF8090' }}><Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked</div>
+          <div
+            className="mt-5 rounded-xl border px-4 py-3.5 sm:px-5 sm:py-4"
+            style={{ borderColor: 'rgba(255,77,94,0.4)', background: 'rgba(255,77,94,0.08)' }}
+          >
+            <div
+              className="flex items-center gap-2 text-[13.5px] sm:text-[14px] font-bold"
+              style={{ color: '#FF8090' }}
+            >
+              <Icon d={paths.alert} size={16} /> Quarantined — all future requests blocked
+            </div>
             <p className="section-sub-soft mt-1.5 text-[13px] sm:text-[13.5px]">
-              Attempted data access outside registered purpose{events[0]?.reason ? `: ${events[0].reason}` : '.'} Review the violations below, then release or keep isolated.
+              Attempted data access outside registered purpose
+              {events[0]?.reason ? `: ${events[0].reason}` : '.'} Review the violations below, then release or
+              keep isolated.
             </p>
           </div>
         )}
@@ -202,7 +270,9 @@ const thirdeye = new ThirdEye({
                 { title: 'Allowed data', items: getAllowedData(profile), tone: 'good' as const },
                 { title: 'Forbidden data', items: getForbiddenData(profile), tone: 'bad' as const },
               ];
-              return scopes.map(({ title, items, tone }) => <ScopeList key={title} title={title} items={items} tone={tone} />);
+              return scopes.map(({ title, items, tone }) => (
+                <ScopeList key={title} title={title} items={items} tone={tone} />
+              ));
             })()}
           </div>
         </div>
@@ -211,14 +281,36 @@ const thirdeye = new ThirdEye({
         <div className="space-y-5">
           <div className="section-card">
             <div className="flex items-baseline justify-between">
-              <div className="section-label-soft">Behaviour — normal vs current {history ? '· live' : '· baseline'}</div>
-              <span className="mono-num text-[11.5px] sm:text-[12px] font-bold" style={{ color: c }}>{deviation}x deviation</span>
+              <div className="section-label-soft">
+                Behaviour — normal vs current {history ? '· live' : '· baseline'}
+              </div>
+              <span className="mono-num text-[11.5px] sm:text-[12px] font-bold" style={{ color: c }}>
+                {deviation}x deviation
+              </span>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2.5 text-center">
-              {[['Normal', `${normal}/min`, '#7D8DA8'], ['Current', `${current}/min`, c], ['Deviation', `${deviation}x`, c]].map(([l, v, col]) => (
-                <div key={l} className="rounded-xl border px-2 py-2.5 sm:px-3 sm:py-3 min-w-0" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}>
-                  <div className="font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.12em]" style={{ color: '#7D8DA8' }}>{l}</div>
-                  <div className="mono-num mt-1 text-[13px] sm:text-[16px] font-bold truncate" style={{ color: col as string }}>{v}</div>
+              {[
+                ['Normal', `${normal}/min`, '#7D8DA8'],
+                ['Current', `${current}/min`, c],
+                ['Deviation', `${deviation}x`, c],
+              ].map(([l, v, col]) => (
+                <div
+                  key={l}
+                  className="rounded-xl border px-2 py-2.5 sm:px-3 sm:py-3 min-w-0"
+                  style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.03)' }}
+                >
+                  <div
+                    className="font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.12em]"
+                    style={{ color: '#7D8DA8' }}
+                  >
+                    {l}
+                  </div>
+                  <div
+                    className="mono-num mt-1 text-[13px] sm:text-[16px] font-bold truncate"
+                    style={{ color: col as string }}
+                  >
+                    {v}
+                  </div>
                 </div>
               ))}
             </div>
@@ -232,23 +324,61 @@ const thirdeye = new ThirdEye({
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="rgba(245,249,255,0.06)" vertical={false} />
-                  <XAxis dataKey="t" tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fill: '#7D8DA8', fontSize: 10 }} axisLine={false} tickLine={false} width={44} />
+                  <XAxis
+                    dataKey="t"
+                    tick={{ fill: '#7D8DA8', fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fill: '#7D8DA8', fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={44}
+                  />
                   <Tooltip
-                    contentStyle={{ background: '#0E1A33', border: '1px solid rgba(245,249,255,0.14)', borderRadius: 12, fontSize: 12, color: '#F5F9FF' }}
+                    contentStyle={{
+                      background: '#0E1A33',
+                      border: '1px solid rgba(245,249,255,0.14)',
+                      borderRadius: 12,
+                      fontSize: 12,
+                      color: '#F5F9FF',
+                    }}
                     labelStyle={{ color: '#8B9BB4' }}
                     formatter={(v: unknown) => [`${v}/min`, 'Volume']}
                   />
-                  <ReferenceLine y={normal} stroke="#19D98A" strokeDasharray="4 4" strokeOpacity={0.6} label={{ value: 'normal', fill: '#19D98A', fontSize: 10, position: 'insideTopRight' }} />
-                  <Area type="monotone" dataKey="v" stroke={c} strokeWidth={2.5} fill="url(#riskVol)" dot={false} activeDot={{ r: 4, fill: c, stroke: '#fff', strokeWidth: 1 }} />
+                  <ReferenceLine
+                    y={normal}
+                    stroke="#19D98A"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    label={{ value: 'normal', fill: '#19D98A', fontSize: 10, position: 'insideTopRight' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="v"
+                    stroke={c}
+                    strokeWidth={2.5}
+                    fill="url(#riskVol)"
+                    dot={false}
+                    activeDot={{ r: 4, fill: c, stroke: '#fff', strokeWidth: 1 }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            {!series.length && <div className="body-muted mt-2 text-center text-[12px]">No traffic history yet — showing baseline.</div>}
+            {!series.length && (
+              <div className="body-muted mt-2 text-center text-[12px]">
+                No traffic history yet — showing baseline.
+              </div>
+            )}
           </div>
 
           <div className="section-card--numbered overflow-hidden">
-            <div className="relative z-10 border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+            <div
+              className="relative z-10 border-b px-5 py-4"
+              style={{ borderColor: 'rgba(245,249,255,0.08)' }}
+            >
               <div className="section-label-soft">Recent violations</div>
             </div>
             <EventTimeline events={events.slice(0, 5)} />
@@ -259,17 +389,45 @@ const thirdeye = new ThirdEye({
   );
 }
 
-function ScopeList({ title, items, tone }: { title: string; items: string[]; tone: 'good' | 'bad' | 'neutral' }) {
+function ScopeList({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: 'good' | 'bad' | 'neutral';
+}) {
   const col = tone === 'good' ? '#19D98A' : tone === 'bad' ? '#FF4D5E' : '#7D8DA8';
   const mark = tone === 'bad' ? paths.cross : paths.check;
   return (
     <div>
-      <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: '#7D8DA8' }}>{title}</div>
+      <div
+        className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]"
+        style={{ color: '#7D8DA8' }}
+      >
+        {title}
+      </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
-        {items.length === 0 && <span className="text-[12.5px]" style={{ color: '#8B9BB4' }}>—</span>}
-        {items.map((x) => (
-          <span key={x} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px]" style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)', color: '#B8C4D8' }}>
-            <span style={{ color: col }}><Icon d={mark} size={12} /></span>{x}
+        {items.length === 0 && (
+          <span className="text-[12.5px]" style={{ color: '#8B9BB4' }}>
+            —
+          </span>
+        )}
+        {items.map(x => (
+          <span
+            key={x}
+            className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px]"
+            style={{
+              borderColor: 'rgba(245,249,255,0.10)',
+              background: 'rgba(245,249,255,0.04)',
+              color: '#B8C4D8',
+            }}
+          >
+            <span style={{ color: col }}>
+              <Icon d={mark} size={12} />
+            </span>
+            {x}
           </span>
         ))}
       </div>

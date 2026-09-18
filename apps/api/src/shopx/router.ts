@@ -21,7 +21,7 @@ shopxRouter.get('/orders', (req: Request, res: Response) => {
 // GET /api/shopx/orders/dispatch
 shopxRouter.get('/orders/dispatch', (req: Request, res: Response) => {
   const dispatchable = Object.values(shopxStore.orders).filter(
-    (o) => o.status === 'processing' || o.status === 'dispatched'
+    o => o.status === 'processing' || o.status === 'dispatched'
   );
   return res.status(200).json({
     success: true,
@@ -45,7 +45,7 @@ shopxRouter.get('/orders/:id', (req: Request, res: Response) => {
 
 // GET /api/shopx/customers
 shopxRouter.get('/customers', (req: Request, res: Response) => {
-  const customers = Object.values(shopxStore.customers).map((c) => ({
+  const customers = Object.values(shopxStore.customers).map(c => ({
     id: c.id,
     name: c.name,
     email: c.email,
@@ -91,8 +91,8 @@ shopxRouter.get('/customers/:id/summary', (req: Request, res: Response) => {
   if (!customer) {
     return res.status(404).json({ error: `Customer ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
-  const customerOrders = Object.values(shopxStore.orders).filter((o) => o.customer_id === req.params.id);
-  const customerTickets = Object.values(shopxStore.tickets).filter((t) => t.customer_id === req.params.id);
+  const customerOrders = Object.values(shopxStore.orders).filter(o => o.customer_id === req.params.id);
+  const customerTickets = Object.values(shopxStore.tickets).filter(t => t.customer_id === req.params.id);
 
   return res.status(200).json({
     success: true,
@@ -103,7 +103,7 @@ shopxRouter.get('/customers/:id/summary', (req: Request, res: Response) => {
     },
     ordersCount: customerOrders.length,
     recentOrders: customerOrders.slice(0, 3),
-    openTicketsCount: customerTickets.filter((t) => t.status === 'open').length,
+    openTicketsCount: customerTickets.filter(t => t.status === 'open').length,
   });
 });
 
@@ -166,7 +166,7 @@ shopxRouter.get('/payments/status', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     totalTransactions: payments.length,
-    succeededCount: payments.filter((p) => p.status === 'succeeded').length,
+    succeededCount: payments.filter(p => p.status === 'succeeded').length,
     settlementVolumeUSD: payments.reduce((acc, p) => acc + p.amount, 0),
   });
 });
@@ -222,7 +222,7 @@ const handleDeliveryStatus = (_req: Request, res: Response) => {
   const shipments = Object.values(shopxStore.shipments);
   return res.status(200).json({
     success: true,
-    inTransitCount: shipments.filter((s) => s.status === 'in_transit').length,
+    inTransitCount: shipments.filter(s => s.status === 'in_transit').length,
     shipments,
   });
 };

@@ -9,13 +9,13 @@
 
 ## 1. Locked stack
 
-| Layer | Choice | Why |
-|---|---|---|
-| Frontend | Next.js 14 App Router + TypeScript + Tailwind + Recharts | Fast, Vercel-native, PRD §22 compliant |
-| Backend | Node.js + Express + TypeScript | Team strength, faster than Next API routes for this team |
-| DB + Realtime | Supabase Postgres + Supabase Realtime + supabase-js | No Prisma, no Socket.io server to maintain |
-| Deploy | Vercel (web) + Render/Railway (api) + Supabase (db) | Live demo requirement |
-| Monorepo | npm workspaces: `apps/web`, `apps/api`, `packages/shared` | One clone, shared types, independent deploys |
+| Layer         | Choice                                                    | Why                                                      |
+| ------------- | --------------------------------------------------------- | -------------------------------------------------------- |
+| Frontend      | Next.js 14 App Router + TypeScript + Tailwind + Recharts  | Fast, Vercel-native, PRD §22 compliant                   |
+| Backend       | Node.js + Express + TypeScript                            | Team strength, faster than Next API routes for this team |
+| DB + Realtime | Supabase Postgres + Supabase Realtime + supabase-js       | No Prisma, no Socket.io server to maintain               |
+| Deploy        | Vercel (web) + Render/Railway (api) + Supabase (db)       | Live demo requirement                                    |
+| Monorepo      | npm workspaces: `apps/web`, `apps/api`, `packages/shared` | One clone, shared types, independent deploys             |
 
 > Rule: frontend **never** talks to Supabase directly for writes. All writes go through Express. Frontend may subscribe to Supabase Realtime for reads only (events/requests) to keep dashboard live with zero socket code.
 
@@ -27,7 +27,7 @@
 thirdeye/
   package.json (workspaces)
   .env.example
-  prd.md (product)
+  prd.md (product) — both specs live in `docs/`
   TECH_PRD.md (this file)
   packages/shared/src/index.ts (TrustProfile, CheckRequest, CheckResult, SecurityEvent, Action, RiskLevel)
   apps/api/ (Express)
@@ -92,21 +92,31 @@ Seed (PRD §3-4): `payment_001` (/payments, /payments/status), `delivery_001` (/
 ## 4. Core logic — `checkRequest()` (BE-2 owns, pure function, must be unit-testable)
 
 Input (`POST /api/check-request`):
+
 ```json
-{ "integrationId": "analytics_001", "method": "GET", "endpoint": "/customers/payment-details", "dataRequested": ["payment","phone"], "requestCount": 1780, "timestamp": "2026-09-11T14:30:00Z", "contextEvent": "none" }
+{
+  "integrationId": "analytics_001",
+  "method": "GET",
+  "endpoint": "/customers/payment-details",
+  "dataRequested": ["payment", "phone"],
+  "requestCount": 1780,
+  "timestamp": "2026-09-11T14:30:00Z",
+  "contextEvent": "none"
+}
 ```
 
 Scoring (PRD §7, max 100, cumulative):
-| Check | Condition | +Risk |
-|---|---|---|
-| Identity | integrationId unknown | +50 → immediate BLOCK candidate |
-| Endpoint | endpoint not in allowedEndpoints | +20 |
-| Method | method not in allowedMethods | +10 |
-| Purpose | endpoint/data outside purpose keywords (simple denylist + endpoint mismatch counts as purpose signal) | +25 |
-| Data | any dataRequested in forbiddenData (case-insensitive substring) | +30 |
-| Volume | requestCount > 3× expected_request_rate | +20 |
-| Time | hour 0-5 local | +5 |
-| Context | contextEvent in ['black_friday','campaign_launch','known_spike'] | −20 (floor 0), never auto-block on volume alone |
+
+| Check    | Condition                                                                                             | +Risk                                           |
+| -------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Identity | integrationId unknown                                                                                 | +50 → immediate BLOCK candidate                 |
+| Endpoint | endpoint not in allowedEndpoints                                                                      | +20                                             |
+| Method   | method not in allowedMethods                                                                          | +10                                             |
+| Purpose  | endpoint/data outside purpose keywords (simple denylist + endpoint mismatch counts as purpose signal) | +25                                             |
+| Data     | any dataRequested in forbiddenData (case-insensitive substring)                                       | +30                                             |
+| Volume   | requestCount > 3× expected_request_rate                                                               | +20                                             |
+| Time     | hour 0-5 local                                                                                        | +5                                              |
+| Context  | contextEvent in ['black_friday','campaign_launch','known_spike']                                      | −20 (floor 0), never auto-block on volume alone |
 
 Levels (§8): 0-30 TRUSTED, 31-60 SUSPICIOUS, 61-80 HIGH_RISK, 81-100 CRITICAL.
 Actions (§9): TRUSTED→ALLOW, SUSPICIOUS→ALLOW+MONITOR, HIGH_RISK→RATE_LIMIT+MONITOR, CRITICAL→BLOCK+QUARANTINE+ALERT.
@@ -115,6 +125,7 @@ Quarantine: on CRITICAL set `integrations.status='QUARANTINED'`, emit `QUARANTIN
 Must produce: `{ riskScore, level, violations: [{code, detail, points}], action, reason }` + insert into `requests` + (if violations) `security_events` + update `integrations.risk_score/status`.
 
 Golden tests (PRD §10, must pass):
+
 - `GET /analytics/events` normal → ~5, ALLOW
 - `GET /customers/profile` (unknown endpoint + purpose) → 45, ALLOW+MONITOR
 - `GET /customers/payment-details` + payment/phone/address + 1780/min → 95, BLOCK+QUARANTINE+ALERT

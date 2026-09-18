@@ -45,7 +45,7 @@ export function IntegrationTable({
           </tr>
         </thead>
         <tbody className="data-table__divider divide-y">
-          {rows.map((it) => {
+          {rows.map(it => {
             const score = getRiskScore(it);
             const rate = getCurrentRate(it);
             const c = riskColor(score);
@@ -88,7 +88,7 @@ export function IntegrationTable({
                       : (() => {
                           try {
                             return timeAgo(
-                              it.lastActivity ?? it.updated_at ?? it.updatedAt ?? new Date().toISOString(),
+                              it.lastActivity ?? it.updated_at ?? it.updatedAt ?? new Date().toISOString()
                             );
                           } catch {
                             return 'just now';
@@ -130,7 +130,10 @@ export function IntegrationTable({
       </table>
       {compact && items.length > 5 && (
         <div className="border-t px-5 py-3" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
-          <Link href="/integrations" className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline">
+          <Link
+            href="/integrations"
+            className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline"
+          >
             View all {items.length} integrations →
           </Link>
         </div>

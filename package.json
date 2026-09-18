@@ -15,6 +15,11 @@
     "build": "npm run build --workspaces",
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.json || true"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.8"
   }
 }

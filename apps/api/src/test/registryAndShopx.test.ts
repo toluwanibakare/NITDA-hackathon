@@ -23,14 +23,8 @@ describe('Integration Registry & Single Source of Truth', () => {
     const list = getAllIntegrations();
     assert.equal(list.length, 5, 'Must contain exactly 5 registered integrations');
 
-    const ids = list.map((i) => i.id).sort();
-    assert.deepEqual(ids, [
-      'analytics_001',
-      'delivery_001',
-      'marketing_001',
-      'payment_001',
-      'support_001',
-    ]);
+    const ids = list.map(i => i.id).sort();
+    assert.deepEqual(ids, ['analytics_001', 'delivery_001', 'marketing_001', 'payment_001', 'support_001']);
   });
 
   test('verifies each integration has complete purpose and scope definitions', () => {
@@ -102,7 +96,7 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
   let baseUrl: string;
 
   before(async () => {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       server = app.listen(0, () => {
         const addr = server.address();
         if (typeof addr === 'object' && addr !== null) {
@@ -114,7 +108,7 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
   });
 
   after(async () => {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       server.close(() => resolve());
     });
   });
@@ -204,7 +198,11 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
     const res = await fetch(`${baseUrl}/api/shopx/analytics/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event_type: 'page_view', url: '/shop/headphones', anonymous_user_id: 'anon_991' }),
+      body: JSON.stringify({
+        event_type: 'page_view',
+        url: '/shop/headphones',
+        anonymous_user_id: 'anon_991',
+      }),
     });
     assert.equal(res.status, 200);
     const body = await res.json();

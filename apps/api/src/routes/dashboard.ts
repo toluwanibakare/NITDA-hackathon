@@ -13,13 +13,17 @@ dashboardRouter.get('/stats', async (_req: Request, res: Response) => {
   try {
     if (isSupabaseConfigured) {
       const { data: integrations } = await supabase.from('integrations').select('id,status,risk_score');
-      const { count: threats } = await supabase.from('security_events').select('id', { count: 'exact', head: true });
-      const { count: monitored } = await supabase.from('requests').select('id', { count: 'exact', head: true });
+      const { count: threats } = await supabase
+        .from('security_events')
+        .select('id', { count: 'exact', head: true });
+      const { count: monitored } = await supabase
+        .from('requests')
+        .select('id', { count: 'exact', head: true });
 
       const list = integrations || [];
       const total = list.length;
-      const active = list.filter((i) => i.status === 'ACTIVE').length;
-      const quarantined = list.filter((i) => i.status === 'QUARANTINED').length;
+      const active = list.filter(i => i.status === 'ACTIVE').length;
+      const quarantined = list.filter(i => i.status === 'QUARANTINED').length;
       const totalThreats = threats || 0;
       const totalMonitored = monitored || 0;
 
@@ -74,7 +78,7 @@ dashboardRouter.get('/activity', async (req: Request, res: Response) => {
         .limit(limit);
 
       if (requests && requests.length > 0) {
-        const activity = requests.map((r) => ({
+        const activity = requests.map(r => ({
           id: r.id,
           type: r.action === 'ALLOW' ? 'NORMAL' : 'VIOLATION',
           integrationId: r.integration_id,

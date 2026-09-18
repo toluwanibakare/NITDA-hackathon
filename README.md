@@ -330,29 +330,105 @@ Full payload contracts: [`docs/PAYLOADS.md`](./docs/PAYLOADS.md).
 
 **Use ThirdEye from anywhere** — no-code dashboard, a 3-line SDK, or zero effort via AI:
 
+### SDK Quickstart
+
+Install the official SDKs:
+
+```bash
+# TypeScript / Node.js
+npm install @the-third-eye/sdk
+
+# Python
+pip install thirdeye-sdk
+```
+
 ```ts
 // TypeScript
-import { ThirdEye } from '@the-third-eye/sdk';
-const thirdeye = new ThirdEye({ apiKey: process.env.THIRDEYE_KEY });
-await thirdeye.check({ integrationId: 'analytics_001', method: 'GET', endpoint: '/analytics/events' });
+import { ThirdEyeClient, wrapOutbound } from '@the-third-eye/sdk';
+
+const te = new ThirdEyeClient({ baseUrl: process.env.THIRDEYE_API_URL });
+const safeFetch = wrapOutbound(te, { integrationId: 'stripe_001', endpoint: '/payments' }, fetch);
 ```
 
 ```python
 # Python
-from thirdeye import ThirdEye
-te = ThirdEye(api_key="te_live_...")
-te.check(integration_id="analytics_001", method="GET", endpoint="/analytics/events")
+from thirdeye import ThirdEyeClient, guard
+
+te = ThirdEyeClient()
+
+@guard("stripe_001", "/payments", client=te)
+def charge_stripe(order_id, amount):
+    ...
 ```
 
-**Agent skill** (`skills/thirdeye/SKILL.md`, open AgentSkills format) — fully supports coding agents (**Antigravity**, **Claude Code**, **Cursor**, **Copilot**):
+---
 
-- **Workspace Discovery**: Linked to `.agents/skills/thirdeye` (Antigravity) and `.claude/skills/thirdeye` (Claude Code).
-- **Codebase Auditing**: Run `python3 skills/thirdeye/scripts/audit_codebase.py` to scan project outbound APIs and sensitive parameters.
-- **Trust Profile Registration**: `python3 skills/thirdeye/scripts/register_integration.py` or programmatic SDK registration.
-- **Agentic AI & Tool Guarding**: Protect LLM agent tool dispatch (LangChain, OpenAI tools, MCP) with recipes in `references/coding-agent-recipes.md`.
-- **Golden Probes**: Verify guard behavior with `python3 skills/thirdeye/scripts/test_guard_probe.py` (ALLOW, MONITOR, BLOCK).
-- **Verify the full suite**: `bash skills/thirdeye/scripts/verify_skill.sh`
-- SDK docs: `packages/sdk-typescript/README.md` · `packages/sdk-python/README.md`
+### Agent Skill Setup (for Coding Agents)
+
+ThirdEye ships with a production-grade **Agent Skill** (`skills/thirdeye/SKILL.md`) that teaches autonomous coding agents (**Antigravity**, **Claude Code**, **Cursor**, **GitHub Copilot**) how to audit, guard, and verify integrations.
+
+#### 1. Install into any project (One-Liner)
+
+Run in the root of your project:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/toluwanibakare/thirdeye/main/skills/install.sh | bash
+```
+
+Or using `npx degit`:
+
+```bash
+# For Antigravity / Gemini CLI / Cursor:
+npx degit toluwanibakare/thirdeye/skills/thirdeye .agents/skills/thirdeye
+
+# For Claude Code:
+npx degit toluwanibakare/thirdeye/skills/thirdeye .claude/skills/thirdeye
+```
+
+> **Global machine-wide install:**
+>
+> ```bash
+> curl -fsSL https://raw.githubusercontent.com/toluwanibakare/thirdeye/main/skills/install.sh | bash -s -- --global
+> ```
+
+#### 2. What your coding agent can do
+
+Once installed, prompt your agent in plain English:
+
+- **Audit**: _"Audit this project with ThirdEye to find all external API calls and sensitive parameters."_
+- **Trust Profile**: _"Generate a ThirdEye Trust Profile for Stripe and SendGrid and register it."_
+- **Wire SDK Guards**: _"Guard our checkout API route with `@the-third-eye/sdk` (or `thirdeye-sdk`) against exfiltration."_
+- **Agentic AI Security**: _"Guard our LangChain / OpenAI tool calls with ThirdEye so the agent cannot leak PII."_
+- **Verify**: _"Run the ThirdEye golden probes to confirm our guards work."_
+
+- Verification suite: `bash skills/thirdeye/scripts/verify_skill.sh`
+- Complete recipes: `skills/thirdeye/references/coding-agent-recipes.md`
+
+---
+
+### Publishing SDKs (npm & PyPI)
+
+#### Publish TypeScript SDK to npm
+
+```bash
+# 1. Build and verify package
+npm run build --workspace=@the-third-eye/sdk
+npm pack --workspace=@the-third-eye/sdk --dry-run
+
+# 2. Publish to npm public registry
+npm publish --workspace=@the-third-eye/sdk --access public
+```
+
+#### Publish Python SDK to PyPI
+
+```bash
+# 1. Build sdist and wheel
+python3 -m build packages/sdk-python
+python3 -m twine check packages/sdk-python/dist/*
+
+# 2. Upload to PyPI
+python3 -m twine upload packages/sdk-python/dist/*
+```
 
 ---
 

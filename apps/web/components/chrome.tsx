@@ -2,12 +2,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon, paths } from './icons';
 
-export function StatCard({ label, value, sub, tone = 'neutral', delta }: {
-  label: string; value: string | number; sub: string; tone?: 'neutral' | 'good' | 'warn' | 'bad'; delta?: string;
+export function StatCard({
+  label,
+  value,
+  sub,
+  tone = 'neutral',
+  delta,
+}: {
+  label: string;
+  value: string | number;
+  sub: string;
+  tone?: 'neutral' | 'good' | 'warn' | 'bad';
+  delta?: string;
 }) {
-  const accent = tone === 'good' ? '#19D98A' : tone === 'warn' ? '#FFC42E' : tone === 'bad' ? '#FF4D5E' : '#1677FF';
-  const bgTint = tone === 'good' ? 'rgba(25,217,138,0.12)' : tone === 'warn' ? 'rgba(255,196,46,0.12)' : tone === 'bad' ? 'rgba(255,77,94,0.12)' : 'rgba(22,119,255,0.12)';
-  const iconD = tone === 'good' ? paths.eye : tone === 'warn' ? paths.pulse : tone === 'bad' ? paths.alert : paths.layers;
+  const accent =
+    tone === 'good' ? '#19D98A' : tone === 'warn' ? '#FFC42E' : tone === 'bad' ? '#FF4D5E' : '#1677FF';
+  const bgTint =
+    tone === 'good'
+      ? 'rgba(25,217,138,0.12)'
+      : tone === 'warn'
+        ? 'rgba(255,196,46,0.12)'
+        : tone === 'bad'
+          ? 'rgba(255,77,94,0.12)'
+          : 'rgba(22,119,255,0.12)';
+  const iconD =
+    tone === 'good' ? paths.eye : tone === 'warn' ? paths.pulse : tone === 'bad' ? paths.alert : paths.layers;
   return (
     <div className="stat-card">
       <div className="flex items-start justify-between gap-3">
@@ -17,15 +36,23 @@ export function StatCard({ label, value, sub, tone = 'neutral', delta }: {
         </span>
       </div>
       <div className="mt-2.5 flex items-end justify-between gap-3">
-        <span className="stat-card__value" style={{ color: accent }}>{value}</span>
+        <span className="stat-card__value" style={{ color: accent }}>
+          {value}
+        </span>
         {delta && (
-          <span className="chip" style={{ color: accent, borderColor: `${accent}33`, background: `${accent}0D` }}>
+          <span
+            className="chip"
+            style={{ color: accent, borderColor: `${accent}33`, background: `${accent}0D` }}
+          >
             {delta}
           </span>
         )}
       </div>
       <div className="stat-card__sub mt-1">{sub}</div>
-      <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-2xl" style={{ background: `linear-gradient(90deg, ${accent}44, ${accent}11, transparent)` }} />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-2xl"
+        style={{ background: `linear-gradient(90deg, ${accent}44, ${accent}11, transparent)` }}
+      />
     </div>
   );
 }
@@ -57,22 +84,40 @@ export function BootLoader({ done }: { done: boolean }) {
   }, [done]);
   if (!show) return null;
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-white ${done ? 'boot-fade' : ''}`}>
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-white ${done ? 'boot-fade' : ''}`}
+    >
       <video
         ref={videoRef}
         src="/loading.webm"
-        autoPlay muted playsInline preload="auto"
-        onLoadedMetadata={() => { if (videoRef.current) videoRef.current.playbackRate = 5; }}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onLoadedMetadata={() => {
+          if (videoRef.current) videoRef.current.playbackRate = 5;
+        }}
         className="h-32 w-32 object-contain md:h-40 md:w-40"
       />
     </div>
   );
 }
 
-export function EmptyState({ title, body, icon = 'grid' }: { title: string; body: string; icon?: keyof typeof paths }) {
+export function EmptyState({
+  title,
+  body,
+  icon = 'grid',
+}: {
+  title: string;
+  body: string;
+  icon?: keyof typeof paths;
+}) {
   return (
     <div className="section-card flex flex-col items-center py-10">
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl shadow-sm" style={{ background: 'rgba(22,119,255,0.14)', color: '#5B9CFF' }}>
+      <span
+        className="flex h-11 w-11 items-center justify-center rounded-xl shadow-sm"
+        style={{ background: 'rgba(22,119,255,0.14)', color: '#5B9CFF' }}
+      >
         <Icon d={paths[icon]} size={19} />
       </span>
       <div className="h-section mt-4">{title}</div>

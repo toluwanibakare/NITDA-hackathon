@@ -44,7 +44,7 @@ export default function Dashboard() {
     setItems(list.data.length ? list.data.map(normaliseIntegration) : MOCK_INTEGRATIONS);
     const rawAct: ActivityItem[] = Array.isArray(act.data)
       ? act.data
-      : (act.data as { activities?: ActivityItem[] })?.activities ?? [];
+      : ((act.data as { activities?: ActivityItem[] })?.activities ?? []);
     if (rawAct.length) setEvents(rawAct.map(activityToEvent));
     else if (ev.data.length) setEvents(ev.data.map(normaliseEvent));
     else setEvents(MOCK_EVENTS);
@@ -58,10 +58,20 @@ export default function Dashboard() {
     try {
       if (isSupabaseEnvConfigured()) {
         const sb = supabaseBrowser();
-        chan = sb.channel('te-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => load()).subscribe() as unknown as { unsubscribe: () => void };
+        chan = sb
+          .channel('te-events')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () =>
+            load()
+          )
+          .subscribe() as unknown as { unsubscribe: () => void };
       }
-    } catch { /* polling fallback */ }
-    return () => { clearInterval(id); chan?.unsubscribe(); };
+    } catch {
+      /* polling fallback */
+    }
+    return () => {
+      clearInterval(id);
+      chan?.unsubscribe();
+    };
   }, [load]);
 
   async function quarantine(id: string) {
@@ -70,12 +80,12 @@ export default function Dashboard() {
       const r = await apiSafe(
         `/api/integrations/${id}/quarantine`,
         { status: 'QUARANTINED' },
-        { method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from overview' }) },
+        { method: 'POST', body: JSON.stringify({ reason: 'Manual quarantine from overview' }) }
       );
       showToast(
         r.live ? 'Integration quarantined' : 'Quarantine queued (offline)',
         r.live ? `${id} blocked pending review.` : `${id} will sync when engine is back.`,
-        'warn',
+        'warn'
       );
     } finally {
       setQuarantining(null);
@@ -108,7 +118,7 @@ export default function Dashboard() {
       next
         ? 'Zero-tolerance PII validation and strict rate caps enforced.'
         : 'Standard adaptive security rules restored.',
-      next ? 'warn' : 'info',
+      next ? 'warn' : 'info'
     );
   };
 
@@ -119,9 +129,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <div className="section-label">
-            Security overview · {live ? 'live engine' : 'demo data'}
-          </div>
+          <div className="section-label">Security overview · {live ? 'live engine' : 'demo data'}</div>
           <h1 className="section-heading mt-1.5">Third parties, continuously verified</h1>
           <p className="section-sub mt-1.5">
             {integrationsCount} integrations · {threatCount} threats · {quarantineCount} quarantined
@@ -129,24 +137,53 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`} />
+          <span
+            className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`}
+            />
             {live ? 'LIVE' : 'DEMO'}
           </span>
-          <button onClick={toggleUnderAttack} className={underAttackMode ? 'btn-danger !py-2 !text-[12.5px]' : 'btn-ghost !py-2 !text-[12.5px]'}>
+          <button
+            onClick={toggleUnderAttack}
+            className={underAttackMode ? 'btn-danger !py-2 !text-[12.5px]' : 'btn-ghost !py-2 !text-[12.5px]'}
+          >
             {underAttackMode ? 'Under Attack: ON' : 'Under Attack: OFF'}
           </button>
-          <Link href="/simulator" className="btn-accent !py-2 !text-[12.5px]">Open simulator →</Link>
+          <Link href="/simulator" className="btn-accent !py-2 !text-[12.5px]">
+            Open simulator →
+          </Link>
         </div>
       </div>
 
       {/* Stat cards — real backend values */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="Integrations" value={integrationsCount} sub="Registered third parties" tone="neutral" />
+        <StatCard
+          label="Integrations"
+          value={integrationsCount}
+          sub="Registered third parties"
+          tone="neutral"
+        />
         <StatCard label="Active" value={activeCount} sub="Passing continuous checks" tone="good" />
-        <StatCard label="Monitored requests" value={reqCount.toLocaleString()} sub="Evaluated via risk engine" tone="neutral" />
-        <StatCard label="Threats" value={threatCount} sub="Violations + anomalies" tone={threatCount > 0 ? 'warn' : 'good'} />
-        <StatCard label="Quarantined" value={quarantineCount} sub="Blocked pending review" tone={quarantineCount > 0 ? 'bad' : 'good'} />
+        <StatCard
+          label="Monitored requests"
+          value={reqCount.toLocaleString()}
+          sub="Evaluated via risk engine"
+          tone="neutral"
+        />
+        <StatCard
+          label="Threats"
+          value={threatCount}
+          sub="Violations + anomalies"
+          tone={threatCount > 0 ? 'warn' : 'good'}
+        />
+        <StatCard
+          label="Quarantined"
+          value={quarantineCount}
+          sub="Blocked pending review"
+          tone={quarantineCount > 0 ? 'bad' : 'good'}
+        />
       </div>
 
       {/* Traffic + risk — data-driven charts (topology lives on the Activity page) */}
@@ -156,10 +193,13 @@ export default function Dashboard() {
             <div>
               <p className="section-label-soft">Traffic share · live request rates</p>
               <h2 className="mono-num mt-1 text-[24px] font-extrabold tabular-nums text-white">
-                {reqCount.toLocaleString()} <span className="text-[13px] font-semibold text-[#8E92A4]">monitored</span>
+                {reqCount.toLocaleString()}{' '}
+                <span className="text-[13px] font-semibold text-[#8E92A4]">monitored</span>
               </h2>
             </div>
-            <span className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-white/10 !bg-white/5 !text-[#8E92A4]'}`}>
+            <span
+              className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-white/10 !bg-white/5 !text-[#8E92A4]'}`}
+            >
               {live ? 'Live gateway stream' : 'Demo stream'}
             </span>
           </div>
@@ -170,7 +210,10 @@ export default function Dashboard() {
         <div className="section-card lg:col-span-5">
           <div className="flex items-center justify-between">
             <span className="section-label-soft">Risk by integration</span>
-            <Link href="/events" className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline">
+            <Link
+              href="/events"
+              className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline"
+            >
               Audit trail →
             </Link>
           </div>
@@ -182,13 +225,25 @@ export default function Dashboard() {
       {/* Table + timeline + posture */}
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="section-card overflow-hidden !p-0 lg:col-span-8">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-4"
+            style={{ borderColor: 'rgba(245,249,255,0.08)' }}
+          >
             <div className="section-label-soft">Integration trust table</div>
-            <Link href="/integrations" className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline">
+            <Link
+              href="/integrations"
+              className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline"
+            >
               Open registry →
             </Link>
           </div>
-          <IntegrationTable items={items} quarantining={quarantining} onQuarantine={quarantine} onRelease={release} compact />
+          <IntegrationTable
+            items={items}
+            quarantining={quarantining}
+            onQuarantine={quarantine}
+            onRelease={release}
+            compact
+          />
         </div>
         <div className="space-y-5 lg:col-span-4">
           <div className="section-card">

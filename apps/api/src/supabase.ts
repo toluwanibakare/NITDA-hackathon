@@ -11,7 +11,9 @@ export const isSupabaseConfigured = Boolean(
 );
 
 if (!isSupabaseConfigured) {
-  console.warn('[thirdeye-api] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured. Endpoints will use in-memory seed baseline where appropriate.');
+  console.warn(
+    '[thirdeye-api] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured. Endpoints will use in-memory seed baseline where appropriate.'
+  );
 }
 
 export const supabase = createClient(url, key);

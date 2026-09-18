@@ -1,4 +1,4 @@
--- ThirdEye seed — 4 demo integrations per prd.md §3-4. Run after migrations.sql.
+-- ThirdEye seed — 4 demo integrations per docs/prd.md §3-4. Run after migrations.sql.
 insert into integrations (id, name, purpose, status, risk_score, expected_request_rate, allowed_endpoints, allowed_methods, allowed_data, forbidden_data) values
 ('payment_001','Payment Provider','Process payments','ACTIVE',8,120,
  '{/payments,/payments/status}','{GET,POST}','{order_id,amount,transaction_id}','{password,customer_profile,marketing_data}'),

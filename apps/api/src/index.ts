@@ -14,7 +14,7 @@ const app = express();
 const serverStartTime = Date.now();
 
 const allowedOrigins = process.env.WEB_URL
-  ? process.env.WEB_URL.split(',').map((origin) => origin.trim())
+  ? process.env.WEB_URL.split(',').map(origin => origin.trim())
   : ['http://localhost:3000'];
 
 app.use(
@@ -45,7 +45,9 @@ app.use((req, res, next) => {
       res.setHeader('X-Response-Time', `${durationMs}ms`);
     }
     if (process.env.NODE_ENV !== 'test') {
-      console.log(`[api] ${res.statusCode} ${req.method} ${req.originalUrl} - ${durationMs}ms (req_${requestId.slice(0, 8)})`);
+      console.log(
+        `[api] ${res.statusCode} ${req.method} ${req.originalUrl} - ${durationMs}ms (req_${requestId.slice(0, 8)})`
+      );
     }
     return originalEnd.apply(this, args as any);
   };
@@ -92,7 +94,7 @@ app.use('/api/shopx', shopxRouter);
 const isTestEnv =
   process.env.NODE_ENV === 'test' ||
   Boolean(process.env.NODE_TEST_CONTEXT) ||
-  process.argv.some((arg) => arg.includes('test'));
+  process.argv.some(arg => arg.includes('test'));
 
 const port = Number(process.env.PORT || 4000);
 if (!isTestEnv) {

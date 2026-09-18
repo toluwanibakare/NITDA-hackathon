@@ -26,11 +26,7 @@ checkRouter.post('/', async (req: Request, res: Response) => {
     let integration: any = null;
 
     if (isSupabaseConfigured) {
-      const { data } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('id', body.integrationId)
-        .single();
+      const { data } = await supabase.from('integrations').select('*').eq('id', body.integrationId).single();
       integration = data;
     }
 
@@ -121,10 +117,10 @@ checkRouter.post('/', async (req: Request, res: Response) => {
               result.level === 'CRITICAL'
                 ? 'QUARANTINED'
                 : result.level === 'HIGH_RISK'
-                ? 'RATE_LIMITED'
-                : result.level === 'SUSPICIOUS'
-                ? 'MONITORED'
-                : 'ACTIVE';
+                  ? 'RATE_LIMITED'
+                  : result.level === 'SUSPICIOUS'
+                    ? 'MONITORED'
+                    : 'ACTIVE';
 
             await supabase
               .from('integrations')

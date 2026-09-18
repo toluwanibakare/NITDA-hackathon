@@ -9,7 +9,11 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function apiSafe<T>(path: string, fallback: T, init?: RequestInit): Promise<{ data: T; live: boolean }> {
+export async function apiSafe<T>(
+  path: string,
+  fallback: T,
+  init?: RequestInit
+): Promise<{ data: T; live: boolean }> {
   try {
     const data = await api<T>(path, init);
     return { data, live: true };
@@ -156,16 +160,32 @@ export interface SecEvent {
 }
 
 export function getEventIntegrationId(e: SecEvent | ActivityItem): string {
-  const v = (e as SecEvent).integration_id ?? (e as SecEvent).integrationId ?? (e as ActivityItem).integrationId ?? 'unknown';
+  const v =
+    (e as SecEvent).integration_id ??
+    (e as SecEvent).integrationId ??
+    (e as ActivityItem).integrationId ??
+    'unknown';
   return v;
 }
 
 export function getEventRiskScore(e: SecEvent | ActivityItem): number {
-  return (e as SecEvent).risk_score ?? (e as SecEvent).riskScore ?? (e as ActivityItem).riskScore ?? (e as ActivityItem).risk_score ?? 0;
+  return (
+    (e as SecEvent).risk_score ??
+    (e as SecEvent).riskScore ??
+    (e as ActivityItem).riskScore ??
+    (e as ActivityItem).risk_score ??
+    0
+  );
 }
 
 export function getEventCreatedAt(e: SecEvent | ActivityItem): string {
-  return (e as SecEvent).created_at ?? (e as SecEvent).createdAt ?? (e as ActivityItem).timestamp ?? (e as ActivityItem).created_at ?? new Date().toISOString();
+  return (
+    (e as SecEvent).created_at ??
+    (e as SecEvent).createdAt ??
+    (e as ActivityItem).timestamp ??
+    (e as ActivityItem).created_at ??
+    new Date().toISOString()
+  );
 }
 
 export function getEventType(e: SecEvent): string {
@@ -196,7 +216,14 @@ export function normaliseEvent(e: SecEvent): SecEvent {
 export function activityToEvent(a: ActivityItem): SecEvent {
   const riskScore = a.riskScore ?? a.risk_score ?? 0;
   const createdAt = a.timestamp ?? a.created_at ?? new Date().toISOString();
-  const type = a.type === 'NORMAL' ? 'NORMAL' : a.type === 'QUARANTINE' ? 'QUARANTINED' : a.type === 'RELEASE' ? 'RELEASED' : undefined;
+  const type =
+    a.type === 'NORMAL'
+      ? 'NORMAL'
+      : a.type === 'QUARANTINE'
+        ? 'QUARANTINED'
+        : a.type === 'RELEASE'
+          ? 'RELEASED'
+          : undefined;
   return normaliseEvent({
     id: a.id,
     integrationId: a.integrationId,
@@ -231,7 +258,11 @@ export function getBehaviourNormal(b: IntegrationDetailResponse['behaviour'], fa
 export function getBehaviourCurrent(b: IntegrationDetailResponse['behaviour'], fallback: number): number {
   return b.currentRate ?? b.current ?? b.currentRatePerMin ?? fallback;
 }
-export function getBehaviourDeviation(b: IntegrationDetailResponse['behaviour'], normal: number, current: number): number {
+export function getBehaviourDeviation(
+  b: IntegrationDetailResponse['behaviour'],
+  normal: number,
+  current: number
+): number {
   if (typeof b.deviationMultiple === 'number') return b.deviationMultiple;
   if (typeof b.deviation === 'number') return b.deviation;
   return Number((current / Math.max(1, normal)).toFixed(1));
@@ -334,18 +365,30 @@ export async function downloadAuditExport(format: 'csv' | 'json' = 'json', fallb
     content = JSON.stringify(list, null, 2);
     mimeType = 'application/json';
   } else {
-    const headers = ['id', 'timestamp', 'integration_id', 'event_type', 'risk_score', 'action', 'endpoint', 'reason', 'hash'];
-    const rows = list.map((e) => [
-      e.id,
-      getEventCreatedAt(e),
-      getEventIntegrationId(e),
-      getEventType(e),
-      getEventRiskScore(e),
-      e.action ?? '',
-      e.endpoint ?? '',
-      `"${(e.reason ?? '').replace(/"/g, '""')}"`,
-      e.hash ?? '',
-    ].join(','));
+    const headers = [
+      'id',
+      'timestamp',
+      'integration_id',
+      'event_type',
+      'risk_score',
+      'action',
+      'endpoint',
+      'reason',
+      'hash',
+    ];
+    const rows = list.map(e =>
+      [
+        e.id,
+        getEventCreatedAt(e),
+        getEventIntegrationId(e),
+        getEventType(e),
+        getEventRiskScore(e),
+        e.action ?? '',
+        e.endpoint ?? '',
+        `"${(e.reason ?? '').replace(/"/g, '""')}"`,
+        e.hash ?? '',
+      ].join(',')
+    );
     content = [headers.join(','), ...rows].join('\n');
     mimeType = 'text/csv;charset=utf-8;';
   }
@@ -389,20 +432,30 @@ export function riskColor(score: number): string {
 
 export function statusColor(status: string): string {
   switch (status) {
-    case 'QUARANTINED': return '#FF4D5E';
-    case 'RATE_LIMITED': return '#FF9F2E';
-    case 'MONITORED': return '#FFC42E';
-    default: return '#19D98A';
+    case 'QUARANTINED':
+      return '#FF4D5E';
+    case 'RATE_LIMITED':
+      return '#FF9F2E';
+    case 'MONITORED':
+      return '#FFC42E';
+    default:
+      return '#19D98A';
   }
 }
 
 export function actionLabel(action: string): string {
   switch (action) {
-    case 'ALLOW': return 'Allow';
-    case 'MONITOR': return 'Allow + Monitor';
-    case 'RATE_LIMIT': return 'Rate limit + Monitor';
-    case 'BLOCK': return 'Block';
-    case 'QUARANTINE': return 'Block + Quarantine';
-    default: return action;
+    case 'ALLOW':
+      return 'Allow';
+    case 'MONITOR':
+      return 'Allow + Monitor';
+    case 'RATE_LIMIT':
+      return 'Rate limit + Monitor';
+    case 'BLOCK':
+      return 'Block';
+    case 'QUARANTINE':
+      return 'Block + Quarantine';
+    default:
+      return action;
   }
 }

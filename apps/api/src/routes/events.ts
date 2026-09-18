@@ -6,10 +6,15 @@ export const eventsRouter = Router();
 
 const GENESIS_HASH = '0'.repeat(64);
 
-export function computeEventHash(prevHash: string, event: { id: string; integrationId: string; eventType: string; riskScore: number; timestamp: string }) {
+export function computeEventHash(
+  prevHash: string,
+  event: { id: string; integrationId: string; eventType: string; riskScore: number; timestamp: string }
+) {
   return crypto
     .createHash('sha256')
-    .update(`${prevHash}:${event.id}:${event.integrationId}:${event.eventType}:${event.riskScore}:${event.timestamp}`)
+    .update(
+      `${prevHash}:${event.id}:${event.integrationId}:${event.eventType}:${event.riskScore}:${event.timestamp}`
+    )
     .digest('hex');
 }
 
@@ -120,7 +125,10 @@ eventsRouter.get('/export', async (req: Request, res: Response) => {
   try {
     let rawList: any[] = [];
     if (isSupabaseConfigured) {
-      const { data } = await supabase.from('security_events').select('*').order('created_at', { ascending: true });
+      const { data } = await supabase
+        .from('security_events')
+        .select('*')
+        .order('created_at', { ascending: true });
       if (data && data.length > 0) {
         rawList = data;
       }
@@ -130,15 +138,25 @@ eventsRouter.get('/export', async (req: Request, res: Response) => {
     }
 
     let currentHash = GENESIS_HASH;
-    const events = rawList.map((e) => {
+    const events = rawList.map(e => {
       const formatted = formatEvent(e, currentHash);
       currentHash = formatted.hash;
       return formatted;
     });
 
     if (format === 'csv') {
-      const headers = ['id', 'timestamp', 'integration_id', 'event_type', 'endpoint', 'risk_score', 'action', 'reason', 'hash'];
-      const csvRows = events.map((e) =>
+      const headers = [
+        'id',
+        'timestamp',
+        'integration_id',
+        'event_type',
+        'endpoint',
+        'risk_score',
+        'action',
+        'reason',
+        'hash',
+      ];
+      const csvRows = events.map(e =>
         [
           e.id,
           `"${e.createdAt}"`,
@@ -187,7 +205,7 @@ eventsRouter.get('/stats', async (_req: Request, res: Response) => {
       rawList = demoEvents;
     }
 
-    const events = rawList.map((e) => formatEvent(e));
+    const events = rawList.map(e => formatEvent(e));
     const totalEvents = events.length;
 
     const byEventType: Record<string, number> = {};
@@ -257,7 +275,9 @@ eventsRouter.get('/', async (req: Request, res: Response) => {
 
     let filtered = demoEvents;
     if (integrationId) {
-      filtered = filtered.filter((e) => (e.integrationId === integrationId || e.integration_id === integrationId));
+      filtered = filtered.filter(
+        e => e.integrationId === integrationId || e.integration_id === integrationId
+      );
     }
     return res.status(200).json(filtered.slice(0, limit).map(formatEvent));
   } catch (err: any) {
@@ -280,7 +300,7 @@ eventsRouter.get('/:id', async (req: Request, res: Response) => {
       }
     }
 
-    const found = demoEvents.find((e) => e.id === id);
+    const found = demoEvents.find(e => e.id === id);
     if (found) {
       return res.status(200).json(formatEvent(found));
     }

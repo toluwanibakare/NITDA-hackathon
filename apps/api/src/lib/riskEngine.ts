@@ -12,13 +12,10 @@ import {
  * Applies progressive risk scoring based on endpoint authorization, purpose alignment,
  * payload sensitivity, rate limits, and contextual factors.
  */
-export function checkRequestPure(
-  req: CheckRequest,
-  profile: TrustProfile | null
-): CheckResult {
+export function checkRequestPure(req: CheckRequest, profile: TrustProfile | null): CheckResult {
   const violations: Violation[] = [];
   let score = 0;
-  const requestedData = (req.dataRequested || []).map((d) => d.toLowerCase());
+  const requestedData = (req.dataRequested || []).map(d => d.toLowerCase());
 
   // Unknown integration identity triggers immediate block threshold
   if (!profile) {
@@ -37,9 +34,9 @@ export function checkRequestPure(
     };
   }
 
-  const allowedEndpoints = profile.allowedEndpoints.map((e) => e.toLowerCase());
-  const allowedMethods = profile.allowedMethods.map((m) => m.toUpperCase());
-  const forbiddenData = profile.forbiddenData.map((d) => d.toLowerCase());
+  const allowedEndpoints = profile.allowedEndpoints.map(e => e.toLowerCase());
+  const allowedMethods = profile.allowedMethods.map(m => m.toUpperCase());
+  const forbiddenData = profile.forbiddenData.map(d => d.toLowerCase());
 
   // Endpoint verification
   if (!allowedEndpoints.includes(req.endpoint.toLowerCase())) {
@@ -70,8 +67,8 @@ export function checkRequestPure(
   }
 
   // Sensitive data access validation
-  const matchedForbidden = requestedData.filter((item) =>
-    forbiddenData.some((forbidden) => item.includes(forbidden) || forbidden.includes(item))
+  const matchedForbidden = requestedData.filter(item =>
+    forbiddenData.some(forbidden => item.includes(forbidden) || forbidden.includes(item))
   );
 
   if (matchedForbidden.length > 0) {
@@ -127,7 +124,7 @@ export function checkRequestPure(
 
   const reason =
     violations.length > 0
-      ? violations.map((v) => v.detail).join('; ')
+      ? violations.map(v => v.detail).join('; ')
       : `Request conforms to ${profile.name} trust profile`;
 
   return {

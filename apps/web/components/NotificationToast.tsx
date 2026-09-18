@@ -26,10 +26,10 @@ export function NotificationToastContainer() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
-    toastListener = (newToast) => {
-      setToasts((prev) => [newToast, ...prev].slice(0, 4));
+    toastListener = newToast => {
+      setToasts(prev => [newToast, ...prev].slice(0, 4));
       setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
+        setToasts(prev => prev.filter(t => t.id !== newToast.id));
       }, 4500);
     };
     return () => {
@@ -41,39 +41,39 @@ export function NotificationToastContainer() {
 
   return (
     <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2.5 max-w-sm w-full select-none pointer-events-none">
-      {toasts.map((t) => {
+      {toasts.map(t => {
         const borderCol =
           t.type === 'success'
             ? 'rgba(25,217,138,0.4)'
             : t.type === 'warn'
-            ? 'rgba(255,196,46,0.4)'
-            : t.type === 'alert'
-            ? 'rgba(255,77,94,0.5)'
-            : 'rgba(22,119,255,0.4)';
+              ? 'rgba(255,196,46,0.4)'
+              : t.type === 'alert'
+                ? 'rgba(255,77,94,0.5)'
+                : 'rgba(22,119,255,0.4)';
         const bgCol =
           t.type === 'success'
             ? 'rgba(7, 26, 20, 0.95)'
             : t.type === 'warn'
-            ? 'rgba(28, 22, 7, 0.95)'
-            : t.type === 'alert'
-            ? 'rgba(28, 8, 11, 0.95)'
-            : 'rgba(7, 20, 38, 0.95)';
+              ? 'rgba(28, 22, 7, 0.95)'
+              : t.type === 'alert'
+                ? 'rgba(28, 8, 11, 0.95)'
+                : 'rgba(7, 20, 38, 0.95)';
         const iconCol =
           t.type === 'success'
             ? '#19D98A'
             : t.type === 'warn'
-            ? '#FFC42E'
-            : t.type === 'alert'
-            ? '#FF4D5E'
-            : '#5B9CFF';
+              ? '#FFC42E'
+              : t.type === 'alert'
+                ? '#FF4D5E'
+                : '#5B9CFF';
         const iconName =
           t.type === 'success'
             ? paths.check
             : t.type === 'alert'
-            ? paths.alert
-            : t.type === 'warn'
-            ? paths.pulse
-            : paths.shield;
+              ? paths.alert
+              : t.type === 'warn'
+                ? paths.pulse
+                : paths.shield;
 
         return (
           <div
@@ -92,7 +92,7 @@ export function NotificationToastContainer() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[13.5px] font-bold text-[#F5F9FF]">{t.title}</span>
                   <button
-                    onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
+                    onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
                     className="text-[11px] text-[#6E7E99] hover:text-white"
                   >
                     ✕

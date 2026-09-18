@@ -29,18 +29,18 @@ export default function EventsPage() {
 
   useEffect(() => {
     // Backend: GET /api/security-events?limit=50 → SecEvent[] dual-cased + SHA-256 hash chain
-    apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then((r) => {
+    apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then(r => {
       setEvents((r.data.length ? r.data : MOCK_EVENTS).map(normaliseEvent));
       setLive(r.live);
     });
-    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
       setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
     });
     const poll = setInterval(() => {
-      apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then((r) => {
+      apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then(r => {
         if (r.data.length) setEvents(r.data.map(normaliseEvent));
       });
-      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
         if (r.data.length) setItems(r.data.map(normaliseIntegration));
       });
     }, 5000);
@@ -48,10 +48,15 @@ export default function EventsPage() {
     try {
       if (isSupabaseEnvConfigured()) {
         const sb = supabaseBrowser();
-        chan = sb.channel('te-events-page')
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, (payload) => {
-            setEvents((prev) => [normaliseEvent(payload.new as SecEvent), ...prev].slice(0, 60));
-          })
+        chan = sb
+          .channel('te-events-page')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'security_events' },
+            payload => {
+              setEvents(prev => [normaliseEvent(payload.new as SecEvent), ...prev].slice(0, 60));
+            }
+          )
           .subscribe() as unknown as { unsubscribe: () => void };
       }
     } catch {
@@ -95,11 +100,11 @@ export default function EventsPage() {
   }
 
   const ids = useMemo(
-    () => ['all', ...Array.from(new Set(events.map((e) => getEventIntegrationId(e))))],
-    [events],
+    () => ['all', ...Array.from(new Set(events.map(e => getEventIntegrationId(e))))],
+    [events]
   );
 
-  const shown = filter === 'all' ? events : events.filter((e) => getEventIntegrationId(e) === filter);
+  const shown = filter === 'all' ? events : events.filter(e => getEventIntegrationId(e) === filter);
   const verified = verifyResult?.verified === true;
 
   return (
@@ -110,15 +115,22 @@ export default function EventsPage() {
         <div className="page-header">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="section-label">Audit trail · tamper-evident log {live ? '· live' : '· demo data'}</div>
+              <div className="section-label">
+                Audit trail · tamper-evident log {live ? '· live' : '· demo data'}
+              </div>
               <h1 className="section-heading mt-2">Every violation, with its reason</h1>
               <p className="section-sub mt-2">
-                Tamper-evident SHA-256 chain log detailing what happened, to which data, and why the engine responded that way.
+                Tamper-evident SHA-256 chain log detailing what happened, to which data, and why the engine
+                responded that way.
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-              <span className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}>
-                <span className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`} />
+              <span
+                className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`}
+                />
                 {live ? 'LIVE' : 'DEMO'}
               </span>
             </div>
@@ -127,17 +139,34 @@ export default function EventsPage() {
       </div>
 
       {exportError && (
-        <div className="rounded-2xl border px-5 py-3.5 text-[13px]" style={{ borderColor: 'rgba(255,196,46,0.35)', background: 'rgba(255,196,46,0.07)', color: '#FFC42E' }}>
+        <div
+          className="rounded-2xl border px-5 py-3.5 text-[13px]"
+          style={{
+            borderColor: 'rgba(255,196,46,0.35)',
+            background: 'rgba(255,196,46,0.07)',
+            color: '#FFC42E',
+          }}
+        >
           {exportError}
         </div>
       )}
 
       {/* Verification Card */}
       {verifyResult && (
-        <div className="rounded-2xl border p-4 sm:p-5 transition-[border-color,background] duration-150 animate-rise" style={verified ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.06)' } : { borderColor: 'rgba(255,196,46,0.35)', background: 'rgba(255,196,46,0.06)' }}>
+        <div
+          className="rounded-2xl border p-4 sm:p-5 transition-[border-color,background] duration-150 animate-rise"
+          style={
+            verified
+              ? { borderColor: 'rgba(25,217,138,0.3)', background: 'rgba(25,217,138,0.06)' }
+              : { borderColor: 'rgba(255,196,46,0.35)', background: 'rgba(255,196,46,0.06)' }
+          }
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start sm:items-center gap-2.5 min-w-0">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white" style={{ background: verified ? '#19D98A' : '#FFC42E' }}>
+              <span
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white"
+                style={{ background: verified ? '#19D98A' : '#FFC42E' }}
+              >
                 <Icon d={verified ? paths.check : paths.alert} size={16} />
               </span>
               <div className="min-w-0">
@@ -145,11 +174,16 @@ export default function EventsPage() {
                   Cryptographic Audit Chain: {verifyResult.integrity}
                 </div>
                 <div className="text-[12px] leading-snug" style={{ color: '#8B9BB4' }}>
-                  {verified ? `Verified ${verifyResult.verifiedRecordsCount} records · SHA-256 hash sequence unbroken.` : 'Offline — showing last known state. Reconnect to verify live chain.'}
+                  {verified
+                    ? `Verified ${verifyResult.verifiedRecordsCount} records · SHA-256 hash sequence unbroken.`
+                    : 'Offline — showing last known state. Reconnect to verify live chain.'}
                 </div>
               </div>
             </div>
-            <span className="font-mono text-[11px] shrink-0" style={{ color: verified ? '#19D98A' : '#FFC42E' }}>
+            <span
+              className="font-mono text-[11px] shrink-0"
+              style={{ color: verified ? '#19D98A' : '#FFC42E' }}
+            >
               Latest: {verifyResult.latestHash.slice(0, 14)}…
             </span>
           </div>
@@ -157,10 +191,7 @@ export default function EventsPage() {
       )}
 
       {/* ═══ Live Integration Topology ═══ */}
-      <IntegrationMap
-        items={items}
-        onSelect={(id) => setFilter((prev) => (prev === id ? 'all' : id))}
-      />
+      <IntegrationMap items={items} onSelect={id => setFilter(prev => (prev === id ? 'all' : id))} />
 
       {/* ═══ Audit actions ═══ */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -191,7 +222,7 @@ export default function EventsPage() {
 
       {/* ═══ Filters ═══ */}
       <div className="pill-nav flex-nowrap sm:flex-wrap overflow-x-auto pb-1 max-w-full">
-        {ids.map((id) => (
+        {ids.map(id => (
           <button
             key={id}
             onClick={() => setFilter(id)}
@@ -206,7 +237,10 @@ export default function EventsPage() {
       <div className="section-card--numbered overflow-hidden">
         <div className="relative z-10">
           {shown.length === 0 ? (
-            <EmptyState title="No events for this filter" body="Traffic here is clean. Try another integration." />
+            <EmptyState
+              title="No events for this filter"
+              body="Traffic here is clean. Try another integration."
+            />
           ) : (
             <EventTimeline events={shown} />
           )}

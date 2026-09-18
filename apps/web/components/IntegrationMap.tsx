@@ -37,8 +37,12 @@ export function IntegrationMap({
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] px-5 py-3.5 md:px-6 bg-[#FAFCFF]">
         <div>
-          <div className="eyebrow font-bold text-[11px] uppercase tracking-wider text-brand">Live Integration Topology</div>
-          <div className="h-section mt-0.5 text-[15px] font-bold text-[#0A1830]">Authorised traffic under continuous verification</div>
+          <div className="eyebrow font-bold text-[11px] uppercase tracking-wider text-brand">
+            Live Integration Topology
+          </div>
+          <div className="h-section mt-0.5 text-[15px] font-bold text-[#0A1830]">
+            Authorised traffic under continuous verification
+          </div>
         </div>
         <span className="chip !border-[#0E9F6E]/30 !bg-[#0E9F6E]/[0.08] !text-[#0B7A55] font-semibold text-[11.5px]">
           <span className="h-2 w-2 rounded-full bg-[#0E9F6E] animate-pulseDot" />
@@ -107,12 +111,7 @@ export function IntegrationMap({
               />
               {/* App Icon Circle */}
               <circle cx={26} cy={26} r={13} fill="#1677FF" opacity={0.25} />
-              <path
-                d="M20 26h12 M26 20v12"
-                stroke="#5B9CFF"
-                strokeWidth={2}
-                strokeLinecap="round"
-              />
+              <path d="M20 26h12 M26 20v12" stroke="#5B9CFF" strokeWidth={2} strokeLinecap="round" />
               {/* Title & Subtitle - Start aligned with clean right margin */}
               <text x={52} y={23} fill="#F5F9FF" fontSize={13} fontWeight={800} fontFamily="Inter, system-ui">
                 STORE APPLICATION
@@ -121,7 +120,6 @@ export function IntegrationMap({
                 checkout · payments · delivery
               </text>
             </g>
-
 
             {/* Connection: App -> ThirdEye Core */}
             <line
@@ -136,7 +134,12 @@ export function IntegrationMap({
             />
             {/* Animated App-to-Core Flow Packet */}
             <circle cx={cx} cy={appY + 36} r={3.5} fill="#00C8D7" filter="url(#glowLight)">
-              <animate attributeName="cy" values={`${appY + 25};${coreY - 28};${appY + 25}`} dur="2.2s" repeatCount="indefinite" />
+              <animate
+                attributeName="cy"
+                values={`${appY + 25};${coreY - 28};${appY + 25}`}
+                dur="2.2s"
+                repeatCount="indefinite"
+              />
               <animate attributeName="opacity" values="1;0.4;1" dur="2.2s" repeatCount="indefinite" />
             </circle>
 
@@ -160,26 +163,66 @@ export function IntegrationMap({
               <circle cx={26} cy={28} r={4.5} fill="#00C8D7" filter="url(#glowLight)" />
 
               {/* Engine Text - Clean spacing */}
-              <text x={48} y={23} fill="#FFFFFF" fontSize={13.5} fontWeight={900} fontFamily="Inter, system-ui" letterSpacing={0.6}>
+              <text
+                x={48}
+                y={23}
+                fill="#FFFFFF"
+                fontSize={13.5}
+                fontWeight={900}
+                fontFamily="Inter, system-ui"
+                letterSpacing={0.6}
+              >
                 THIRDEYE
               </text>
-              <text x={48} y={39} fill="#94A3B8" fontSize={9.5} fontFamily="monospace" letterSpacing={1.0} fontWeight={600}>
+              <text
+                x={48}
+                y={39}
+                fill="#94A3B8"
+                fontSize={9.5}
+                fontFamily="monospace"
+                letterSpacing={1.0}
+                fontWeight={600}
+              >
                 RISK ENGINE · LIVE
               </text>
 
               {/* Live Indicator Pill - Positioned at x=212 to avoid subtitle text */}
               <g transform="translate(212, 18)">
-                <rect width={54} height={20} rx={10} fill="#0E9F6E" fillOpacity={0.2} stroke="#0E9F6E" strokeWidth={1} />
+                <rect
+                  width={54}
+                  height={20}
+                  rx={10}
+                  fill="#0E9F6E"
+                  fillOpacity={0.2}
+                  stroke="#0E9F6E"
+                  strokeWidth={1}
+                />
                 <circle cx={12} cy={10} r={3} fill="#19D98A" className="animate-pulseDot" />
-                <text x={32} y={13.5} textAnchor="middle" fill="#19D98A" fontSize={9.5} fontWeight={800} fontFamily="Inter, system-ui">
+                <text
+                  x={32}
+                  y={13.5}
+                  textAnchor="middle"
+                  fill="#19D98A"
+                  fontSize={9.5}
+                  fontWeight={800}
+                  fontFamily="Inter, system-ui"
+                >
                   LIVE
                 </text>
               </g>
             </g>
 
             {/* Ports on bottom of ThirdEye Engine Box */}
-            {corePortXs.map((px) => (
-              <circle key={px} cx={px} cy={coreY + 28} r={3.5} fill="#3B82F6" stroke="#FFFFFF" strokeWidth={1.5} />
+            {corePortXs.map(px => (
+              <circle
+                key={px}
+                cx={px}
+                cy={coreY + 28}
+                r={3.5}
+                fill="#3B82F6"
+                stroke="#FFFFFF"
+                strokeWidth={1.5}
+              />
             ))}
 
             {/* 3. BRANCH LINKS + 4 INTEGRATION NODES */}
@@ -204,7 +247,13 @@ export function IntegrationMap({
               const pathD = `M ${portX} ${startY} C ${portX} ${controlY1}, ${destX} ${controlY2}, ${destX} ${endY}`;
 
               const nodeName = it.name.replace(' Provider', '').replace(' Sync', '').toUpperCase();
-              const statusLabel = isCritical ? 'CRITICAL' : isHigh ? 'HIGH_RISK' : isWatch ? 'SUSPICIOUS' : 'TRUSTED';
+              const statusLabel = isCritical
+                ? 'CRITICAL'
+                : isHigh
+                  ? 'HIGH_RISK'
+                  : isWatch
+                    ? 'SUSPICIOUS'
+                    : 'TRUSTED';
               const rateText = `${it.requestsPerMin ?? it.expected_request_rate ?? '90'}/min`;
 
               return (
@@ -220,7 +269,11 @@ export function IntegrationMap({
                   />
 
                   {/* Animated Flow Packet along path */}
-                  <circle r={isCritical ? 4.5 : 3.5} fill={linkColor} filter={isCritical ? 'url(#glowRed)' : 'url(#glowLight)'}>
+                  <circle
+                    r={isCritical ? 4.5 : 3.5}
+                    fill={linkColor}
+                    filter={isCritical ? 'url(#glowRed)' : 'url(#glowLight)'}
+                  >
                     <animateMotion
                       dur={isCritical ? '1.1s' : isHigh ? '1.8s' : '2.6s'}
                       repeatCount="indefinite"
@@ -236,8 +289,12 @@ export function IntegrationMap({
                     transform={`translate(${destX - 90}, ${nodeY - 32})`}
                     onClick={() => onSelect?.(it.id)}
                     style={{ cursor: onSelect ? 'pointer' : 'default', transition: 'filter 150ms ease-out' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.18)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.filter = ''; }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.filter = 'brightness(1.18)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.filter = '';
+                    }}
                   >
                     {/* Card Shadow and Background */}
                     <rect
@@ -254,8 +311,21 @@ export function IntegrationMap({
                     {isCritical && (
                       <g transform="translate(156, -6)">
                         <circle cx={0} cy={0} r={10} fill="#FF4D5E" className="animate-pulseDot" />
-                        <circle cx={0} cy={0} r={14} fill="none" stroke="#FF4D5E" strokeWidth={1.5} opacity={0.5} />
-                        <path d="M-3 -3l6 6 M3 -3l-6 6" stroke="#FFFFFF" strokeWidth={2} strokeLinecap="round" />
+                        <circle
+                          cx={0}
+                          cy={0}
+                          r={14}
+                          fill="none"
+                          stroke="#FF4D5E"
+                          strokeWidth={1.5}
+                          opacity={0.5}
+                        />
+                        <path
+                          d="M-3 -3l6 6 M3 -3l-6 6"
+                          stroke="#FFFFFF"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                        />
                       </g>
                     )}
 
@@ -307,14 +377,19 @@ export function IntegrationMap({
 
         {/* Legend Bar */}
         <div className="relative flex flex-wrap items-center gap-2.5 border-t border-white/10 bg-[#040B16]/80 px-5 py-3 md:px-6">
-          <span className="eyebrow mr-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Legend</span>
+          <span className="eyebrow mr-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Legend
+          </span>
           {[
             ['#19D98A', 'Trusted 0–30'],
             ['#FFC42E', 'Suspicious 31–60'],
             ['#FF9F2E', 'High 61–80'],
             ['#FF4D5E', 'Critical 81–100'],
           ].map(([c, t]) => (
-            <span key={t} className="chip font-semibold text-[11px] !bg-white/5 !border-white/10 !text-slate-300">
+            <span
+              key={t}
+              className="chip font-semibold text-[11px] !bg-white/5 !border-white/10 !text-slate-300"
+            >
               <span className="h-2 w-2 rounded-full mr-1.5 inline-block" style={{ background: c }} />
               {t}
             </span>

@@ -81,9 +81,7 @@
           ],
           "request": {
             "method": "GET",
-            "header": [
-              { "key": "X-Request-Id", "value": "postman-trace-9999" }
-            ],
+            "header": [{ "key": "X-Request-Id", "value": "postman-trace-9999" }],
             "url": "{{baseUrl}}/healthz"
           }
         }

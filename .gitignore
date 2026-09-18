@@ -1,13 +1,66 @@
+# ── Env & secrets (never commit real credentials) ──
+# Templates (*.example) are explicitly re-included below.
+.env
+.env.*
+!.env.example
+apps/*/.env*
+!apps/*/.env.example
+packages/*/.env*
+!packages/*/.env.example
+*.pem
+*.key
+
+# ── Node / npm ──
 node_modules/
-.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pnp
+.pnp.js
+
+# ── Build output ──
 dist/
 build/
-.env
-.env.local
-apps/*/.env
-apps/*/.env.local
-*.log
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Test / coverage ──
+coverage/
+.nyc_output/
+junit.xml
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+.eggs/
+
+# ── Supabase CLI (local state) ──
+.supabase/
+supabase/.branches/
+supabase/.temp/
+
+# ── OS / editors ──
 .DS_Store
-apps/web/next-env.d.ts
-.agents/
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── Logs & local scratch ──
+.agents/*
+!.agents/skills/
 .memory/

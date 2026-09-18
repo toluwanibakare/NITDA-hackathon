@@ -53,24 +53,24 @@ Create 4 simulated integrations.
 
 Purpose:
 
-* Process payments
+- Process payments
 
 Allowed:
 
-* `/payments`
-* `/payments/status`
+- `/payments`
+- `/payments/status`
 
 Allowed data:
 
-* order ID
-* amount
-* transaction ID
+- order ID
+- amount
+- transaction ID
 
 Forbidden:
 
-* passwords
-* customer profile
-* marketing data
+- passwords
+- customer profile
+- marketing data
 
 ---
 
@@ -78,26 +78,26 @@ Forbidden:
 
 Purpose:
 
-* Deliver customer orders
+- Deliver customer orders
 
 Allowed:
 
-* `/orders`
-* `/delivery`
-* `/delivery/status`
+- `/orders`
+- `/delivery`
+- `/delivery/status`
 
 Allowed data:
 
-* order ID
-* delivery address
-* customer name
-* phone
+- order ID
+- delivery address
+- customer name
+- phone
 
 Forbidden:
 
-* payment information
-* passwords
-* marketing records
+- payment information
+- passwords
+- marketing records
 
 ---
 
@@ -105,27 +105,27 @@ Forbidden:
 
 Purpose:
 
-* Collect anonymous usage statistics
+- Collect anonymous usage statistics
 
 Allowed:
 
-* `/analytics/events`
-* `/analytics/metrics`
+- `/analytics/events`
+- `/analytics/metrics`
 
 Allowed data:
 
-* anonymous user ID
-* page
-* event
-* timestamp
+- anonymous user ID
+- page
+- event
+- timestamp
 
 Forbidden:
 
-* payment data
-* phone numbers
-* addresses
-* passwords
-* customer profiles
+- payment data
+- phone numbers
+- addresses
+- passwords
+- customer profiles
 
 ---
 
@@ -133,23 +133,23 @@ Forbidden:
 
 Purpose:
 
-* Manage marketing campaigns
+- Manage marketing campaigns
 
 Allowed:
 
-* `/campaigns`
-* `/campaigns/events`
+- `/campaigns`
+- `/campaigns/events`
 
 Allowed data:
 
-* campaign ID
-* anonymous user ID
-* event
+- campaign ID
+- anonymous user ID
+- event
 
 Forbidden:
 
-* payment data
-* passwords
+- payment data
+- passwords
 
 ---
 
@@ -162,26 +162,10 @@ Each integration must have:
   "id": "analytics_001",
   "name": "Analytics Provider",
   "purpose": "Collect anonymous usage statistics",
-  "allowedEndpoints": [
-    "/analytics/events",
-    "/analytics/metrics"
-  ],
-  "allowedMethods": [
-    "GET",
-    "POST"
-  ],
-  "allowedData": [
-    "anonymous_user_id",
-    "page",
-    "event",
-    "timestamp"
-  ],
-  "forbiddenData": [
-    "payment",
-    "phone",
-    "address",
-    "password"
-  ],
+  "allowedEndpoints": ["/analytics/events", "/analytics/metrics"],
+  "allowedMethods": ["GET", "POST"],
+  "allowedData": ["anonymous_user_id", "page", "event", "timestamp"],
+  "forbiddenData": ["payment", "phone", "address", "password"],
   "expectedRequestRate": 100
 }
 ```
@@ -199,11 +183,7 @@ Every request entering the middleware should look like:
   "integrationId": "analytics_001",
   "method": "GET",
   "endpoint": "/customers/payment-details",
-  "dataRequested": [
-    "payment",
-    "phone",
-    "address"
-  ],
+  "dataRequested": ["payment", "phone", "address"],
   "requestCount": 1780,
   "timestamp": "2026-09-11T14:30:00"
 }
@@ -874,14 +854,14 @@ The UI should feel like a **modern cybersecurity command center**.
 
 Use:
 
-* dark interface
-* clear risk indicators
-* cards
-* tables
-* live activity
-* charts
-* integration nodes
-* event timeline
+- dark interface
+- clear risk indicators
+- cards
+- tables
+- live activity
+- charts
+- integration nodes
+- event timeline
 
 Do not overcrowd the interface.
 
@@ -1121,21 +1101,21 @@ GRADED RESPONSE
 
 The MVP is complete when:
 
-* [ ] 4 integrations exist
-* [ ] Each has a Trust Profile
-* [ ] Requests pass through middleware
-* [ ] Requests receive risk scores
-* [ ] Purpose violations are detected
-* [ ] Forbidden data access is detected
-* [ ] Abnormal volume is detected
-* [ ] Context can reduce false positives
-* [ ] Risk increases dynamically
-* [ ] Actions change according to risk
-* [ ] Critical integrations can be quarantined
-* [ ] Security events are logged
-* [ ] Dashboard updates live
-* [ ] Integration map works
-* [ ] Attack simulator works
-* [ ] Full attack scenario can be demonstrated end-to-end
+- [ ] 4 integrations exist
+- [ ] Each has a Trust Profile
+- [ ] Requests pass through middleware
+- [ ] Requests receive risk scores
+- [ ] Purpose violations are detected
+- [ ] Forbidden data access is detected
+- [ ] Abnormal volume is detected
+- [ ] Context can reduce false positives
+- [ ] Risk increases dynamically
+- [ ] Actions change according to risk
+- [ ] Critical integrations can be quarantined
+- [ ] Security events are logged
+- [ ] Dashboard updates live
+- [ ] Integration map works
+- [ ] Attack simulator works
+- [ ] Full attack scenario can be demonstrated end-to-end
 
 **If all 16 are working, you have the competition MVP.**

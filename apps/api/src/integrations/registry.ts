@@ -33,8 +33,20 @@ const INITIAL_INTEGRATIONS: Record<string, IntegrationRecord> = {
     allowed_methods: ['GET', 'POST'],
     allowedFields: ['order_id', 'amount', 'currency', 'transaction_id', 'status'],
     allowed_data: ['order_id', 'amount', 'currency', 'transaction_id', 'status'],
-    forbiddenFields: ['password', 'customer_profile', 'marketing_data', 'customer_password', 'internal_margin'],
-    forbidden_data: ['password', 'customer_profile', 'marketing_data', 'customer_password', 'internal_margin'],
+    forbiddenFields: [
+      'password',
+      'customer_profile',
+      'marketing_data',
+      'customer_password',
+      'internal_margin',
+    ],
+    forbidden_data: [
+      'password',
+      'customer_profile',
+      'marketing_data',
+      'customer_password',
+      'internal_margin',
+    ],
     testApiKey: 'sec_test_payment_key_120',
     api_key: 'sec_test_payment_key_120',
     createdAt: '2026-09-01T00:00:00.000Z',
@@ -51,8 +63,22 @@ const INITIAL_INTEGRATIONS: Record<string, IntegrationRecord> = {
     expected_request_rate: 80,
     currentRequestRate: 80,
     current_request_rate: 80,
-    allowedEndpoints: ['/orders', '/orders/dispatch', '/delivery', '/delivery/status', '/shipments', '/shipments/:id'],
-    allowed_endpoints: ['/orders', '/orders/dispatch', '/delivery', '/delivery/status', '/shipments', '/shipments/:id'],
+    allowedEndpoints: [
+      '/orders',
+      '/orders/dispatch',
+      '/delivery',
+      '/delivery/status',
+      '/shipments',
+      '/shipments/:id',
+    ],
+    allowed_endpoints: [
+      '/orders',
+      '/orders/dispatch',
+      '/delivery',
+      '/delivery/status',
+      '/shipments',
+      '/shipments/:id',
+    ],
     allowedMethods: ['GET', 'POST'],
     allowed_methods: ['GET', 'POST'],
     allowedFields: ['order_id', 'recipient_name', 'delivery_address', 'customer_name', 'phone', 'items'],
@@ -79,10 +105,46 @@ const INITIAL_INTEGRATIONS: Record<string, IntegrationRecord> = {
     allowed_endpoints: ['/analytics/events', '/analytics/metrics'],
     allowedMethods: ['GET', 'POST'],
     allowed_methods: ['GET', 'POST'],
-    allowedFields: ['anonymous_user_id', 'anonymous_id', 'page', 'event', 'event_type', 'timestamp', 'url', 'device'],
-    allowed_data: ['anonymous_user_id', 'anonymous_id', 'page', 'event', 'event_type', 'timestamp', 'url', 'device'],
-    forbiddenFields: ['payment', 'phone', 'address', 'password', 'customer', 'customer_name', 'card_details', 'email'],
-    forbidden_data: ['payment', 'phone', 'address', 'password', 'customer', 'customer_name', 'card_details', 'email'],
+    allowedFields: [
+      'anonymous_user_id',
+      'anonymous_id',
+      'page',
+      'event',
+      'event_type',
+      'timestamp',
+      'url',
+      'device',
+    ],
+    allowed_data: [
+      'anonymous_user_id',
+      'anonymous_id',
+      'page',
+      'event',
+      'event_type',
+      'timestamp',
+      'url',
+      'device',
+    ],
+    forbiddenFields: [
+      'payment',
+      'phone',
+      'address',
+      'password',
+      'customer',
+      'customer_name',
+      'card_details',
+      'email',
+    ],
+    forbidden_data: [
+      'payment',
+      'phone',
+      'address',
+      'password',
+      'customer',
+      'customer_name',
+      'card_details',
+      'email',
+    ],
     testApiKey: 'sec_test_analytics_key_100',
     api_key: 'sec_test_analytics_key_100',
     createdAt: '2026-09-01T00:00:00.000Z',
@@ -103,8 +165,22 @@ const INITIAL_INTEGRATIONS: Record<string, IntegrationRecord> = {
     allowed_endpoints: ['/campaigns', '/campaigns/events', '/campaigns/broadcast'],
     allowedMethods: ['GET', 'POST'],
     allowed_methods: ['GET', 'POST'],
-    allowedFields: ['campaign_id', 'anonymous_user_id', 'event', 'audience_tag', 'template_id', 'scheduled_at'],
-    allowed_data: ['campaign_id', 'anonymous_user_id', 'event', 'audience_tag', 'template_id', 'scheduled_at'],
+    allowedFields: [
+      'campaign_id',
+      'anonymous_user_id',
+      'event',
+      'audience_tag',
+      'template_id',
+      'scheduled_at',
+    ],
+    allowed_data: [
+      'campaign_id',
+      'anonymous_user_id',
+      'event',
+      'audience_tag',
+      'template_id',
+      'scheduled_at',
+    ],
     forbiddenFields: ['payment', 'password', 'card_number', 'cvv', 'order_financials', 'admin_credentials'],
     forbidden_data: ['payment', 'password', 'card_number', 'cvv', 'order_financials', 'admin_credentials'],
     testApiKey: 'sec_test_marketing_key_95',
@@ -129,8 +205,22 @@ const INITIAL_INTEGRATIONS: Record<string, IntegrationRecord> = {
     allowed_methods: ['GET', 'POST'],
     allowedFields: ['ticket_id', 'customer_name', 'email', 'issue_description', 'order_id', 'status'],
     allowed_data: ['ticket_id', 'customer_name', 'email', 'issue_description', 'order_id', 'status'],
-    forbiddenFields: ['card_cvv', 'password_hash', 'full_credit_card', 'system_logs', 'card_number', 'password'],
-    forbidden_data: ['card_cvv', 'password_hash', 'full_credit_card', 'system_logs', 'card_number', 'password'],
+    forbiddenFields: [
+      'card_cvv',
+      'password_hash',
+      'full_credit_card',
+      'system_logs',
+      'card_number',
+      'password',
+    ],
+    forbidden_data: [
+      'card_cvv',
+      'password_hash',
+      'full_credit_card',
+      'system_logs',
+      'card_number',
+      'password',
+    ],
     testApiKey: 'sec_test_support_key_60',
     api_key: 'sec_test_support_key_60',
     createdAt: '2026-09-01T00:00:00.000Z',
@@ -154,9 +244,11 @@ export function getIntegrationById(id: string): IntegrationRecord | null {
 export function getIntegrationByApiKey(apiKey: string): IntegrationRecord | null {
   if (!apiKey) return null;
   const cleanKey = apiKey.trim();
-  return Object.values(integrationRegistry).find(
-    (item) => item.testApiKey === cleanKey || item.api_key === cleanKey
-  ) || null;
+  return (
+    Object.values(integrationRegistry).find(
+      item => item.testApiKey === cleanKey || item.api_key === cleanKey
+    ) || null
+  );
 }
 
 export function updateIntegrationStatus(

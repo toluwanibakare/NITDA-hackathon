@@ -1,0 +1,10 @@
+{
+  "id": "stripe_001",
+  "name": "Stripe Payments",
+  "purpose": "Process checkout payments",
+  "allowedEndpoints": ["/payments", "/payments/status"],
+  "allowedMethods": ["GET", "POST"],
+  "allowedData": ["order_id", "amount", "currency"],
+  "forbiddenData": ["password", "ssn", "marketing_data"],
+  "expectedRequestRate": 120
+}

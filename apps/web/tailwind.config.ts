@@ -22,7 +22,17 @@ export default {
         watch: '#FFC42E',
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', 'Inter', 'system-ui', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          'Inter',
+          'system-ui',
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ],
         mono: ['ui-monospace', '"SF Mono"', '"Cascadia Mono"', 'Menlo', 'Consolas', 'monospace'],
       },
       boxShadow: {
@@ -32,15 +42,32 @@ export default {
         aqua: '0 8px 24px -10px rgba(0,200,215,0.45)',
       },
       keyframes: {
-        rise: { from: { opacity: '0', transform: 'translateY(6px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-        pulseDot: { '0%,100%': { opacity: '1', transform: 'scale(1)' }, '50%': { opacity: '0.45', transform: 'scale(0.8)' } },
-        pingRing: { '0%': { opacity: '0.7', transform: 'scale(0.6)' }, '80%,100%': { opacity: '0', transform: 'scale(1.6)' } },
+        rise: {
+          from: { opacity: '0', transform: 'translateY(6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseDot: {
+          '0%,100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.45', transform: 'scale(0.8)' },
+        },
+        pingRing: {
+          '0%': { opacity: '0.7', transform: 'scale(0.6)' },
+          '80%,100%': { opacity: '0', transform: 'scale(1.6)' },
+        },
         dashFlow: { to: { strokeDashoffset: '-28' } },
-        scanY: { '0%': { top: '0%', opacity: '0' }, '12%': { opacity: '1' }, '88%': { opacity: '1' }, '100%': { top: '100%', opacity: '0' } },
+        scanY: {
+          '0%': { top: '0%', opacity: '0' },
+          '12%': { opacity: '1' },
+          '88%': { opacity: '1' },
+          '100%': { top: '100%', opacity: '0' },
+        },
         ticker: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
         blink: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.25' } },
         spinSlow: { to: { transform: 'rotate(360deg)' } },
-        eyeScan: { '0%,100%': { transform: 'translateX(-28px)', opacity: '0.6' }, '50%': { transform: 'translateX(28px)', opacity: '1' } },
+        eyeScan: {
+          '0%,100%': { transform: 'translateX(-28px)', opacity: '0.6' },
+          '50%': { transform: 'translateX(28px)', opacity: '1' },
+        },
         barSlide: { from: { transform: 'translateX(-110%)' }, to: { transform: 'translateX(320%)' } },
       },
       animation: {

@@ -143,7 +143,13 @@ const INITIAL_ORDERS: Record<string, ShopXOrder> = {
 };
 
 const INITIAL_PRODUCTS: Record<string, ShopXProduct> = {
-  prod_1: { id: 'prod_1', name: 'Wireless Noise-Cancelling Headphones', price: 149.99, stock: 45, category: 'electronics' },
+  prod_1: {
+    id: 'prod_1',
+    name: 'Wireless Noise-Cancelling Headphones',
+    price: 149.99,
+    stock: 45,
+    category: 'electronics',
+  },
   prod_2: { id: 'prod_2', name: 'Ergonomic Desk Mat', price: 39.75, stock: 120, category: 'accessories' },
   prod_3: { id: 'prod_3', name: 'Smart Fitness Tracker v4', price: 299.0, stock: 18, category: 'wearables' },
 };

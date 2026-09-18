@@ -81,7 +81,7 @@ integrationsRouter.get('/', async (req: Request, res: Response) => {
       list = Object.values(fallbackIntegrations).map(formatIntegration);
       if (status) {
         const filterStatus = String(status).toUpperCase();
-        list = list.filter((i) => i.status === filterStatus);
+        list = list.filter(i => i.status === filterStatus);
       }
       if (sort === 'rate') {
         list.sort((a, b) => b.expectedRequestRate - a.expectedRequestRate);
@@ -95,7 +95,7 @@ integrationsRouter.get('/', async (req: Request, res: Response) => {
     if (search) {
       const q = String(search).toLowerCase();
       list = list.filter(
-        (i) =>
+        i =>
           i.name.toLowerCase().includes(q) ||
           i.purpose.toLowerCase().includes(q) ||
           i.id.toLowerCase().includes(q)
@@ -152,7 +152,7 @@ integrationsRouter.get('/:id', async (req: Request, res: Response) => {
         currentRate,
         deviationMultiple: Number((currentRate / Math.max(1, expectedRate)).toFixed(2)),
       },
-      recentViolations: recentViolations.map((v) => ({
+      recentViolations: recentViolations.map(v => ({
         id: v.id,
         integrationId: v.integration_id,
         eventType: v.event_type,
@@ -196,9 +196,9 @@ integrationsRouter.get('/:id/history', async (req: Request, res: Response) => {
   const intervals = [
     { label: '-50m', volume: Math.round(normal * 0.94), risk: Math.min(currentRisk, 8) },
     { label: '-40m', volume: Math.round(normal * 1.04), risk: Math.min(currentRisk, 10) },
-    { label: '-30m', volume: Math.round(normal * 0.90), risk: Math.min(currentRisk, 12) },
-    { label: '-20m', volume: Math.round(normal * 1.40), risk: Math.min(currentRisk, 25) },
-    { label: '-10m', volume: Math.round(normal * 2.10), risk: Math.max(Math.min(currentRisk, 50), 15) },
+    { label: '-30m', volume: Math.round(normal * 0.9), risk: Math.min(currentRisk, 12) },
+    { label: '-20m', volume: Math.round(normal * 1.4), risk: Math.min(currentRisk, 25) },
+    { label: '-10m', volume: Math.round(normal * 2.1), risk: Math.max(Math.min(currentRisk, 50), 15) },
     { label: 'now', volume: currentRate, risk: currentRisk },
   ];
 
@@ -207,7 +207,7 @@ integrationsRouter.get('/:id/history', async (req: Request, res: Response) => {
     normalRate: normal,
     currentRate,
     currentRisk,
-    history: intervals.map((int) => ({
+    history: intervals.map(int => ({
       t: int.label,
       v: int.volume,
       volume: int.volume,
@@ -307,7 +307,8 @@ integrationsRouter.patch('/:id', async (req: Request, res: Response) => {
 
   const dbUpdates: any = { updated_at: now };
   if (updates.purpose !== undefined) dbUpdates.purpose = updates.purpose;
-  if (updates.expectedRequestRate !== undefined) dbUpdates.expected_request_rate = updates.expectedRequestRate;
+  if (updates.expectedRequestRate !== undefined)
+    dbUpdates.expected_request_rate = updates.expectedRequestRate;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
 
   if (isSupabaseConfigured) {
@@ -342,7 +343,10 @@ integrationsRouter.post('/:id/quarantine', async (req: Request, res: Response) =
 
   if (isSupabaseConfigured) {
     try {
-      await supabase.from('integrations').update({ status: 'QUARANTINED', risk_score: 95, updated_at: now }).eq('id', id);
+      await supabase
+        .from('integrations')
+        .update({ status: 'QUARANTINED', risk_score: 95, updated_at: now })
+        .eq('id', id);
       await supabase.from('security_events').insert({
         integration_id: id,
         event_type: 'QUARANTINED',
@@ -396,7 +400,10 @@ integrationsRouter.post('/:id/release', async (req: Request, res: Response) => {
 
   if (isSupabaseConfigured) {
     try {
-      await supabase.from('integrations').update({ status: 'ACTIVE', risk_score: 8, updated_at: now }).eq('id', id);
+      await supabase
+        .from('integrations')
+        .update({ status: 'ACTIVE', risk_score: 8, updated_at: now })
+        .eq('id', id);
       await supabase.from('security_events').insert({
         integration_id: id,
         event_type: 'RELEASED',

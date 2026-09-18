@@ -1,4 +1,4 @@
--- ThirdEye Supabase schema — run in SQL editor. TECH_PRD §3.
+-- ThirdEye Supabase schema — run in SQL editor. docs/TECH_PRD.md §3.
 create table if not exists integrations (
   id text primary key,
   name text not null,

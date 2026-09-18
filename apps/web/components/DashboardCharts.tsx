@@ -36,10 +36,7 @@ export function TrafficDonut({ items }: { items: IntegrationRow[] }) {
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/5">
-                <div
-                  className="risk-fill h-full rounded-full"
-                  style={{ width: pct, background: color }}
-                />
+                <div className="risk-fill h-full rounded-full" style={{ width: pct, background: color }} />
               </div>
             </div>
           );
@@ -77,17 +74,20 @@ export function TrafficDonut({ items }: { items: IntegrationRow[] }) {
 
 export function RiskBars({ items }: { items: IntegrationRow[] }) {
   const sorted = [...items].sort((a, b) => getRiskScore(b) - getRiskScore(a)).slice(0, 7);
-  const max = Math.max(100, ...sorted.map((it) => getRiskScore(it)));
+  const max = Math.max(100, ...sorted.map(it => getRiskScore(it)));
   return (
     <div className="flex h-44 items-end justify-between gap-2 pt-6">
-      {sorted.map((it) => {
+      {sorted.map(it => {
         const score = getRiskScore(it);
         const c = riskColor(score);
         const h = Math.max(8, Math.round((score / max) * 100));
         const short = it.name.replace(' Provider', '').replace(' Payments', '').slice(0, 8);
         return (
           <div key={it.id} className="group flex h-full flex-1 flex-col items-center justify-end gap-2">
-            <span className="mono-num text-[10px] font-bold tabular-nums opacity-0 transition-opacity group-hover:opacity-100" style={{ color: c }}>
+            <span
+              className="mono-num text-[10px] font-bold tabular-nums opacity-0 transition-opacity group-hover:opacity-100"
+              style={{ color: c }}
+            >
               {score}
             </span>
             <div
@@ -107,9 +107,7 @@ export function RiskBars({ items }: { items: IntegrationRow[] }) {
 }
 
 export function TrustGauge({ items, quarantined }: { items: IntegrationRow[]; quarantined: number }) {
-  const avg = items.length
-    ? Math.round(items.reduce((s, it) => s + getRiskScore(it), 0) / items.length)
-    : 0;
+  const avg = items.length ? Math.round(items.reduce((s, it) => s + getRiskScore(it), 0) / items.length) : 0;
   const trust = Math.max(0, 100 - avg);
   const arc = 90 * Math.PI; // semicircle r=90
   const filled = (trust / 100) * arc;
@@ -123,7 +121,13 @@ export function TrustGauge({ items, quarantined }: { items: IntegrationRow[]; qu
       </div>
       <div className="relative flex justify-center pt-2">
         <svg width="220" height="120" viewBox="0 0 220 120">
-          <path d="M 20 100 A 90 90 0 0 1 200 100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="18" strokeLinecap="round" />
+          <path
+            d="M 20 100 A 90 90 0 0 1 200 100"
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="18"
+            strokeLinecap="round"
+          />
           <path
             d="M 20 100 A 90 90 0 0 1 200 100"
             fill="none"

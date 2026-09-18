@@ -7,7 +7,15 @@ import { Icon, paths } from '@/components/icons';
 import { IntegrationTable } from '@/components/IntegrationTable';
 import { showToast } from '@/components/NotificationToast';
 import { RiskBadge, StatusDot } from '@/components/RiskBadge';
-import { api, apiSafe, getAllowedEndpoints, getExpectedRate, getRiskScore, normaliseIntegration, type IntegrationRow } from '@/lib/api';
+import {
+  api,
+  apiSafe,
+  getAllowedEndpoints,
+  getExpectedRate,
+  getRiskScore,
+  normaliseIntegration,
+  type IntegrationRow,
+} from '@/lib/api';
 import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 const MARKETPLACE_CATALOG = [
@@ -77,7 +85,7 @@ function IntegrationsInner() {
   const [live, setLive] = useState(false);
   const [view, setView] = useState<'cards' | 'table'>('table');
   const [activeTab, setActiveTab] = useState<'registry' | 'marketplace'>('registry');
-  const [connectModal, setConnectModal] = useState<typeof MARKETPLACE_CATALOG[0] | null>(null);
+  const [connectModal, setConnectModal] = useState<(typeof MARKETPLACE_CATALOG)[0] | null>(null);
   const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
@@ -91,7 +99,7 @@ function IntegrationsInner() {
     if (q) query.set('search', q);
     query.set('sort', sortKey);
 
-    apiSafe<IntegrationRow[]>(`/api/integrations?${query.toString()}`, MOCK_INTEGRATIONS).then((r) => {
+    apiSafe<IntegrationRow[]>(`/api/integrations?${query.toString()}`, MOCK_INTEGRATIONS).then(r => {
       setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
       setLive(r.live);
     });
@@ -99,7 +107,7 @@ function IntegrationsInner() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then((r) => {
+      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
         if (r.data.length) setItems(r.data.map(normaliseIntegration));
         setLive(r.live);
       });
@@ -108,7 +116,7 @@ function IntegrationsInner() {
   }, []);
 
   const filtered = items
-    .filter((i) => {
+    .filter(i => {
       const matchText = `${i.name} ${i.purpose} ${i.id}`.toLowerCase().includes(q.toLowerCase());
       const matchStatus = statusFilter === 'ALL' || i.status === statusFilter;
       return matchText && matchStatus;
@@ -126,7 +134,7 @@ function IntegrationsInner() {
   const [showConnectProjectModal, setShowConnectProjectModal] = useState(false);
   const [projectStep, setProjectStep] = useState<1 | 2 | 3>(1);
 
-  async function completeConnection(cat: typeof MARKETPLACE_CATALOG[0]) {
+  async function completeConnection(cat: (typeof MARKETPLACE_CATALOG)[0]) {
     setConnecting(true);
     const payload = {
       id: `${cat.id}_001`,
@@ -162,7 +170,11 @@ function IntegrationsInner() {
     } finally {
       setConnecting(false);
     }
-    if (saved) setItems((prev) => [normaliseIntegration(saved as IntegrationRow), ...prev.filter((p) => p.id !== (saved as IntegrationRow).id)]);
+    if (saved)
+      setItems(prev => [
+        normaliseIntegration(saved as IntegrationRow),
+        ...prev.filter(p => p.id !== (saved as IntegrationRow).id),
+      ]);
     setConnectModal(null);
     setActiveTab('registry');
     showToast(
@@ -170,7 +182,7 @@ function IntegrationsInner() {
       engineLive
         ? `Connected ${cat.name} to ${projectName}. Gateway route: https://gateway.thirdeye.sec/api/v1/${cat.id}`
         : `Engine offline — ${cat.name} staged locally and will sync on reconnect.`,
-      engineLive ? 'success' : 'warn',
+      engineLive ? 'success' : 'warn'
     );
   }
 
@@ -198,11 +210,14 @@ function IntegrationsInner() {
             <div className="min-w-0">
               <div className="section-label">
                 ThirdEye Platform Hub · {items.length} active connectors ·{' '}
-                <span className={live ? 'text-[#19D98A]' : 'text-[#FFC42E]'}>{live ? 'live' : 'demo data'}</span>
+                <span className={live ? 'text-[#19D98A]' : 'text-[#FFC42E]'}>
+                  {live ? 'live' : 'demo data'}
+                </span>
               </div>
               <h1 className="section-heading mt-2">Integrations & Marketplace</h1>
               <p className="section-sub mt-2">
-                Connect your merchant project (like ShopX) to ThirdEye, browse pre-verified partner integrations, generate gateway routing keys, and monitor compliance in real time.
+                Connect your merchant project (like ShopX) to ThirdEye, browse pre-verified partner
+                integrations, generate gateway routing keys, and monitor compliance in real time.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -247,16 +262,23 @@ function IntegrationsInner() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#5B9CFF]">CONNECTED MERCHANT PROJECT</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#5B9CFF]">
+                  CONNECTED MERCHANT PROJECT
+                </span>
                 <span className="chip !border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A] !py-0.5 !text-[10px]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#19D98A] animate-pulse" /> LIVE SHIELD ACTIVE
                 </span>
               </div>
               <h2 className="mt-0.5 text-[18px] font-bold text-white">{projectName}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-[12px] text-[#8494AD]">
-                <span>Project Key: <code className="mono-num text-[#00C8D7]">{projectId}</code></span>
+                <span>
+                  Project Key: <code className="mono-num text-[#00C8D7]">{projectId}</code>
+                </span>
                 <span>•</span>
-                <span>Gateway Domain: <code className="mono-num text-[#5B9CFF]">https://gateway.thirdeye.sec</code></span>
+                <span>
+                  Gateway Domain:{' '}
+                  <code className="mono-num text-[#5B9CFF]">https://gateway.thirdeye.sec</code>
+                </span>
               </div>
             </div>
           </div>
@@ -291,8 +313,8 @@ function IntegrationsInner() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {MARKETPLACE_CATALOG.map((cat) => {
-              const connected = items.some((i) => i.name === cat.name);
+            {MARKETPLACE_CATALOG.map(cat => {
+              const connected = items.some(i => i.name === cat.name);
               return (
                 <div
                   key={cat.id}
@@ -305,19 +327,28 @@ function IntegrationsInner() {
                         <h3 className="mt-2 text-[17px] font-bold text-white">{cat.name}</h3>
                       </div>
                       {connected ? (
-                        <span className="chip !border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]">CONNECTED</span>
+                        <span className="chip !border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]">
+                          CONNECTED
+                        </span>
                       ) : (
-                        <span className="chip !border-[#5B9CFF]/30 !bg-[#5B9CFF]/10 !text-[#5B9CFF]">READY</span>
+                        <span className="chip !border-[#5B9CFF]/30 !bg-[#5B9CFF]/10 !text-[#5B9CFF]">
+                          READY
+                        </span>
                       )}
                     </div>
                     <p className="mt-2 text-[13.5px] leading-relaxed text-[#94A3B8]">{cat.purpose}</p>
 
                     <div className="mt-4 space-y-2 border-t pt-3 border-white/10">
                       <div>
-                        <span className="mono-num text-[10px] uppercase text-[#64748B]">Scope Endpoints:</span>
+                        <span className="mono-num text-[10px] uppercase text-[#64748B]">
+                          Scope Endpoints:
+                        </span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {cat.allowedEndpoints.map((e) => (
-                            <span key={e} className="rounded-md border px-1.5 py-0.5 font-mono text-[10.5px] border-white/10 bg-white/5 text-[#94A3B8]">
+                          {cat.allowedEndpoints.map(e => (
+                            <span
+                              key={e}
+                              className="rounded-md border px-1.5 py-0.5 font-mono text-[10.5px] border-white/10 bg-white/5 text-[#94A3B8]"
+                            >
                               {e}
                             </span>
                           ))}
@@ -348,12 +379,16 @@ function IntegrationsInner() {
               </span>
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={e => setQ(e.target.value)}
                 placeholder="Filter by name, purpose or id…"
                 className="w-full bg-transparent text-[13.5px] text-[#F5F9FF] outline-none placeholder:text-[#5B6B85]"
               />
               {q && (
-                <button onClick={() => setQ('')} className="font-mono text-[11px] hover:text-white" style={{ color: '#8B9BB4' }}>
+                <button
+                  onClick={() => setQ('')}
+                  className="font-mono text-[11px] hover:text-white"
+                  style={{ color: '#8B9BB4' }}
+                >
                   CLEAR
                 </button>
               )}
@@ -361,7 +396,7 @@ function IntegrationsInner() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <div className="pill-nav !p-1 flex-nowrap overflow-x-auto max-w-full">
-                {['ALL', 'ACTIVE', 'QUARANTINED', 'MONITORED'].map((st) => (
+                {['ALL', 'ACTIVE', 'QUARANTINED', 'MONITORED'].map(st => (
                   <button
                     key={st}
                     onClick={() => setStatusFilter(st)}
@@ -376,7 +411,7 @@ function IntegrationsInner() {
 
               <select
                 value={sortKey}
-                onChange={(e) => setSortKey(e.target.value as 'risk' | 'rate' | 'name')}
+                onChange={e => setSortKey(e.target.value as 'risk' | 'rate' | 'name')}
                 className="rounded-xl border px-3 py-2 text-[12.5px] font-semibold outline-none shadow-sm w-full sm:w-auto"
                 style={{ borderColor: 'rgba(245,249,255,0.16)', background: '#0E1A33', color: '#F5F9FF' }}
               >
@@ -385,7 +420,7 @@ function IntegrationsInner() {
                 <option value="name">Sort: Alphabetical</option>
               </select>
               <div className="pill-nav !p-1">
-                {(['table', 'cards'] as const).map((v) => (
+                {(['table', 'cards'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => setView(v)}
@@ -406,7 +441,7 @@ function IntegrationsInner() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((it) => {
+              {filtered.map(it => {
                 const score = getRiskScore(it);
                 const endpoints = getAllowedEndpoints(it);
                 return (
@@ -414,36 +449,64 @@ function IntegrationsInner() {
                     key={it.id}
                     href={`/integrations/${it.id}`}
                     className="group relative overflow-hidden rounded-2xl border p-6 transition-[border-color,background] duration-150 active:scale-[0.99]"
-                    style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'linear-gradient(180deg, rgba(245,249,255,0.03), rgba(245,249,255,0.01)), #0E1A33' }}
+                    style={{
+                      borderColor: 'rgba(245,249,255,0.10)',
+                      background:
+                        'linear-gradient(180deg, rgba(245,249,255,0.03), rgba(245,249,255,0.01)), #0E1A33',
+                    }}
                   >
-                    <div className="absolute inset-x-0 top-0 h-[2px] opacity-0 transition-opacity duration-150 group-hover:opacity-100" style={{ background: 'rgba(22,119,255,0.55)' }} />
+                    <div
+                      className="absolute inset-x-0 top-0 h-[2px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      style={{ background: 'rgba(22,119,255,0.55)' }}
+                    />
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <div className="text-[16px] font-semibold text-[#F5F9FF] transition-colors duration-150 group-hover:text-[#5B9CFF]" style={{ letterSpacing: '-0.01em' }}>{it.name}</div>
-                        <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: '#94A3B8' }}>{it.purpose}</p>
+                        <div
+                          className="text-[16px] font-semibold text-[#F5F9FF] transition-colors duration-150 group-hover:text-[#5B9CFF]"
+                          style={{ letterSpacing: '-0.01em' }}
+                        >
+                          {it.name}
+                        </div>
+                        <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: '#94A3B8' }}>
+                          {it.purpose}
+                        </p>
                         <div className="mt-2.5 flex items-center gap-2">
-                          <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>{it.id}</span>
+                          <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>
+                            {it.id}
+                          </span>
                           <span style={{ color: '#334155' }}>·</span>
-                          <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>{endpoints.length} endpoints</span>
+                          <span className="font-mono text-[11px]" style={{ color: '#64748B' }}>
+                            {endpoints.length} endpoints
+                          </span>
                         </div>
                       </div>
                       <RiskBadge score={score} size="sm" />
                     </div>
                     <div className="mt-5 flex flex-wrap gap-1.5">
-                      {endpoints.slice(0, 4).map((e) => (
+                      {endpoints.slice(0, 4).map(e => (
                         <span
                           key={e}
                           className="rounded-full border px-2 py-0.5 font-mono text-[10.5px]"
-                          style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)', color: '#94A3B8' }}
+                          style={{
+                            borderColor: 'rgba(245,249,255,0.10)',
+                            background: 'rgba(245,249,255,0.04)',
+                            color: '#94A3B8',
+                          }}
                         >
                           {e}
                         </span>
                       ))}
                     </div>
-                    <div className="mt-4 flex items-center justify-between border-t pt-3.5" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
+                    <div
+                      className="mt-4 flex items-center justify-between border-t pt-3.5"
+                      style={{ borderColor: 'rgba(245,249,255,0.08)' }}
+                    >
                       <StatusDot status={it.status} />
                       <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#5B9CFF]">
-                        OPEN TRUST PROFILE <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5"><Icon d={paths.arrow} size={13} /></span>
+                        OPEN TRUST PROFILE{' '}
+                        <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5">
+                          <Icon d={paths.arrow} size={13} />
+                        </span>
                       </span>
                     </div>
                   </Link>
@@ -457,24 +520,38 @@ function IntegrationsInner() {
       {/* ═══ CONNECT PROJECT TO THIRD EYE MODAL ═══ */}
       {showConnectProjectModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-rise">
-          <div className="panel max-w-xl w-full p-6 space-y-5 border-white/20" style={{ background: '#0A1224' }}>
+          <div
+            className="panel max-w-xl w-full p-6 space-y-5 border-white/20"
+            style={{ background: '#0A1224' }}
+          >
             <div className="flex items-start justify-between border-b pb-4 border-white/10">
               <div>
-                <span className="chip !text-[10px] uppercase text-[#1677FF] border-[#1677FF]/30 bg-[#1677FF]/10">STEP {projectStep} OF 3</span>
+                <span className="chip !text-[10px] uppercase text-[#1677FF] border-[#1677FF]/30 bg-[#1677FF]/10">
+                  STEP {projectStep} OF 3
+                </span>
                 <h3 className="mt-1 text-[20px] font-bold text-white">Connect Your Project to ThirdEye</h3>
-                <p className="text-[13px] text-[#8494AD]">Connect your store or web app to start protecting third-party API traffic.</p>
+                <p className="text-[13px] text-[#8494AD]">
+                  Connect your store or web app to start protecting third-party API traffic.
+                </p>
               </div>
-              <button onClick={() => setShowConnectProjectModal(false)} className="text-[#8494AD] hover:text-white">✕</button>
+              <button
+                onClick={() => setShowConnectProjectModal(false)}
+                className="text-[#8494AD] hover:text-white"
+              >
+                ✕
+              </button>
             </div>
 
             {projectStep === 1 && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[12.5px] font-semibold text-[#94A3B8] mb-1">Project / Store Name</label>
+                  <label className="block text-[12.5px] font-semibold text-[#94A3B8] mb-1">
+                    Project / Store Name
+                  </label>
                   <input
                     type="text"
                     value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
+                    onChange={e => setProjectName(e.target.value)}
                     placeholder="e.g. ShopX Store, Acme Market"
                     className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-2.5 text-[14px] text-white outline-none focus:border-[#1677FF]"
                   />
@@ -488,7 +565,9 @@ function IntegrationsInner() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[12.5px] font-semibold text-[#94A3B8] mb-1">Store / Web App Base URL</label>
+                  <label className="block text-[12.5px] font-semibold text-[#94A3B8] mb-1">
+                    Store / Web App Base URL
+                  </label>
                   <input
                     type="text"
                     defaultValue="https://shopx.store"
@@ -496,8 +575,15 @@ function IntegrationsInner() {
                   />
                 </div>
                 <div className="pt-3 flex justify-end gap-2">
-                  <button onClick={() => setShowConnectProjectModal(false)} className="btn-ghost !px-4 !py-2 !text-[13px]">Cancel</button>
-                  <button onClick={() => setProjectStep(2)} className="btn-accent !px-5 !py-2 !text-[13px]">Next: Generate Key →</button>
+                  <button
+                    onClick={() => setShowConnectProjectModal(false)}
+                    className="btn-ghost !px-4 !py-2 !text-[13px]"
+                  >
+                    Cancel
+                  </button>
+                  <button onClick={() => setProjectStep(2)} className="btn-accent !px-5 !py-2 !text-[13px]">
+                    Next: Generate Key →
+                  </button>
                 </div>
               </div>
             )}
@@ -505,15 +591,22 @@ function IntegrationsInner() {
             {projectStep === 2 && (
               <div className="space-y-4">
                 <div className="rounded-xl border border-[#1677FF]/30 bg-[#1677FF]/10 p-4">
-                  <div className="text-[12px] font-semibold text-[#5B9CFF]">PROJECT GATEWAY KEY GENERATED</div>
-                  <div className="mono-num mt-1 text-[16px] font-bold text-white">te_proj_{projectName.toLowerCase().replace(/[^a-z0-9]/g, '')}_99a8b7c6</div>
-                  <p className="mt-1 text-[12px] text-[#8494AD]">Use this project token in header <code className="text-[#00C8D7]">X-ThirdEye-Project-Key</code></p>
+                  <div className="text-[12px] font-semibold text-[#5B9CFF]">
+                    PROJECT GATEWAY KEY GENERATED
+                  </div>
+                  <div className="mono-num mt-1 text-[16px] font-bold text-white">
+                    te_proj_{projectName.toLowerCase().replace(/[^a-z0-9]/g, '')}_99a8b7c6
+                  </div>
+                  <p className="mt-1 text-[12px] text-[#8494AD]">
+                    Use this project token in header{' '}
+                    <code className="text-[#00C8D7]">X-ThirdEye-Project-Key</code>
+                  </p>
                 </div>
 
                 <div>
                   <label className="section-label-soft">Gateway Middleware Snippet</label>
                   <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11.5px] text-[#19D98A]">
-{`import { ThirdEyeGateway } from '@thirdeye/sdk';
+                    {`import { ThirdEyeGateway } from '@the-third-eye/sdk';
 
 export const gateway = new ThirdEyeGateway({
   projectKey: 'te_proj_${projectName.toLowerCase().replace(/[^a-z0-9]/g, '')}_99a8b7c6',
@@ -524,8 +617,12 @@ export const gateway = new ThirdEyeGateway({
                 </div>
 
                 <div className="pt-3 flex justify-between">
-                  <button onClick={() => setProjectStep(1)} className="btn-ghost !px-4 !py-2 !text-[13px]">← Back</button>
-                  <button onClick={() => setProjectStep(3)} className="btn-accent !px-5 !py-2 !text-[13px]">Test Connection →</button>
+                  <button onClick={() => setProjectStep(1)} className="btn-ghost !px-4 !py-2 !text-[13px]">
+                    ← Back
+                  </button>
+                  <button onClick={() => setProjectStep(3)} className="btn-accent !px-5 !py-2 !text-[13px]">
+                    Test Connection →
+                  </button>
                 </div>
               </div>
             )}
@@ -537,7 +634,8 @@ export const gateway = new ThirdEyeGateway({
                 </div>
                 <h4 className="text-[20px] font-bold text-white">Connected & Protected!</h4>
                 <p className="text-[13.5px] text-[#94A3B8] max-w-md mx-auto">
-                  Project <span className="text-white font-semibold">{projectName}</span> is now linked to ThirdEye Gateway. You can now search and connect partner APIs from the Marketplace catalog!
+                  Project <span className="text-white font-semibold">{projectName}</span> is now linked to
+                  ThirdEye Gateway. You can now search and connect partner APIs from the Marketplace catalog!
                 </p>
                 <div className="pt-4 flex justify-center">
                   <button onClick={handleConnectProject} className="btn-accent !px-6 !py-2.5 !text-[13.5px]">
@@ -553,14 +651,19 @@ export const gateway = new ThirdEyeGateway({
       {/* ═══ Connect Integration Modal ═══ */}
       {connectModal && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-rise">
-          <div className="panel max-w-xl w-full p-6 space-y-5 border-white/20" style={{ background: '#0E1A33' }}>
+          <div
+            className="panel max-w-xl w-full p-6 space-y-5 border-white/20"
+            style={{ background: '#0E1A33' }}
+          >
             <div className="flex items-start justify-between border-b pb-4 border-white/10">
               <div>
                 <span className="chip !text-[10px] uppercase">{connectModal.category}</span>
                 <h3 className="mt-1 text-[20px] font-bold text-white">Connect {connectModal.name}</h3>
                 <p className="text-[13px] text-[#8494AD]">{connectModal.purpose}</p>
               </div>
-              <button onClick={() => setConnectModal(null)} className="text-[#8494AD] hover:text-white">✕</button>
+              <button onClick={() => setConnectModal(null)} className="text-[#8494AD] hover:text-white">
+                ✕
+              </button>
             </div>
 
             <div className="space-y-4 text-[13px]">
@@ -568,7 +671,9 @@ export const gateway = new ThirdEyeGateway({
                 <label className="section-label-soft">Generated Production API Key</label>
                 <div className="mono-num mt-1 flex items-center justify-between rounded-xl border p-3 border-white/10 bg-black/40 text-[#00C8D7]">
                   <span>te_live_{connectModal.id}_98a7b6c5</span>
-                  <span className="chip !text-[10px]" style={{ color: '#19D98A' }}>ACTIVE</span>
+                  <span className="chip !text-[10px]" style={{ color: '#19D98A' }}>
+                    ACTIVE
+                  </span>
                 </div>
               </div>
 
@@ -580,9 +685,9 @@ export const gateway = new ThirdEyeGateway({
               </div>
 
               <div>
-                <label className="section-label-soft">{projectName} @thirdeye/sdk Code Snippet</label>
+                <label className="section-label-soft">{projectName} @the-third-eye/sdk Code Snippet</label>
                 <pre className="mono-num mt-1 overflow-x-auto rounded-xl border p-3 text-[11.5px] leading-relaxed border-white/10 bg-black/60 text-[#19D98A]">
-{`import { ThirdEye } from '@thirdeye/sdk';
+                  {`import { ThirdEye } from '@the-third-eye/sdk';
 
 const thirdeye = new ThirdEye({
   projectKey: '${projectId}',
@@ -614,10 +719,12 @@ const thirdeye = new ThirdEye({
 
 export default function IntegrationsPage() {
   return (
-    <Suspense fallback={<div className="section-card py-10 text-center text-[13px] text-[#8B9BB4]">Loading registry…</div>}>
+    <Suspense
+      fallback={
+        <div className="section-card py-10 text-center text-[13px] text-[#8B9BB4]">Loading registry…</div>
+      }
+    >
       <IntegrationsInner />
     </Suspense>
   );
 }
-
-
