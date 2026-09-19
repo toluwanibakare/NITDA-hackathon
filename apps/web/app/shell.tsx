@@ -8,6 +8,8 @@ import { Icon, paths } from '@/components/icons';
 import { NotificationToastContainer, showToast } from '@/components/NotificationToast';
 import { checkEngineHealth } from '@/lib/api';
 
+import { ChatGPTStoryModal } from '@/components/ChatGPTStoryModal';
+
 const NAV = [
   { href: '/dashboard', label: 'Overview' },
   { href: '/integrations', label: 'Integrations' },
@@ -50,6 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [engineOnline, setEngineOnline] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [devMode, setDevMode] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
   const [search, setSearch] = useState('');
   const [logoOk, setLogoOk] = useState(true);
 
@@ -220,6 +223,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Bottom Controls & User Profile */}
           <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
             <button
+              onClick={() => setShowChatModal(true)}
+              className="w-full flex items-center justify-between rounded-xl px-3.5 py-2 text-[11.5px] font-semibold border border-[#10A37F]/30 bg-[#10A37F]/10 text-[#10A37F] hover:bg-[#10A37F]/20 transition-all"
+            >
+              <span>🤖 ChatGPT Discovery Story</span>
+              <span className="text-[10px] bg-[#10A37F] text-white px-1.5 py-0.5 rounded font-bold">Tim @ ShopX</span>
+            </button>
+
+            <button
               onClick={toggleDevMode}
               className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[12px] font-semibold border transition-all ${
                 devMode
@@ -348,6 +359,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
+      <ChatGPTStoryModal isOpen={showChatModal} onClose={() => setShowChatModal(false)} />
     </>
   );
 }
