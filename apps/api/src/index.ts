@@ -96,10 +96,20 @@ const isTestEnv =
   Boolean(process.env.NODE_TEST_CONTEXT) ||
   process.argv.some(arg => arg.includes('test'));
 
-const port = Number(process.env.PORT || 4000);
+const initialPort = Number(process.env.PORT || 4000);
 if (!isTestEnv) {
-  app.listen(port, () => {
-    console.log(`[thirdeye-api] server running on port ${port}`);
+  const server = app.listen(initialPort, () => {
+    console.log(`[thirdeye-api] server running on port ${initialPort}`);
+  });
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[thirdeye-api] Port ${initialPort} in use, trying ${initialPort + 1}...`);
+      app.listen(initialPort + 1, () => {
+        console.log(`[thirdeye-api] server running on port ${initialPort + 1}`);
+      });
+    } else {
+      console.error(err);
+    }
   });
 }
 
