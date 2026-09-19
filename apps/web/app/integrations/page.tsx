@@ -20,6 +20,28 @@ import {
 
 const MARKETPLACE_CATALOG = [
   {
+    id: 'shopx_sales_agent_skill',
+    name: 'ShopX Sales AI Agent Skill',
+    category: '🤖 AI Agent Skill',
+    purpose: 'Autonomous sales assistant executing checkout recommendations, cart updates & product lookup.',
+    allowedEndpoints: ['/agent/recommend', '/agent/cart-checkout'],
+    allowedMethods: ['POST'],
+    allowedData: ['item_sku', 'session_token', 'quantity'],
+    forbiddenData: ['full_credit_card', 'customer_password_hash', 'master_api_secret'],
+    expectedRate: 300,
+  },
+  {
+    id: 'support_agent_tool',
+    name: 'Customer Support Agent Skill',
+    category: '🤖 AI Agent Skill',
+    purpose: 'AI Agent tool executing order inquiries, refund lookups, and support ticket creation.',
+    allowedEndpoints: ['/agent/support-ticket', '/agent/order-lookup'],
+    allowedMethods: ['POST'],
+    allowedData: ['ticket_id', 'customer_email', 'order_status'],
+    forbiddenData: ['payment_card_number', 'system_prompt_tokens'],
+    expectedRate: 180,
+  },
+  {
     id: 'stripe_pay',
     name: 'Stripe Payments',
     category: 'Payments',

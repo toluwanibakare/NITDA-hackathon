@@ -58,7 +58,51 @@ const FALLBACK_PHASES: SimulatorPhase[] = [
   },
 ];
 
+const AGENT_PHASES: SimulatorPhase[] = [
+  {
+    phase: 1,
+    name: 'Normal Agent Skill Execution',
+    endpoint: '/agent/cart-checkout',
+    method: 'POST',
+    dataRequested: ['item_sku', 'quantity'],
+    requestCount: 85,
+    expectedRisk: 5,
+    expectedAction: 'ALLOW',
+  },
+  {
+    phase: 2,
+    name: 'Agent Prompt Drift (System Probe)',
+    endpoint: '/agent/system-prompt-probe',
+    method: 'POST',
+    dataRequested: ['item_sku'],
+    requestCount: 280,
+    expectedRisk: 45,
+    expectedAction: 'MONITOR',
+  },
+  {
+    phase: 3,
+    name: 'Agent PII Exfiltration Surge',
+    endpoint: '/agent/exfiltrate-customer-pii',
+    method: 'POST',
+    dataRequested: ['full_credit_card', 'customer_password_hash'],
+    requestCount: 750,
+    expectedRisk: 75,
+    expectedAction: 'RATE_LIMIT',
+  },
+  {
+    phase: 4,
+    name: 'Compromised Agent Tool Flood',
+    endpoint: '/agent/exfiltrate-customer-pii',
+    method: 'POST',
+    dataRequested: ['full_credit_card', 'customer_password_hash', 'master_api_secret'],
+    requestCount: 1650,
+    expectedRisk: 95,
+    expectedAction: 'BLOCK',
+  },
+];
+
 export default function SimulatorPage() {
+  const [attackType, setAttackType] = useState<'credential_compromise' | 'agent_drift'>('credential_compromise');
   const [integrations, setIntegrations] = useState<IntegrationRow[]>([]);
   const [integrationId, setIntegrationId] = useState('analytics_001');
   const [running, setRunning] = useState(false);
@@ -290,11 +334,27 @@ export default function SimulatorPage() {
                 })()}
               </div>
               <div>
-                <label className="section-label-soft">Attack pattern</label>
-                <div className="input mt-2 flex items-center justify-between">
-                  <span className="text-[13.5px] text-[#F5F9FF]">Credential compromise</span>
-                  <span className="chip !text-[10.5px]">4 PHASES</span>
+                <div className="flex items-center justify-between">
+                  <label className="section-label-soft">Attack Pattern / Scenario</label>
+                  <span className="chip !text-[10px] !border-[#5B50E6]/30 !bg-[#5B50E6]/15 !text-white">4 PHASES</span>
                 </div>
+                <select
+                  value={attackType}
+                  onChange={e => {
+                    const next = e.target.value as 'credential_compromise' | 'agent_drift';
+                    setAttackType(next);
+                    setPhases(next === 'agent_drift' ? AGENT_PHASES : FALLBACK_PHASES);
+                  }}
+                  className="input mt-2"
+                  disabled={running}
+                >
+                  <option value="credential_compromise" style={{ background: '#0E1A33' }}>
+                    🔑 Credential Compromise (API Key Leak)
+                  </option>
+                  <option value="agent_drift" style={{ background: '#0E1A33' }}>
+                    🤖 AI Agent Skill & Tool Drift (Prompt Injection)
+                  </option>
+                </select>
               </div>
               <div className="space-y-2 border-t pt-4" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
                 {phases.map((p, i) => {
