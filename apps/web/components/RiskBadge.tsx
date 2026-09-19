@@ -3,21 +3,22 @@ import { levelFor, riskColor } from '@/lib/api';
 export function RiskBadge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }) {
   const c = riskColor(score);
   const label = levelFor(score);
-  const pad = size === 'sm' ? 'px-2 py-[3px] text-[10.5px]' : 'px-2.5 py-1 text-[11.5px]';
+  const pad = size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-[12px]';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border font-mono font-semibold tracking-wide shadow-[0_1px_2px_rgba(16,24,40,0.06)] ${pad}`}
+      className={`inline-flex items-center whitespace-nowrap shrink-0 gap-1.5 rounded-full border font-mono font-semibold tracking-wide shadow-sm leading-none ${pad}`}
       style={{ borderColor: `${c}3D`, background: `${c}0F`, color: c }}
     >
-      <span className="relative flex h-1.5 w-1.5">
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
         <span
           className="absolute inline-flex h-full w-full rounded-full opacity-60 animate-pingRing"
           style={{ background: c }}
         />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: c }} />
       </span>
-      <span className="tabular-nums">{score}</span>
-      <span className="opacity-90">· {label}</span>
+      <span className="tabular-nums font-bold leading-none">{score}</span>
+      <span className="opacity-50 leading-none">·</span>
+      <span className="opacity-95 leading-none">{label}</span>
     </span>
   );
 }
@@ -33,14 +34,14 @@ export function StatusDot({ status }: { status: string }) {
           : '#19D98A';
   return (
     <span
-      className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1"
+      className="inline-flex items-center whitespace-nowrap shrink-0 gap-2 rounded-full border px-2.5 py-1 leading-none"
       style={{ borderColor: 'rgba(245,249,255,0.10)', background: 'rgba(245,249,255,0.04)' }}
     >
-      <span className="relative flex h-2 w-2">
+      <span className="relative flex h-2 w-2 shrink-0">
         <span className="absolute h-full w-full rounded-full animate-pingRing" style={{ background: c }} />
         <span className="relative h-2 w-2 rounded-full animate-pulseDot" style={{ background: c }} />
       </span>
-      <span className="font-mono text-[10.5px] font-semibold tracking-[0.12em]" style={{ color: c }}>
+      <span className="font-mono text-[10.5px] font-semibold tracking-[0.12em] leading-none" style={{ color: c }}>
         {status}
       </span>
     </span>

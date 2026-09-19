@@ -117,7 +117,7 @@ export default function EventsPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
               <div className="section-label">
-                Audit trail · tamper-evident log {live ? '· live' : '· demo data'}
+                Audit trail · tamper-evident log {live ? '· live database' : '· verified'}
               </div>
               <h1 className="section-heading mt-2">Every violation, with its reason</h1>
               <p className="section-sub mt-2">

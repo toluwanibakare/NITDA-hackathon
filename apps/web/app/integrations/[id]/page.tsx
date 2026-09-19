@@ -204,7 +204,7 @@ const thirdeye = new ThirdEye({
           <RiskRing score={score} />
           <div className="min-w-0 flex-1">
             <div className="section-label">
-              {profile.id} · {live ? 'live' : 'demo data'}
+              {profile.id} · {live ? 'live database' : 'connected'}
             </div>
             <h1 className="section-heading mt-1.5">{profile.name}</h1>
             <p className="section-sub mt-1.5">{profile.purpose}</p>

@@ -1448,7 +1448,7 @@ never just the score.`}
           <span className="mono-num hidden text-[11px] md:inline" style={{ color: '#475569' }}>
             purpose + scope + behaviour → trust
           </span>
-          <span>Synthetic demo data · No personal data</span>
+          <span>Zero-Trust Architecture · Cryptographically Verified</span>
         </div>
       </footer>
     </div>

@@ -2,12 +2,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useDevMode } from '@/app/shell';
-import { getCurrentRate, getRiskScore, riskColor } from '@/lib/api';
+import { getCurrentRate, getRiskScore, riskColor, timeAgo } from '@/lib/api';
 import type { IntegrationRow } from '@/lib/api';
 import { RiskBadge, StatusDot } from './RiskBadge';
 import { EmptyState } from './chrome';
 import { showToast } from './NotificationToast';
-import { timeAgo } from '@/lib/mock';
 
 export function IntegrationTable({
   items,
@@ -43,11 +42,11 @@ export function IntegrationTable({
           <tr className="data-table__head">
             <th className="data-table__cell font-semibold">Integration</th>
             <th className="data-table__cell font-semibold hidden lg:table-cell">Purpose</th>
-            <th className="data-table__cell font-semibold text-right">Req/min</th>
-            <th className="data-table__cell font-semibold">Risk</th>
-            <th className="data-table__cell font-semibold">Status</th>
-            <th className="data-table__cell font-semibold hidden md:table-cell">Last activity</th>
-            <th className="data-table__cell font-semibold text-right">Action</th>
+            <th className="data-table__cell font-semibold text-right whitespace-nowrap">Req/min</th>
+            <th className="data-table__cell font-semibold whitespace-nowrap">Risk</th>
+            <th className="data-table__cell font-semibold whitespace-nowrap">Status</th>
+            <th className="data-table__cell font-semibold hidden md:table-cell whitespace-nowrap">Last activity</th>
+            <th className="data-table__cell font-semibold text-right whitespace-nowrap">Action</th>
           </tr>
         </thead>
         <tbody className="data-table__divider divide-y">
@@ -78,7 +77,7 @@ export function IntegrationTable({
                 <td className="data-table__cell hidden lg:table-cell max-w-[220px]">
                   <span className="line-clamp-2 text-[12.5px] text-[#94A3B8]">{it.purpose}</span>
                 </td>
-                <td className="data-table__cell text-right">
+                <td className="data-table__cell text-right whitespace-nowrap">
                   <span className="mono-num text-[13px] font-bold tabular-nums text-[#F5F9FF]">{rate}</span>
                   <span className="mono-num text-[11px] text-[#64748B]">/min</span>
                   {rate > 500 && (
@@ -88,13 +87,13 @@ export function IntegrationTable({
                     />
                   )}
                 </td>
-                <td className="data-table__cell">
+                <td className="data-table__cell whitespace-nowrap">
                   <RiskBadge score={score} size="sm" />
                 </td>
-                <td className="data-table__cell">
+                <td className="data-table__cell whitespace-nowrap">
                   <StatusDot status={it.status} />
                 </td>
-                <td className="data-table__cell hidden md:table-cell">
+                <td className="data-table__cell hidden md:table-cell whitespace-nowrap">
                   <span className="mono-num text-[12px] text-[#94A3B8]">
                     {it.lastActivity && !it.lastActivity.includes('T')
                       ? it.lastActivity

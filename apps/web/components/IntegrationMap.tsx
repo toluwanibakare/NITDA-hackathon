@@ -27,10 +27,17 @@ export function IntegrationMap({
   const coreY = 126;
   const nodeY = 272;
 
-  // Ports along ThirdEye core bottom (width 280, x from 290 to 570)
-  const corePortXs = [335, 398, 462, 525];
-  // X positions of the 4 integration cards
-  const xs = [115, 325, 535, 745];
+  // Dynamic layout for up to 5 integrations from live database
+  const displayItems = items.slice(0, 5);
+  const n = Math.max(1, displayItems.length);
+  const cardW = n <= 4 ? 180 : 154;
+  const gap = n <= 4 ? 30 : 14;
+  const totalW = n * cardW + (n - 1) * gap;
+  const startLeft = (W - totalW) / 2;
+  const xs = Array.from({ length: n }, (_, i) => startLeft + i * (cardW + gap) + cardW / 2);
+  const coreSpan = 220;
+  const corePortXs =
+    n === 1 ? [cx] : Array.from({ length: n }, (_, i) => cx - coreSpan / 2 + (i * coreSpan) / (n - 1));
 
   return (
     <div className="panel relative overflow-hidden rounded-2xl shadow-sm border border-[#E2E8F0]">
@@ -225,10 +232,11 @@ export function IntegrationMap({
               />
             ))}
 
-            {/* 3. BRANCH LINKS + 4 INTEGRATION NODES */}
-            {items.slice(0, 4).map((it, i) => {
+            {/* 3. BRANCH LINKS + INTEGRATION NODES */}
+            {displayItems.map((it, i) => {
               const destX = xs[i] ?? 115;
               const portX = corePortXs[i] ?? cx;
+              const cardHalf = cardW / 2;
 
               const score = getRiskScore(it);
 
@@ -286,7 +294,7 @@ export function IntegrationMap({
 
                   {/* INTEGRATION CARD NODE */}
                   <g
-                    transform={`translate(${destX - 90}, ${nodeY - 32})`}
+                    transform={`translate(${destX - cardHalf}, ${nodeY - 32})`}
                     onClick={() => onSelect?.(it.id)}
                     style={{ cursor: onSelect ? 'pointer' : 'default', transition: 'filter 150ms ease-out' }}
                     onMouseEnter={e => {
@@ -298,7 +306,7 @@ export function IntegrationMap({
                   >
                     {/* Card Shadow and Background */}
                     <rect
-                      width={180}
+                      width={cardW}
                       height={64}
                       rx={14}
                       fill={isCritical ? '#2A0E18' : isHigh ? '#2A1E0A' : '#0E1A33'}
@@ -309,7 +317,7 @@ export function IntegrationMap({
 
                     {/* Red Alert Indicator Badge for Critical Nodes */}
                     {isCritical && (
-                      <g transform="translate(156, -6)">
+                      <g transform={`translate(${cardW - 24}, -6)`}>
                         <circle cx={0} cy={0} r={10} fill="#FF4D5E" className="animate-pulseDot" />
                         <circle
                           cx={0}
@@ -331,11 +339,11 @@ export function IntegrationMap({
 
                     {/* Integration Name */}
                     <text
-                      x={90}
+                      x={cardHalf}
                       y={21}
                       textAnchor="middle"
                       fill="#F5F9FF"
-                      fontSize={12}
+                      fontSize={n <= 4 ? 12 : 11}
                       fontWeight={800}
                       fontFamily="Inter, system-ui"
                       letterSpacing={0.4}
@@ -345,11 +353,11 @@ export function IntegrationMap({
 
                     {/* Risk Score & Tier Label */}
                     <text
-                      x={90}
+                      x={cardHalf}
                       y={38}
                       textAnchor="middle"
                       fill={linkColor}
-                      fontSize={12}
+                      fontSize={n <= 4 ? 12 : 11}
                       fontWeight={900}
                       fontFamily="monospace"
                     >
@@ -358,11 +366,11 @@ export function IntegrationMap({
 
                     {/* Traffic Rate & Status */}
                     <text
-                      x={90}
+                      x={cardHalf}
                       y={52}
                       textAnchor="middle"
                       fill="#8B9BB4"
-                      fontSize={10}
+                      fontSize={9.5}
                       fontFamily="monospace"
                       fontWeight={500}
                     >

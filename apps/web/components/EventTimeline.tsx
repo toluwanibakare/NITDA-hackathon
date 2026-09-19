@@ -9,9 +9,9 @@ import {
   getEventRiskScore,
   getEventType,
   riskColor,
+  timeAgo,
 } from '@/lib/api';
 import type { SecEvent } from '@/lib/api';
-import { timeAgo } from '@/lib/mock';
 
 export function EventTimeline({ events, compact = false }: { events: SecEvent[]; compact?: boolean }) {
   const devMode = useDevMode();

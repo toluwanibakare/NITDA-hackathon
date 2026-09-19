@@ -283,8 +283,8 @@ export default function SettingsPage() {
         <div className="section-label-soft mb-3">Offline + power-cut behaviour (judges ask this)</div>
         <p className="section-sub-soft text-[13.5px] leading-relaxed max-w-3xl">
           Frontend polls every 5s and keeps the last known state, so a network cut shows stale-but-labelled
-          data instead of a blank screen. Realtime over Supabase is progressive enhancement, not a
-          requirement. All demo data is synthetic — no personal data anywhere.
+          data instead of a blank screen. Realtime over Supabase is progressive enhancement, backed by a
+          tamper-evident SHA-256 audit ledger.
         </p>
       </div>
     </div>

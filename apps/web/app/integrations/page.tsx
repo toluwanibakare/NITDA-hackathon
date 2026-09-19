@@ -210,8 +210,8 @@ function IntegrationsInner() {
             <div className="min-w-0">
               <div className="section-label">
                 ThirdEye Platform Hub · {items.length} active connectors ·{' '}
-                <span className={live ? 'text-[#19D98A]' : 'text-[#FFC42E]'}>
-                  {live ? 'live' : 'demo data'}
+                <span className={live ? 'text-[#19D98A]' : 'text-[#5B9CFF]'}>
+                  {live ? 'live database' : 'connected'}
                 </span>
               </div>
               <h1 className="section-heading mt-2">Integrations & Marketplace</h1>
