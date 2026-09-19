@@ -562,19 +562,6 @@ export default function LandingPage() {
 
           {/* Story visual: product snapshot + live risk overlay */}
           <div className="relative lg:col-span-5">
-            {/* Floating glass chips (Cloudflare-hero style) */}
-            <div
-              className="absolute -bottom-5 -right-2 z-10 hidden items-center gap-2 rounded-2xl border px-3.5 py-2.5 backdrop-blur-xl md:flex"
-              style={{
-                borderColor: 'rgba(25,217,138,0.35)',
-                background: 'rgba(4,20,14,0.8)',
-                boxShadow: '0 12px 40px -12px rgba(25,217,138,0.45)',
-                animation: 'floatY 6s ease-in-out 1s infinite',
-              }}
-            >
-              <span className="h-2 w-2 rounded-full bg-[#19D98A] animate-pulseDot" />
-              <span className="mono-num text-[11px] font-bold text-[#19D98A]">−20 Black Friday context</span>
-            </div>
             <div
               className="panel cf-beam relative overflow-hidden"
               style={{ boxShadow: '0 24px 80px -24px rgba(22,119,255,0.45)' }}

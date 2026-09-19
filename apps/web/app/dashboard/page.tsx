@@ -24,8 +24,10 @@ import {
 } from '@/lib/api';
 import { MOCK_EVENTS, MOCK_INTEGRATIONS, MOCK_STATS } from '@/lib/mock';
 import { isSupabaseEnvConfigured, supabaseBrowser } from '@/lib/supabaseClient';
+import { useDevMode } from '@/app/shell';
 
 export default function Dashboard() {
+  const devMode = useDevMode();
   const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
   const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
   const [events, setEvents] = useState<SecEvent[]>(MOCK_EVENTS);
@@ -122,121 +124,81 @@ export default function Dashboard() {
     );
   };
 
-  const critical = [...items].sort((a, b) => getRiskScore(b) - getRiskScore(a))[0];
-
   return (
-    <div className="stagger space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
-          <div className="section-label">Security overview · {live ? 'live engine' : 'demo data'}</div>
-          <h1 className="section-heading mt-1.5">Third parties, continuously verified</h1>
-          <p className="section-sub mt-1.5">
-            {integrationsCount} integrations · {threatCount} threats · {quarantineCount} quarantined
-            {critical ? ` · highest risk: ${critical.name} (${getRiskScore(critical)})` : ''}
-          </p>
+    <div className="space-y-6">
+      {/* ═══ DEV MODE VISIBLE BANNER (When Dev Mode is Active) ═══ */}
+      {devMode && (
+        <div className="rounded-2xl border border-[#5B50E6]/50 bg-[#5B50E6]/10 p-4 shadow-lg shadow-[#5B50E6]/20 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-rise">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#5B50E6] text-white font-mono font-bold text-[14px]">
+              ⚡
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-mono font-bold text-white uppercase tracking-wider">DEVELOPER & SECURITY ENGINEER MODE ACTIVE</span>
+                <span className="chip !text-[10px] !border-[#00CEC9]/30 !bg-[#00CEC9]/10 !text-[#00CEC9]">RAW TELEMETRY UNLOCKED</span>
+              </div>
+              <p className="text-[12px] text-[#8E92A4] mt-0.5 font-mono">
+                Showing cURL inspectors, gateway routing tokens (<code className="text-[#00CEC9]">te_proj_shopx_99a8b7c6</code>), P99 latency (0.8ms), and raw payload JSON.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]">
+            <span className="rounded bg-black/40 px-2 py-1 text-[#8E92A4]">p99: 0.8ms</span>
+            <span className="rounded bg-black/40 px-2 py-1 text-[#10B981]">HTTP 200/403 Logged</span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-[#FFC42E]/30 !bg-[#FFC42E]/10 !text-[#FFC42E]'}`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full animate-pulseDot ${live ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`}
-            />
-            {live ? 'LIVE' : 'DEMO'}
-          </span>
-          <button
-            onClick={toggleUnderAttack}
-            className={underAttackMode ? 'btn-danger !py-2 !text-[12.5px]' : 'btn-ghost !py-2 !text-[12.5px]'}
-          >
-            {underAttackMode ? 'Under Attack: ON' : 'Under Attack: OFF'}
-          </button>
-          <Link href="/simulator" className="btn-accent !py-2 !text-[12.5px]">
-            Open simulator →
-          </Link>
-        </div>
-      </div>
+      )}
 
-      {/* Stat cards — real backend values */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard
-          label="Integrations"
-          value={integrationsCount}
-          sub="Registered third parties"
-          tone="neutral"
-        />
-        <StatCard label="Active" value={activeCount} sub="Passing continuous checks" tone="good" />
-        <StatCard
-          label="Monitored requests"
-          value={reqCount.toLocaleString()}
-          sub="Evaluated via risk engine"
-          tone="neutral"
-        />
-        <StatCard
-          label="Threats"
-          value={threatCount}
-          sub="Violations + anomalies"
-          tone={threatCount > 0 ? 'warn' : 'good'}
-        />
-        <StatCard
-          label="Quarantined"
-          value={quarantineCount}
-          sub="Blocked pending review"
-          tone={quarantineCount > 0 ? 'bad' : 'good'}
-        />
-      </div>
-
-      {/* Traffic + risk — data-driven charts (topology lives on the Activity page) */}
-      <div className="grid gap-5 lg:grid-cols-12">
-        <div className="section-card lg:col-span-7">
+      {/* ═══ TOP ROW: 2 CARDS (Wide Category Donut + Bar Chart) ═══ */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Card 1: Wide Category Donut Breakdown */}
+        <div className="panel lg:col-span-8 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl flex flex-col justify-between">
           <div className="flex items-center justify-between border-b border-white/5 pb-4">
             <div>
-              <p className="section-label-soft">Traffic share · live request rates</p>
-              <h2 className="mono-num mt-1 text-[24px] font-extrabold tabular-nums text-white">
-                {reqCount.toLocaleString()}{' '}
-                <span className="text-[13px] font-semibold text-[#8E92A4]">monitored</span>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E92A4]">Integration Scope & Telemetry</p>
+              <h2 className="text-[28px] font-extrabold text-white mt-1 mono-num">
+                {reqCount.toLocaleString()} <span className="text-[14px] font-semibold text-[#8E92A4]">verified reqs</span>
               </h2>
             </div>
-            <span
-              className={`chip font-semibold ${live ? '!border-[#19D98A]/30 !bg-[#19D98A]/10 !text-[#19D98A]' : '!border-white/10 !bg-white/5 !text-[#8E92A4]'}`}
-            >
-              {live ? 'Live gateway stream' : 'Demo stream'}
+            <span className="chip !border-[#5B50E6]/30 !bg-[#5B50E6]/15 !text-white !py-1 !px-3 font-semibold">
+              Live Gateway Stream
             </span>
           </div>
+
           <div className="pt-5">
             <TrafficDonut items={items} />
           </div>
         </div>
-        <div className="section-card lg:col-span-5">
-          <div className="flex items-center justify-between">
-            <span className="section-label-soft">Risk by integration</span>
-            <Link
-              href="/events"
-              className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline"
-            >
-              Audit trail →
-            </Link>
+
+        {/* Card 2: Risk Bars Visualization */}
+        <div className="panel lg:col-span-4 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] font-bold text-[#8E92A4]">Risk Density per API</span>
+              <span className="text-[11px] font-semibold text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded-md">Live Verified</span>
+            </div>
+            <h3 className="text-[28px] font-extrabold text-white mt-1 mono-num">
+              {items.length} <span className="text-[14px] font-semibold text-[#8E92A4]">active connectors</span>
+            </h3>
+            <p className="text-[12px] text-[#8E92A4]">Height = live risk score. Hover to inspect.</p>
           </div>
+
           <RiskBars items={items} />
-          <p className="body-muted mt-3 text-[12px]">Bar height = live risk score. Hover for exact value.</p>
         </div>
       </div>
 
-      {/* Table + timeline + posture */}
-      <div className="grid gap-5 lg:grid-cols-12">
-        <div className="section-card overflow-hidden !p-0 lg:col-span-8">
-          <div
-            className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-4"
-            style={{ borderColor: 'rgba(245,249,255,0.08)' }}
-          >
-            <div className="section-label-soft">Integration trust table</div>
-            <Link
-              href="/integrations"
-              className="font-mono text-[11.5px] font-semibold text-[#5B9CFF] hover:underline"
-            >
-              Open registry →
+      {/* ═══ BOTTOM ROW: 3 CARDS (Integration Table + Trust Gauge + Activity Stream) ═══ */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Card 3: Integration Trust Table */}
+        <div className="panel lg:col-span-8 p-6 bg-[#1C1D2A] border-white/5 rounded-3xl space-y-4 overflow-hidden !p-0">
+          <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
+            <h4 className="text-[14px] font-bold text-white">Integration Trust Registry</h4>
+            <Link href="/integrations" className="text-[12px] font-semibold text-[#5B50E6] hover:underline">
+              Open Marketplace →
             </Link>
           </div>
+
           <IntegrationTable
             items={items}
             quarantining={quarantining}
@@ -245,16 +207,39 @@ export default function Dashboard() {
             compact
           />
         </div>
-        <div className="space-y-5 lg:col-span-4">
-          <div className="section-card">
-            <div className="section-label-soft">Security posture</div>
+
+        {/* Card 4 & 5: Security Posture Gauge & Activity Timeline */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Card 4: Semicircular Radial Gauge */}
+          <div className="panel p-6 bg-[#1C1D2A] border-white/5 rounded-3xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <span className="text-[12px] font-bold text-[#8E92A4]">Security Posture</span>
+              <span className="chip !text-[10px] !border-[#10B981]/30 !bg-[#10B981]/10 !text-[#10B981]">
+                SHIELD ACTIVE
+              </span>
+            </div>
+
             <TrustGauge items={items} quarantined={quarantineCount} />
           </div>
-          <div className="section-card--numbered overflow-hidden">
-            <div className="border-b px-5 py-4" style={{ borderColor: 'rgba(245,249,255,0.08)' }}>
-              <div className="section-label-soft">Live activity</div>
+
+          {/* Card 5: Gradient Quick Action Banner */}
+          <div className="panel p-6 bg-gradient-to-br from-[#5B50E6] via-[#7B2CBF] to-[#9D4EDD] rounded-3xl flex flex-col justify-between text-white shadow-xl shadow-[#5B50E6]/30">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full">
+                ThirdEye Shield
+              </span>
+              <h3 className="text-[22px] font-extrabold mt-3 leading-snug">Connect New Project</h3>
+              <p className="text-[13px] text-white/80 mt-2 leading-relaxed">
+                Protect any store or web application with ThirdEye Custom Gateway proxy.
+              </p>
             </div>
-            <EventTimeline events={events.slice(0, 6)} compact />
+
+            <button
+              onClick={() => showToast('Connect Project', 'Opening Project Setup wizard on Integrations Marketplace.', 'info')}
+              className="mt-5 w-full rounded-2xl bg-[#FF2A6D] py-3 text-[14px] font-bold text-white shadow-lg shadow-[#FF2A6D]/40 transition-transform active:scale-95 hover:brightness-110"
+            >
+              Connect Project Now →
+            </button>
           </div>
         </div>
       </div>

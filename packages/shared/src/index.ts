@@ -22,8 +22,8 @@ export interface TrustProfile {
   purpose: string;
   allowedEndpoints: string[];
   allowedMethods: string[];
-  allowedData: string[];
-  forbiddenData: string[];
+  allowedData?: string[];
+  forbiddenData?: string[];
   expectedRequestRate: number;
 }
 

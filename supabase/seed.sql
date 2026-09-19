@@ -7,7 +7,9 @@ insert into integrations (id, name, purpose, status, risk_score, expected_reques
 ('analytics_001','Analytics Provider','Collect anonymous usage statistics','ACTIVE',8,100,
  '{/analytics/events,/analytics/metrics}','{GET,POST}','{anonymous_user_id,page,event,timestamp}','{payment,phone,address,password,customer}'),
 ('marketing_001','Marketing Provider','Manage marketing campaigns','ACTIVE',22,95,
- '{/campaigns,/campaigns/events}','{GET,POST}','{campaign_id,anonymous_user_id,event}','{payment,password}')
+ '{/campaigns,/campaigns/events}','{GET,POST}','{campaign_id,anonymous_user_id,event}','{payment,password}'),
+('support_001','ZendeskDesk Care','Resolve customer inquiries and ticket escalations','ACTIVE',15,60,
+ '{/support/tickets,/order-status}','{GET,POST}','{ticket_id,customer_email,issue_type}','{payment_credentials,raw_ssn}')
 on conflict (id) do update set name=excluded.name, purpose=excluded.purpose,
   allowed_endpoints=excluded.allowed_endpoints, allowed_methods=excluded.allowed_methods,
   allowed_data=excluded.allowed_data, forbidden_data=excluded.forbidden_data,

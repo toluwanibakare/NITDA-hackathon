@@ -79,7 +79,7 @@ const MARKETPLACE_CATALOG = [
 function IntegrationsInner() {
   const searchParams = useSearchParams();
   const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
-  const [q, setQ] = useState(searchParams.get('q') ?? '');
+  const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortKey, setSortKey] = useState<'risk' | 'rate' | 'name'>('risk');
   const [live, setLive] = useState(false);

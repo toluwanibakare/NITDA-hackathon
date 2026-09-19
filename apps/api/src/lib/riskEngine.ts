@@ -36,7 +36,7 @@ export function checkRequestPure(req: CheckRequest, profile: TrustProfile | null
 
   const allowedEndpoints = profile.allowedEndpoints.map(e => e.toLowerCase());
   const allowedMethods = profile.allowedMethods.map(m => m.toUpperCase());
-  const forbiddenData = profile.forbiddenData.map(d => d.toLowerCase());
+  const forbiddenData = (profile.forbiddenData ?? []).map(d => d.toLowerCase());
 
   // Endpoint verification
   if (!allowedEndpoints.includes(req.endpoint.toLowerCase())) {

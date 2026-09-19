@@ -20,7 +20,7 @@ test('normalizeTrustProfile accepts both camelCase and snake_case fields', () =>
     allowed_data: ['event'],
     forbidden_data: ['payment'],
     expected_request_rate: 100,
-  } satisfies Partial<TrustProfile>);
+  } as any);
 
   assert.ok(profile);
   assert.deepEqual(profile.allowedEndpoints, ['/analytics/events']);

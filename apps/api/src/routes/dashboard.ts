@@ -71,13 +71,13 @@ dashboardRouter.get('/activity', async (req: Request, res: Response) => {
 
   try {
     if (isSupabaseConfigured) {
-      const { data: requests } = await supabase
+      const { data: requests, error } = await supabase
         .from('requests')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
 
-      if (requests && requests.length > 0) {
+      if (!error && requests) {
         const activity = requests.map(r => ({
           id: r.id,
           type: r.action === 'ALLOW' ? 'NORMAL' : 'VIOLATION',

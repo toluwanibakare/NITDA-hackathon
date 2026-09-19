@@ -73,12 +73,12 @@ integrationsRouter.get('/', async (req: Request, res: Response) => {
       }
 
       const { data, error } = await query;
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         list = data.map(formatIntegration);
       }
     }
 
-    if (list.length === 0) {
+    if (!isSupabaseConfigured && list.length === 0) {
       const profiles = await getAllTrustProfiles();
       list = profiles.map(profile => ({
         id: profile.id,

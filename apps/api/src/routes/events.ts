@@ -90,11 +90,23 @@ function formatEvent(e: any, prevHashArg?: string | number) {
  */
 eventsRouter.get('/verify', async (_req: Request, res: Response) => {
   try {
-    const list = [...demoEvents].reverse(); // oldest to newest
+    let rawList: any[] = [];
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase
+        .from('security_events')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!error && data) {
+        rawList = data;
+      }
+    } else {
+      rawList = [...demoEvents].reverse(); // oldest to newest
+    }
+
     let currentHash = GENESIS_HASH;
     const verifiedRecords: string[] = [];
 
-    for (const ev of list) {
+    for (const ev of rawList) {
       const formatted = formatEvent(ev, currentHash);
       verifiedRecords.push(formatted.id);
       currentHash = formatted.hash;
@@ -125,15 +137,14 @@ eventsRouter.get('/export', async (req: Request, res: Response) => {
   try {
     let rawList: any[] = [];
     if (isSupabaseConfigured) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: true });
-      if (data && data.length > 0) {
+      if (!error && data) {
         rawList = data;
       }
-    }
-    if (rawList.length === 0) {
+    } else {
       rawList = [...demoEvents].reverse();
     }
 
@@ -198,10 +209,9 @@ eventsRouter.get('/stats', async (_req: Request, res: Response) => {
   try {
     let rawList: any[] = [];
     if (isSupabaseConfigured) {
-      const { data } = await supabase.from('security_events').select('*');
-      if (data && data.length > 0) rawList = data;
-    }
-    if (rawList.length === 0) {
+      const { data, error } = await supabase.from('security_events').select('*');
+      if (!error && data) rawList = data;
+    } else {
       rawList = demoEvents;
     }
 
@@ -268,7 +278,7 @@ eventsRouter.get('/', async (req: Request, res: Response) => {
       }
 
       const { data, error } = await query;
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return res.status(200).json(data.map(formatEvent));
       }
     }
@@ -294,10 +304,11 @@ eventsRouter.get('/:id', async (req: Request, res: Response) => {
 
   try {
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('security_events').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('security_events').select('*').eq('id', id).maybeSingle();
       if (!error && data) {
         return res.status(200).json(formatEvent(data));
       }
+      return res.status(404).json({ error: `Security event '${id}' not found`, code: 'NOT_FOUND' });
     }
 
     const found = demoEvents.find(e => e.id === id);
