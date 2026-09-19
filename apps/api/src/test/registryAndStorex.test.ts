@@ -11,7 +11,7 @@ import {
   integrationRegistry,
 } from '../integrations/registry.js';
 import { fallbackIntegrations } from '../routes/integrations.js';
-import { shopxStore } from '../shopx/store.js';
+import { storexStore } from '../storex/store.js';
 import app from '../index.js';
 
 describe('Integration Registry & Single Source of Truth', () => {
@@ -91,7 +91,7 @@ describe('Integration Registry & Single Source of Truth', () => {
   });
 });
 
-describe('ShopX Business Service & Realistic Endpoints', () => {
+describe('StoreX Business Service & Realistic Endpoints', () => {
   let server: Server;
   let baseUrl: string;
 
@@ -114,21 +114,21 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
   });
 
   beforeEach(() => {
-    shopxStore.reset();
+    storexStore.reset();
   });
 
-  test('ShopX Store holds realistic in-memory business entities', () => {
-    assert.ok(Object.keys(shopxStore.orders).length >= 3);
-    assert.ok(Object.keys(shopxStore.customers).length >= 3);
-    assert.ok(Object.keys(shopxStore.products).length >= 3);
-    assert.ok(Object.keys(shopxStore.payments).length >= 2);
-    assert.ok(Object.keys(shopxStore.shipments).length >= 1);
-    assert.ok(Object.keys(shopxStore.tickets).length >= 1);
-    assert.ok(Object.keys(shopxStore.campaigns).length >= 1);
+  test('StoreX Store holds realistic in-memory business entities', () => {
+    assert.ok(Object.keys(storexStore.orders).length >= 3);
+    assert.ok(Object.keys(storexStore.customers).length >= 3);
+    assert.ok(Object.keys(storexStore.products).length >= 3);
+    assert.ok(Object.keys(storexStore.payments).length >= 2);
+    assert.ok(Object.keys(storexStore.shipments).length >= 1);
+    assert.ok(Object.keys(storexStore.tickets).length >= 1);
+    assert.ok(Object.keys(storexStore.campaigns).length >= 1);
   });
 
-  test('ShopX Store reset restores original state', () => {
-    shopxStore.orders['ord_custom_test'] = {
+  test('StoreX Store reset restores original state', () => {
+    storexStore.orders['ord_custom_test'] = {
       id: 'ord_custom_test',
       customer_id: 'cust_101',
       items: [],
@@ -137,14 +137,14 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
       status: 'pending',
       created_at: new Date().toISOString(),
     };
-    assert.ok(shopxStore.orders['ord_custom_test']);
+    assert.ok(storexStore.orders['ord_custom_test']);
 
-    shopxStore.reset();
-    assert.equal(shopxStore.orders['ord_custom_test'], undefined);
+    storexStore.reset();
+    assert.equal(storexStore.orders['ord_custom_test'], undefined);
   });
 
-  test('GET /api/shopx/orders returns realistic order objects', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/orders`);
+  test('GET /api/storex/orders returns realistic order objects', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/orders`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.success, true);
@@ -153,16 +153,16 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
     assert.equal(body.orders[0].currency, 'USD');
   });
 
-  test('GET /api/shopx/orders/dispatch returns dispatchable orders', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/orders/dispatch`);
+  test('GET /api/storex/orders/dispatch returns dispatchable orders', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/orders/dispatch`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.success, true);
     assert.ok(body.orders.every((o: any) => o.status === 'processing' || o.status === 'dispatched'));
   });
 
-  test('GET /api/shopx/customers/:id returns customer data without password hash', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/customers/cust_101`);
+  test('GET /api/storex/customers/:id returns customer data without password hash', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/customers/cust_101`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.success, true);
@@ -170,8 +170,8 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
     assert.equal(body.customer.password_hash, undefined);
   });
 
-  test('GET /api/shopx/customers/:id/payment-details returns sensitive payment details', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/customers/cust_101/payment-details`);
+  test('GET /api/storex/customers/:id/payment-details returns sensitive payment details', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/customers/cust_101/payment-details`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.success, true);
@@ -181,8 +181,8 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
     assert.equal(body.paymentMethods[0].last4, '4242');
   });
 
-  test('POST /api/shopx/payments processes payment transaction', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/payments`, {
+  test('POST /api/storex/payments processes payment transaction', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/payments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ order_id: 'ord_1001', amount: 149.99, currency: 'USD' }),
@@ -194,8 +194,8 @@ describe('ShopX Business Service & Realistic Endpoints', () => {
     assert.ok(body.payment.transaction_id.startsWith('tx_stripe_'));
   });
 
-  test('POST /api/shopx/analytics/events records telemetry events', async () => {
-    const res = await fetch(`${baseUrl}/api/shopx/analytics/events`, {
+  test('POST /api/storex/analytics/events records telemetry events', async () => {
+    const res = await fetch(`${baseUrl}/api/storex/analytics/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

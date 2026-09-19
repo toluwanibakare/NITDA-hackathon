@@ -139,7 +139,7 @@ export function EventTimeline({ events, compact = false }: { events: SecEvent[];
   timestamp: selectedEvent.createdAt,
   endpoint: selectedEvent.endpoint,
   headers: {
-    'user-agent': 'ShopX-Gateway/2.1',
+    'user-agent': 'StoreX-Gateway/2.1',
     'x-forwarded-for': '192.168.1.4',
     'authorization': 'Bearer te_live_***'
   },

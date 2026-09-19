@@ -466,7 +466,7 @@ export default function LandingPage() {
                 animation: 'rise 0.55s cubic-bezier(0.23,1,0.32,1) 160ms both',
               }}
             >
-              ThirdEye is the trust layer between apps like <strong className="text-white">ShopX</strong> and
+              ThirdEye is the trust layer between apps like <strong className="text-white">StoreX</strong> and
               their Payments, Delivery, Analytics &amp; Marketing integrations — scoring every call 0–100
               against its declared purpose, then allowing, throttling or quarantining it.
             </p>
@@ -475,7 +475,7 @@ export default function LandingPage() {
               className="mt-5 flex flex-wrap items-center gap-2"
               style={{ animation: 'rise 0.55s cubic-bezier(0.23,1,0.32,1) 220ms both' }}
             >
-              {['ShopX store', 'ThirdEye trust layer', '4 partner APIs'].map((s, j, arr) => (
+              {['StoreX store', 'ThirdEye trust layer', '4 partner APIs'].map((s, j, arr) => (
                 <span key={s} className="flex items-center gap-2">
                   <span
                     className="mono-num rounded-full border px-3 py-1.5 text-[11.5px] font-semibold"
@@ -615,7 +615,7 @@ export default function LandingPage() {
             </div>
             <RiskLoop />
             <p className="mono-num mt-3 text-center text-[11.5px]" style={{ color: '#5B6B85' }}>
-              ShopX Gateway · 1,420 requests verified today · 0 breach exposures
+              StoreX Gateway · 1,420 requests verified today · 0 breach exposures
             </p>
           </div>
         </div>
@@ -695,7 +695,7 @@ export default function LandingPage() {
                 'FedEx Shipping',
                 'Klaviyo Marketing',
                 'Zendesk Support',
-                'ShopX Store',
+                'StoreX Store',
                 'Payments API',
                 'Delivery API',
                 ...[
@@ -704,7 +704,7 @@ export default function LandingPage() {
                   'FedEx Shipping',
                   'Klaviyo Marketing',
                   'Zendesk Support',
-                  'ShopX Store',
+                  'StoreX Store',
                   'Payments API',
                   'Delivery API',
                 ],
@@ -723,7 +723,7 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      {/* ── How it works: 3-step ShopX integration flow ── */}
+      {/* ── How it works: 3-step StoreX integration flow ── */}
       <section
         id="how"
         className="console-full scroll-mt-20 border-t py-12 md:py-14"
@@ -737,10 +737,10 @@ export default function LandingPage() {
                 className="mt-2 text-[22px] sm:text-[26px] font-bold"
                 style={{ letterSpacing: '-0.02em', lineHeight: 1.15 }}
               >
-                ShopX Integration Journey
+                StoreX Integration Journey
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#8494AD' }}>
-                ShopX merchants connect partner integrations through our Marketplace or custom SDK. ThirdEye
+                StoreX merchants connect partner integrations through our Marketplace or custom SDK. ThirdEye
                 continuously verifies scope and intent on every request.
               </p>
               <Link
@@ -814,7 +814,7 @@ export default function LandingPage() {
                 Zero-friction integration for developers.
               </h2>
               <p className="mt-3 text-[14.5px] leading-relaxed" style={{ color: '#A9B6CC' }}>
-                Connect ShopX in 3 lines of code using <code>@the-third-eye/sdk</code> or point your HTTP
+                Connect StoreX in 3 lines of code using <code>@the-third-eye/sdk</code> or point your HTTP
                 client to ThirdEye Custom API Gateway: <code>https://gateway.thirdeye.sec</code>.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">

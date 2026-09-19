@@ -6,18 +6,18 @@ import { showToast } from '@/components/NotificationToast';
 
 const CODE_SAMPLES = {
   ts: {
-    filename: 'shopx-integration.ts',
+    filename: 'storex-integration.ts',
     lang: 'TYPESCRIPT / NODE.JS',
     code: `import { ThirdEye } from '@the-third-eye/sdk';
 
-// Initialize ShopX integration via ThirdEye Custom Gateway
+// Initialize StoreX integration via ThirdEye Custom Gateway
 const thirdeye = new ThirdEye({
   apiKey: 'te_live_98a7b6c5d4e3',
   gatewayUrl: 'https://gateway.thirdeye.sec',
   integrationId: 'analytics_001'
 });
 
-// Verify request before passing to ShopX backend
+// Verify request before passing to StoreX backend
 const decision = await thirdeye.verifyRequest({
   endpoint: '/analytics/events',
   method: 'GET',
@@ -30,11 +30,11 @@ if (decision.action === 'BLOCK') {
 }`,
   },
   py: {
-    filename: 'shopx_integration.py',
+    filename: 'storex_integration.py',
     lang: 'PYTHON 3.11',
     code: `from thirdeye import ThirdEyeClient
 
-# Initialize ShopX integration gateway shield
+# Initialize StoreX integration gateway shield
 client = ThirdEyeClient(
     api_key="te_live_98a7b6c5d4e3",
     gateway_url="https://gateway.thirdeye.sec"
@@ -55,7 +55,7 @@ if result.is_blocked:
     lang: 'cURL / HTTP GATEWAY',
     code: `# Route third-party requests directly through ThirdEye Custom API Gateway
 curl -X POST https://gateway.thirdeye.sec/api/v1/stripe_pay \\
-  -H "X-ThirdEye-Project-Key: te_proj_shopx_99a8b7c6" \\
+  -H "X-ThirdEye-Project-Key: te_proj_storex_99a8b7c6" \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": 12500,

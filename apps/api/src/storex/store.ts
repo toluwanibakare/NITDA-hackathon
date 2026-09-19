@@ -1,9 +1,9 @@
 /**
- * ShopX in-memory business data store.
+ * StoreX in-memory business data store.
  * Provides realistic e-commerce datasets for orders, customers, products, payments, shipments, and telemetry.
  */
 
-export interface ShopXCustomer {
+export interface StoreXCustomer {
   id: string;
   name: string;
   email: string;
@@ -15,7 +15,7 @@ export interface ShopXCustomer {
   created_at: string;
 }
 
-export interface ShopXOrder {
+export interface StoreXOrder {
   id: string;
   customer_id: string;
   items: Array<{ id: string; name: string; quantity: number; price: number }>;
@@ -25,7 +25,7 @@ export interface ShopXOrder {
   created_at: string;
 }
 
-export interface ShopXProduct {
+export interface StoreXProduct {
   id: string;
   name: string;
   price: number;
@@ -33,7 +33,7 @@ export interface ShopXProduct {
   category: string;
 }
 
-export interface ShopXPayment {
+export interface StoreXPayment {
   id: string;
   order_id: string;
   amount: number;
@@ -44,7 +44,7 @@ export interface ShopXPayment {
   created_at: string;
 }
 
-export interface ShopXShipment {
+export interface StoreXShipment {
   id: string;
   order_id: string;
   recipient_name: string;
@@ -56,7 +56,7 @@ export interface ShopXShipment {
   created_at: string;
 }
 
-export interface ShopXTicket {
+export interface StoreXTicket {
   id: string;
   customer_id: string;
   customer_name: string;
@@ -67,7 +67,7 @@ export interface ShopXTicket {
   created_at: string;
 }
 
-export interface ShopXCampaign {
+export interface StoreXCampaign {
   id: string;
   name: string;
   audience_tag: string;
@@ -76,7 +76,7 @@ export interface ShopXCampaign {
   created_at: string;
 }
 
-const INITIAL_CUSTOMERS: Record<string, ShopXCustomer> = {
+const INITIAL_CUSTOMERS: Record<string, StoreXCustomer> = {
   cust_101: {
     id: 'cust_101',
     name: 'Alex Rivera',
@@ -112,7 +112,7 @@ const INITIAL_CUSTOMERS: Record<string, ShopXCustomer> = {
   },
 };
 
-const INITIAL_ORDERS: Record<string, ShopXOrder> = {
+const INITIAL_ORDERS: Record<string, StoreXOrder> = {
   ord_1001: {
     id: 'ord_1001',
     customer_id: 'cust_101',
@@ -142,7 +142,7 @@ const INITIAL_ORDERS: Record<string, ShopXOrder> = {
   },
 };
 
-const INITIAL_PRODUCTS: Record<string, ShopXProduct> = {
+const INITIAL_PRODUCTS: Record<string, StoreXProduct> = {
   prod_1: {
     id: 'prod_1',
     name: 'Wireless Noise-Cancelling Headphones',
@@ -154,7 +154,7 @@ const INITIAL_PRODUCTS: Record<string, ShopXProduct> = {
   prod_3: { id: 'prod_3', name: 'Smart Fitness Tracker v4', price: 299.0, stock: 18, category: 'wearables' },
 };
 
-const INITIAL_PAYMENTS: Record<string, ShopXPayment> = {
+const INITIAL_PAYMENTS: Record<string, StoreXPayment> = {
   pay_901: {
     id: 'pay_901',
     order_id: 'ord_1001',
@@ -177,7 +177,7 @@ const INITIAL_PAYMENTS: Record<string, ShopXPayment> = {
   },
 };
 
-const INITIAL_SHIPMENTS: Record<string, ShopXShipment> = {
+const INITIAL_SHIPMENTS: Record<string, StoreXShipment> = {
   shp_501: {
     id: 'shp_501',
     order_id: 'ord_1002',
@@ -191,7 +191,7 @@ const INITIAL_SHIPMENTS: Record<string, ShopXShipment> = {
   },
 };
 
-const INITIAL_TICKETS: Record<string, ShopXTicket> = {
+const INITIAL_TICKETS: Record<string, StoreXTicket> = {
   tkt_701: {
     id: 'tkt_701',
     customer_id: 'cust_101',
@@ -204,7 +204,7 @@ const INITIAL_TICKETS: Record<string, ShopXTicket> = {
   },
 };
 
-const INITIAL_CAMPAIGNS: Record<string, ShopXCampaign> = {
+const INITIAL_CAMPAIGNS: Record<string, StoreXCampaign> = {
   cmp_301: {
     id: 'cmp_301',
     name: 'Autumn Flash Sale',
@@ -215,14 +215,14 @@ const INITIAL_CAMPAIGNS: Record<string, ShopXCampaign> = {
   },
 };
 
-export class ShopXStore {
-  customers = JSON.parse(JSON.stringify(INITIAL_CUSTOMERS)) as Record<string, ShopXCustomer>;
-  orders = JSON.parse(JSON.stringify(INITIAL_ORDERS)) as Record<string, ShopXOrder>;
-  products = JSON.parse(JSON.stringify(INITIAL_PRODUCTS)) as Record<string, ShopXProduct>;
-  payments = JSON.parse(JSON.stringify(INITIAL_PAYMENTS)) as Record<string, ShopXPayment>;
-  shipments = JSON.parse(JSON.stringify(INITIAL_SHIPMENTS)) as Record<string, ShopXShipment>;
-  tickets = JSON.parse(JSON.stringify(INITIAL_TICKETS)) as Record<string, ShopXTicket>;
-  campaigns = JSON.parse(JSON.stringify(INITIAL_CAMPAIGNS)) as Record<string, ShopXCampaign>;
+export class StoreXStore {
+  customers = JSON.parse(JSON.stringify(INITIAL_CUSTOMERS)) as Record<string, StoreXCustomer>;
+  orders = JSON.parse(JSON.stringify(INITIAL_ORDERS)) as Record<string, StoreXOrder>;
+  products = JSON.parse(JSON.stringify(INITIAL_PRODUCTS)) as Record<string, StoreXProduct>;
+  payments = JSON.parse(JSON.stringify(INITIAL_PAYMENTS)) as Record<string, StoreXPayment>;
+  shipments = JSON.parse(JSON.stringify(INITIAL_SHIPMENTS)) as Record<string, StoreXShipment>;
+  tickets = JSON.parse(JSON.stringify(INITIAL_TICKETS)) as Record<string, StoreXTicket>;
+  campaigns = JSON.parse(JSON.stringify(INITIAL_CAMPAIGNS)) as Record<string, StoreXCampaign>;
   analyticsEvents: Array<Record<string, any>> = [];
 
   reset(): void {
@@ -237,4 +237,4 @@ export class ShopXStore {
   }
 }
 
-export const shopxStore = new ShopXStore();
+export const storexStore = new StoreXStore();

@@ -188,7 +188,7 @@ export function IntegrationTable({
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(`curl -X POST http://localhost:3000/api/proxy/${inspectItem.id} \\
-  -H "Authorization: Bearer te_live_shopx_99a8b7c6" \\
+  -H "Authorization: Bearer te_live_storex_99a8b7c6" \\
   -H "Content-Type: application/json" \\
   -d '{"action": "verify", "data": {"provider": "${inspectItem.id}"}}'`);
                       showToast('Copied to Clipboard', 'cURL command ready to run in terminal.', 'success');
@@ -200,7 +200,7 @@ export function IntegrationTable({
                 </div>
                 <pre className="rounded-xl border border-white/10 bg-[#0B0C14] p-3 text-[12px] font-mono text-[#10B981] overflow-x-auto whitespace-pre-wrap">
 {`curl -X POST http://localhost:3000/api/proxy/${inspectItem.id} \\
-  -H "Authorization: Bearer te_live_shopx_99a8b7c6" \\
+  -H "Authorization: Bearer te_live_storex_99a8b7c6" \\
   -H "Content-Type: application/json" \\
   -d '{"action": "verify", "data": {"provider": "${inspectItem.id}"}}'`}
                 </pre>
@@ -213,7 +213,7 @@ export function IntegrationTable({
                 <pre className="rounded-xl border border-white/10 bg-[#0B0C14] p-3 text-[12px] font-mono text-[#5B9CFF] overflow-x-auto whitespace-pre-wrap">
 {`import { ThirdEye } from '@the-third-eye/sdk';
 
-const thirdeye = new ThirdEye({ apiKey: 'te_live_shopx_99a8b7c6' });
+const thirdeye = new ThirdEye({ apiKey: 'te_live_storex_99a8b7c6' });
 const decision = await thirdeye.guard({
   integration: '${inspectItem.id}',
   payload: { amount: 49.99, currency: 'USD' }

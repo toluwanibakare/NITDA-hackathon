@@ -105,8 +105,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Landing and Docs own their navigation and layout — no dashboard console chrome.
-  if (path === '/' || path?.startsWith('/docs')) {
+  // Landing, Docs, and ChatGPT story page own their navigation and layout — no dashboard console chrome.
+  if (path === '/' || path?.startsWith('/docs') || path === '/chatgpt') {
     return (
       <>
         <BootLoader done={booted} />
@@ -240,8 +240,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 TS
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold text-white truncate">Tim @ ShopX</div>
-                <div className="text-[11px] text-[#8E92A4] truncate">tim.sec@shopx.store</div>
+                <div className="text-[13px] font-semibold text-white truncate">Tim @ StoreX</div>
+                <div className="text-[11px] text-[#8E92A4] truncate">tim.sec@storex.store</div>
               </div>
               <span
                 className={`h-2 w-2 shrink-0 rounded-full ${engineOnline ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`}

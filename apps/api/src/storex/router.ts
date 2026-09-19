@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
-import { shopxStore } from './store.js';
+import { storexStore } from './store.js';
 
-export const shopxRouter = Router();
+export const storexRouter = Router();
 
 // ==========================================
 // 1. ORDERS
 // ==========================================
 
-// GET /api/shopx/orders
-shopxRouter.get('/orders', (req: Request, res: Response) => {
-  const orders = Object.values(shopxStore.orders);
+// GET /api/storex/orders
+storexRouter.get('/orders', (req: Request, res: Response) => {
+  const orders = Object.values(storexStore.orders);
   return res.status(200).json({
     success: true,
     count: orders.length,
@@ -18,9 +18,9 @@ shopxRouter.get('/orders', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/orders/dispatch
-shopxRouter.get('/orders/dispatch', (req: Request, res: Response) => {
-  const dispatchable = Object.values(shopxStore.orders).filter(
+// GET /api/storex/orders/dispatch
+storexRouter.get('/orders/dispatch', (req: Request, res: Response) => {
+  const dispatchable = Object.values(storexStore.orders).filter(
     o => o.status === 'processing' || o.status === 'dispatched'
   );
   return res.status(200).json({
@@ -30,9 +30,9 @@ shopxRouter.get('/orders/dispatch', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/orders/:id
-shopxRouter.get('/orders/:id', (req: Request, res: Response) => {
-  const order = shopxStore.orders[req.params.id];
+// GET /api/storex/orders/:id
+storexRouter.get('/orders/:id', (req: Request, res: Response) => {
+  const order = storexStore.orders[req.params.id];
   if (!order) {
     return res.status(404).json({ error: `Order ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
@@ -43,9 +43,9 @@ shopxRouter.get('/orders/:id', (req: Request, res: Response) => {
 // 2. CUSTOMERS (Sensitive & Summary Resources)
 // ==========================================
 
-// GET /api/shopx/customers
-shopxRouter.get('/customers', (req: Request, res: Response) => {
-  const customers = Object.values(shopxStore.customers).map(c => ({
+// GET /api/storex/customers
+storexRouter.get('/customers', (req: Request, res: Response) => {
+  const customers = Object.values(storexStore.customers).map(c => ({
     id: c.id,
     name: c.name,
     email: c.email,
@@ -53,9 +53,9 @@ shopxRouter.get('/customers', (req: Request, res: Response) => {
   return res.status(200).json({ success: true, customers });
 });
 
-// GET /api/shopx/customers/profile (generic profile probe endpoint)
-shopxRouter.get('/customers/profile', (req: Request, res: Response) => {
-  const customer = Object.values(shopxStore.customers)[0];
+// GET /api/storex/customers/profile (generic profile probe endpoint)
+storexRouter.get('/customers/profile', (req: Request, res: Response) => {
+  const customer = Object.values(storexStore.customers)[0];
   return res.status(200).json({
     success: true,
     profile: {
@@ -67,9 +67,9 @@ shopxRouter.get('/customers/profile', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/customers/:id
-shopxRouter.get('/customers/:id', (req: Request, res: Response) => {
-  const customer = shopxStore.customers[req.params.id];
+// GET /api/storex/customers/:id
+storexRouter.get('/customers/:id', (req: Request, res: Response) => {
+  const customer = storexStore.customers[req.params.id];
   if (!customer) {
     return res.status(404).json({ error: `Customer ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
@@ -85,14 +85,14 @@ shopxRouter.get('/customers/:id', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/customers/:id/summary
-shopxRouter.get('/customers/:id/summary', (req: Request, res: Response) => {
-  const customer = shopxStore.customers[req.params.id];
+// GET /api/storex/customers/:id/summary
+storexRouter.get('/customers/:id/summary', (req: Request, res: Response) => {
+  const customer = storexStore.customers[req.params.id];
   if (!customer) {
     return res.status(404).json({ error: `Customer ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
-  const customerOrders = Object.values(shopxStore.orders).filter(o => o.customer_id === req.params.id);
-  const customerTickets = Object.values(shopxStore.tickets).filter(t => t.customer_id === req.params.id);
+  const customerOrders = Object.values(storexStore.orders).filter(o => o.customer_id === req.params.id);
+  const customerTickets = Object.values(storexStore.tickets).filter(t => t.customer_id === req.params.id);
 
   return res.status(200).json({
     success: true,
@@ -107,9 +107,9 @@ shopxRouter.get('/customers/:id/summary', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/customers/:id/payment-details (HIGHLY SENSITIVE TARGET)
-shopxRouter.get('/customers/:id/payment-details', (req: Request, res: Response) => {
-  const customer = shopxStore.customers[req.params.id];
+// GET /api/storex/customers/:id/payment-details (HIGHLY SENSITIVE TARGET)
+storexRouter.get('/customers/:id/payment-details', (req: Request, res: Response) => {
+  const customer = storexStore.customers[req.params.id];
   if (!customer) {
     return res.status(404).json({ error: `Customer ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
@@ -131,17 +131,17 @@ shopxRouter.get('/customers/:id/payment-details', (req: Request, res: Response) 
 // 3. PRODUCTS
 // ==========================================
 
-// GET /api/shopx/products
-shopxRouter.get('/products', (_req: Request, res: Response) => {
+// GET /api/storex/products
+storexRouter.get('/products', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    products: Object.values(shopxStore.products),
+    products: Object.values(storexStore.products),
   });
 });
 
-// GET /api/shopx/products/:id
-shopxRouter.get('/products/:id', (req: Request, res: Response) => {
-  const product = shopxStore.products[req.params.id];
+// GET /api/storex/products/:id
+storexRouter.get('/products/:id', (req: Request, res: Response) => {
+  const product = storexStore.products[req.params.id];
   if (!product) {
     return res.status(404).json({ error: `Product ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
@@ -152,17 +152,17 @@ shopxRouter.get('/products/:id', (req: Request, res: Response) => {
 // 4. PAYMENTS & REFUNDS
 // ==========================================
 
-// GET /api/shopx/payments
-shopxRouter.get('/payments', (_req: Request, res: Response) => {
+// GET /api/storex/payments
+storexRouter.get('/payments', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    payments: Object.values(shopxStore.payments),
+    payments: Object.values(storexStore.payments),
   });
 });
 
-// GET /api/shopx/payments/status
-shopxRouter.get('/payments/status', (_req: Request, res: Response) => {
-  const payments = Object.values(shopxStore.payments);
+// GET /api/storex/payments/status
+storexRouter.get('/payments/status', (_req: Request, res: Response) => {
+  const payments = Object.values(storexStore.payments);
   return res.status(200).json({
     success: true,
     totalTransactions: payments.length,
@@ -171,17 +171,17 @@ shopxRouter.get('/payments/status', (_req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/payments/:id
-shopxRouter.get('/payments/:id', (req: Request, res: Response) => {
-  const payment = shopxStore.payments[req.params.id];
+// GET /api/storex/payments/:id
+storexRouter.get('/payments/:id', (req: Request, res: Response) => {
+  const payment = storexStore.payments[req.params.id];
   if (!payment) {
     return res.status(404).json({ error: `Payment ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
   return res.status(200).json({ success: true, payment });
 });
 
-// POST /api/shopx/payments
-shopxRouter.post('/payments', (req: Request, res: Response) => {
+// POST /api/storex/payments
+storexRouter.post('/payments', (req: Request, res: Response) => {
   const { order_id, amount, currency = 'USD' } = req.body || {};
   const id = `pay_${Date.now()}`;
   const payment = {
@@ -194,14 +194,14 @@ shopxRouter.post('/payments', (req: Request, res: Response) => {
     method: 'credit_card',
     created_at: new Date().toISOString(),
   };
-  shopxStore.payments[id] = payment;
+  storexStore.payments[id] = payment;
   return res.status(201).json({ success: true, payment });
 });
 
-// POST /api/shopx/refunds
-shopxRouter.post('/refunds', (req: Request, res: Response) => {
+// POST /api/storex/refunds
+storexRouter.post('/refunds', (req: Request, res: Response) => {
   const { payment_id, reason = 'requested_by_customer' } = req.body || {};
-  const payment = shopxStore.payments[payment_id];
+  const payment = storexStore.payments[payment_id];
   if (payment) {
     payment.status = 'refunded';
   }
@@ -217,36 +217,36 @@ shopxRouter.post('/refunds', (req: Request, res: Response) => {
 // 5. SHIPMENTS & DELIVERY
 // ==========================================
 
-// GET /api/shopx/delivery & /api/shopx/delivery/status
+// GET /api/storex/delivery & /api/storex/delivery/status
 const handleDeliveryStatus = (_req: Request, res: Response) => {
-  const shipments = Object.values(shopxStore.shipments);
+  const shipments = Object.values(storexStore.shipments);
   return res.status(200).json({
     success: true,
     inTransitCount: shipments.filter(s => s.status === 'in_transit').length,
     shipments,
   });
 };
-shopxRouter.get('/delivery', handleDeliveryStatus);
-shopxRouter.get('/delivery/status', handleDeliveryStatus);
+storexRouter.get('/delivery', handleDeliveryStatus);
+storexRouter.get('/delivery/status', handleDeliveryStatus);
 
-// GET /api/shopx/shipments
-shopxRouter.get('/shipments', (_req: Request, res: Response) => {
+// GET /api/storex/shipments
+storexRouter.get('/shipments', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    shipments: Object.values(shopxStore.shipments),
+    shipments: Object.values(storexStore.shipments),
   });
 });
 
-// GET /api/shopx/shipments/:id
-shopxRouter.get('/shipments/:id', (req: Request, res: Response) => {
-  const shipment = shopxStore.shipments[req.params.id];
+// GET /api/storex/shipments/:id
+storexRouter.get('/shipments/:id', (req: Request, res: Response) => {
+  const shipment = storexStore.shipments[req.params.id];
   if (!shipment) {
     return res.status(404).json({ error: `Shipment ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
   return res.status(200).json({ success: true, shipment });
 });
 
-// POST /api/shopx/shipments & /api/shopx/delivery
+// POST /api/storex/shipments & /api/storex/delivery
 const handleCreateShipment = (req: Request, res: Response) => {
   const { order_id, recipient_name, delivery_address, phone, items = [] } = req.body || {};
   const id = `shp_${Date.now()}`;
@@ -261,24 +261,24 @@ const handleCreateShipment = (req: Request, res: Response) => {
     items,
     created_at: new Date().toISOString(),
   };
-  shopxStore.shipments[id] = shipment;
+  storexStore.shipments[id] = shipment;
   return res.status(201).json({ success: true, shipment });
 };
-shopxRouter.post('/shipments', handleCreateShipment);
-shopxRouter.post('/delivery', handleCreateShipment);
+storexRouter.post('/shipments', handleCreateShipment);
+storexRouter.post('/delivery', handleCreateShipment);
 
 // ==========================================
 // 6. ANALYTICS
 // ==========================================
 
-// POST /api/shopx/analytics/events
-shopxRouter.post('/analytics/events', (req: Request, res: Response) => {
+// POST /api/storex/analytics/events
+storexRouter.post('/analytics/events', (req: Request, res: Response) => {
   const event = req.body || {};
   const record = {
     ...event,
     receivedAt: new Date().toISOString(),
   };
-  shopxStore.analyticsEvents.push(record);
+  storexStore.analyticsEvents.push(record);
   return res.status(200).json({
     success: true,
     recorded: true,
@@ -286,17 +286,17 @@ shopxRouter.post('/analytics/events', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/shopx/analytics/metrics
-shopxRouter.get('/analytics/metrics', (_req: Request, res: Response) => {
+// GET /api/storex/analytics/metrics
+storexRouter.get('/analytics/metrics', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     metrics: {
-      pageViewsToday: 48290 + shopxStore.analyticsEvents.length,
+      pageViewsToday: 48290 + storexStore.analyticsEvents.length,
       uniqueVisitors: 12450,
       activeCarts: 342,
       conversionRate: 0.038,
       avgResponseTimeMs: 42,
-      recordedEventsCount: shopxStore.analyticsEvents.length,
+      recordedEventsCount: storexStore.analyticsEvents.length,
     },
   });
 });
@@ -305,16 +305,16 @@ shopxRouter.get('/analytics/metrics', (_req: Request, res: Response) => {
 // 7. CAMPAIGNS & MARKETING
 // ==========================================
 
-// GET /api/shopx/campaigns
-shopxRouter.get('/campaigns', (_req: Request, res: Response) => {
+// GET /api/storex/campaigns
+storexRouter.get('/campaigns', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    campaigns: Object.values(shopxStore.campaigns),
+    campaigns: Object.values(storexStore.campaigns),
   });
 });
 
-// POST /api/shopx/campaigns
-shopxRouter.post('/campaigns', (req: Request, res: Response) => {
+// POST /api/storex/campaigns
+storexRouter.post('/campaigns', (req: Request, res: Response) => {
   const { name, audience_tag, scheduled_at } = req.body || {};
   const id = `cmp_${Date.now()}`;
   const campaign = {
@@ -325,12 +325,12 @@ shopxRouter.post('/campaigns', (req: Request, res: Response) => {
     scheduled_at: scheduled_at || new Date().toISOString(),
     created_at: new Date().toISOString(),
   };
-  shopxStore.campaigns[id] = campaign;
+  storexStore.campaigns[id] = campaign;
   return res.status(201).json({ success: true, campaign });
 });
 
-// POST /api/shopx/campaigns/events
-shopxRouter.post('/campaigns/events', (req: Request, res: Response) => {
+// POST /api/storex/campaigns/events
+storexRouter.post('/campaigns/events', (req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     recorded: true,
@@ -338,8 +338,8 @@ shopxRouter.post('/campaigns/events', (req: Request, res: Response) => {
   });
 });
 
-// POST /api/shopx/campaigns/broadcast
-shopxRouter.post('/campaigns/broadcast', (req: Request, res: Response) => {
+// POST /api/storex/campaigns/broadcast
+storexRouter.post('/campaigns/broadcast', (req: Request, res: Response) => {
   const { campaign_id } = req.body || {};
   return res.status(200).json({
     success: true,
@@ -353,25 +353,25 @@ shopxRouter.post('/campaigns/broadcast', (req: Request, res: Response) => {
 // 8. SUPPORT TICKETS
 // ==========================================
 
-// GET /api/shopx/tickets
-shopxRouter.get('/tickets', (_req: Request, res: Response) => {
+// GET /api/storex/tickets
+storexRouter.get('/tickets', (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    tickets: Object.values(shopxStore.tickets),
+    tickets: Object.values(storexStore.tickets),
   });
 });
 
-// GET /api/shopx/tickets/:id
-shopxRouter.get('/tickets/:id', (req: Request, res: Response) => {
-  const ticket = shopxStore.tickets[req.params.id];
+// GET /api/storex/tickets/:id
+storexRouter.get('/tickets/:id', (req: Request, res: Response) => {
+  const ticket = storexStore.tickets[req.params.id];
   if (!ticket) {
     return res.status(404).json({ error: `Ticket ${req.params.id} not found`, code: 'NOT_FOUND' });
   }
   return res.status(200).json({ success: true, ticket });
 });
 
-// POST /api/shopx/tickets
-shopxRouter.post('/tickets', (req: Request, res: Response) => {
+// POST /api/storex/tickets
+storexRouter.post('/tickets', (req: Request, res: Response) => {
   const { customer_id, customer_name, email, issue_description, order_id } = req.body || {};
   const id = `tkt_${Date.now()}`;
   const ticket = {
@@ -384,7 +384,7 @@ shopxRouter.post('/tickets', (req: Request, res: Response) => {
     status: 'open' as const,
     created_at: new Date().toISOString(),
   };
-  shopxStore.tickets[id] = ticket;
+  storexStore.tickets[id] = ticket;
   return res.status(201).json({ success: true, ticket });
 });
 
@@ -392,8 +392,8 @@ shopxRouter.post('/tickets', (req: Request, res: Response) => {
 // 9. STORE RESET
 // ==========================================
 
-// POST /api/shopx/reset
-shopxRouter.post('/reset', (_req: Request, res: Response) => {
-  shopxStore.reset();
-  return res.status(200).json({ success: true, message: 'ShopX business store reset to baseline.' });
+// POST /api/storex/reset
+storexRouter.post('/reset', (_req: Request, res: Response) => {
+  storexStore.reset();
+  return res.status(200).json({ success: true, message: 'StoreX business store reset to baseline.' });
 });

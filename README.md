@@ -206,7 +206,7 @@ thirdeye/
 ├── apps/
 │   ├── web/                  # Next.js console — landing, dashboard,
 │   │                         # integrations[/:id], events, simulator, settings
-│   └── api/                  # Express — risk engine, CRUD, simulator, ShopX demo service
+│   └── api/                  # Express — risk engine, CRUD, simulator, StoreX demo service
 ├── packages/
 │   ├── shared/               # Shared TS types — single source of truth
 │   ├── sdk-typescript/       # @the-third-eye/sdk (guard client + Express middleware)

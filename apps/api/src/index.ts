@@ -8,7 +8,7 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { eventsRouter } from './routes/events.js';
 import { checkRouter } from './routes/check.js';
 import { simulatorRouter } from './routes/simulator.js';
-import { shopxRouter } from './shopx/router.js';
+import { storexRouter } from './storex/router.js';
 
 const app = express();
 const serverStartTime = Date.now();
@@ -89,7 +89,7 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/security-events', eventsRouter);
 app.use('/api/check-request', checkRouter);
 app.use('/api/simulator', simulatorRouter);
-app.use('/api/shopx', shopxRouter);
+app.use('/api/storex', storexRouter);
 
 const isTestEnv =
   process.env.NODE_ENV === 'test' ||

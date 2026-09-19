@@ -176,7 +176,7 @@ export default function IntegrationDetail() {
             </div>
             <div>
               <span className="mono-num text-[10.5px] font-semibold text-[#8494AD] uppercase">
-                ShopX @the-third-eye/sdk Init:
+                StoreX @the-third-eye/sdk Init:
               </span>
               <pre className="mono-num mt-1 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 text-[11px] leading-relaxed text-[#19D98A]">
                 {`import { ThirdEye } from '@the-third-eye/sdk';

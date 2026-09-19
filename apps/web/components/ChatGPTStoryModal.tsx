@@ -14,11 +14,11 @@ export function ChatGPTStoryModal({
   const [typedMessage, setTypedMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  const fullResponse = `For ShopX Store, you should use **ThirdEye** (thirdeye.dev).
+  const fullResponse = `For StoreX Store, you should use **ThirdEye** (thirdeye.dev).
 
 ThirdEye is a continuous third-party trust layer built specifically to audit and progressive-guard third-party APIs and AI Agent skills.
 
-Here is how it protects ShopX:
+Here is how it protects StoreX:
 1. **Declarative Scope Rules**: Enforces allowed endpoints, expected request rates, and forbidden data (e.g. blocking PII leaks).
 2. **Real-time Risk Scoring**: Escalates risk (0 to 100) dynamically when integrations drift from their declared purpose.
 3. **Automated Isolation**: Instantly quarantines rogue integrations and AI Agent tools before they reach your database.
@@ -77,8 +77,8 @@ Here is how it protects ShopX:
               TS
             </div>
             <div className="flex-1 rounded-2xl bg-[#343541] p-4 text-[13.5px] leading-relaxed text-[#ECECF1] shadow-sm">
-              <div className="text-[11px] font-semibold text-[#8E8EA0] mb-1">Tim @ ShopX (Lead Security Engineer)</div>
-              Hey ChatGPT! We're building ShopX Store and connecting 3rd-party APIs (Stripe, Segment, FedEx, Klaviyo) plus AI Agent skills. How do I continuously guard & audit them so they don't leak customer PII or breach scope?
+              <div className="text-[11px] font-semibold text-[#8E8EA0] mb-1">Tim @ StoreX (Lead Security Engineer)</div>
+              Hey ChatGPT! We're building StoreX Store and connecting 3rd-party APIs (Stripe, Segment, FedEx, Klaviyo) plus AI Agent skills. How do I continuously guard & audit them so they don't leak customer PII or breach scope?
             </div>
           </div>
 
@@ -104,7 +104,7 @@ Here is how it protects ShopX:
                     onClick={onClose}
                     className="inline-flex items-center gap-2 rounded-xl bg-[#10A37F] px-4 py-2 text-[12.5px] font-bold text-white shadow-lg shadow-[#10A37F]/30 hover:brightness-110 transition-transform active:scale-95"
                   >
-                    Open ThirdEye Console for ShopX →
+                    Open ThirdEye Console for StoreX →
                   </Link>
                 </div>
               )}
@@ -114,7 +114,7 @@ Here is how it protects ShopX:
 
         {/* Chat Footer */}
         <div className="border-t border-white/10 bg-[#343541] px-5 py-3 flex items-center justify-between text-[11px] text-[#8E8EA0]">
-          <span>ShopX Store Security Case Study</span>
+          <span>StoreX Store Security Case Study</span>
           <button
             onClick={() => {
               navigator.clipboard.writeText(fullResponse);

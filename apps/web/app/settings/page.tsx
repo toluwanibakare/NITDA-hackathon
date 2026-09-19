@@ -17,8 +17,8 @@ export default function SettingsPage() {
   const [apiKeys, setApiKeys] = useState([
     {
       id: 'key_1',
-      name: 'ShopX Production Gateway Key',
-      key: 'te_live_shopx_98a7b6c5d4e3',
+      name: 'StoreX Production Gateway Key',
+      key: 'te_live_storex_98a7b6c5d4e3',
       status: 'ACTIVE',
       created: '2026-09-01',
     },
@@ -110,7 +110,7 @@ export default function SettingsPage() {
               <div className="section-label">Tuning · thresholds, context & developer API keys</div>
               <h1 className="section-heading mt-2">Platform Settings & SDK Keys</h1>
               <p className="section-sub mt-2">
-                Configure false-alarm business context, manage ShopX API keys, and tune enforcement
+                Configure false-alarm business context, manage StoreX API keys, and tune enforcement
                 thresholds.
               </p>
             </div>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="section-label-soft">Developer API Keys</p>
-              <h3 className="h-section mt-0.5">ShopX Integration Credentials</h3>
+              <h3 className="h-section mt-0.5">StoreX Integration Credentials</h3>
             </div>
             <button onClick={generateKey} className="btn-accent !px-3.5 !py-1.5 !text-[12px]">
               + Generate Key

@@ -20,8 +20,8 @@ import {
 
 const MARKETPLACE_CATALOG = [
   {
-    id: 'shopx_sales_agent_skill',
-    name: 'ShopX Sales AI Agent Skill',
+    id: 'storex_sales_agent_skill',
+    name: 'StoreX Sales AI Agent Skill',
     category: '🤖 AI Agent Skill',
     purpose: 'Autonomous sales assistant executing checkout recommendations, cart updates & product lookup.',
     allowedEndpoints: ['/agent/recommend', '/agent/cart-checkout'],
@@ -45,7 +45,7 @@ const MARKETPLACE_CATALOG = [
     id: 'stripe_pay',
     name: 'Stripe Payments',
     category: 'Payments',
-    purpose: 'Process online checkout payments, card tokens and refunds for ShopX.',
+    purpose: 'Process online checkout payments, card tokens and refunds for StoreX.',
     allowedEndpoints: ['/payments', '/refunds'],
     allowedMethods: ['POST'],
     allowedData: ['amount', 'currency', 'order_id'],
@@ -89,7 +89,7 @@ const MARKETPLACE_CATALOG = [
     id: 'zendesk_support',
     name: 'Zendesk Support',
     category: 'Customer Support',
-    purpose: 'Manage ShopX customer inquiry tickets and return requests.',
+    purpose: 'Manage StoreX customer inquiry tickets and return requests.',
     allowedEndpoints: ['/support/tickets', '/order-status'],
     allowedMethods: ['GET', 'POST'],
     allowedData: ['ticket_id', 'customer_email', 'issue_type'],
@@ -151,8 +151,8 @@ function IntegrationsInner() {
 
   // State for Project Connection
   const [projectConnected, setProjectConnected] = useState(true);
-  const [projectName, setProjectName] = useState('ShopX Store');
-  const [projectId, setProjectId] = useState('te_proj_shopx_99a8b7c6');
+  const [projectName, setProjectName] = useState('StoreX Store');
+  const [projectId, setProjectId] = useState('te_proj_storex_99a8b7c6');
   const [showConnectProjectModal, setShowConnectProjectModal] = useState(false);
   const [projectStep, setProjectStep] = useState<1 | 2 | 3>(1);
 
@@ -238,7 +238,7 @@ function IntegrationsInner() {
               </div>
               <h1 className="section-heading mt-2">Integrations & Marketplace</h1>
               <p className="section-sub mt-2">
-                Connect your merchant project (like ShopX) to ThirdEye, browse pre-verified partner
+                Connect your merchant project (like StoreX) to ThirdEye, browse pre-verified partner
                 integrations, generate gateway routing keys, and monitor compliance in real time.
               </p>
             </div>
@@ -574,7 +574,7 @@ function IntegrationsInner() {
                     type="text"
                     value={projectName}
                     onChange={e => setProjectName(e.target.value)}
-                    placeholder="e.g. ShopX Store, Acme Market"
+                    placeholder="e.g. StoreX Store, Acme Market"
                     className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-2.5 text-[14px] text-white outline-none focus:border-[#1677FF]"
                   />
                 </div>
@@ -592,7 +592,7 @@ function IntegrationsInner() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="https://shopx.store"
+                    defaultValue="https://storex.store"
                     className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-2.5 text-[14px] text-white outline-none focus:border-[#1677FF]"
                   />
                 </div>

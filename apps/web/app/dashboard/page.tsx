@@ -153,7 +153,7 @@ export default function Dashboard() {
                 <span className="chip !text-[10px] !border-[#00CEC9]/30 !bg-[#00CEC9]/10 !text-[#00CEC9]">RAW TELEMETRY UNLOCKED</span>
               </div>
               <p className="text-[12px] text-[#8E92A4] mt-0.5 font-mono">
-                Showing cURL inspectors, gateway routing tokens (<code className="text-[#00CEC9]">te_proj_shopx_99a8b7c6</code>), P99 latency (0.8ms), and raw payload JSON.
+                Showing cURL inspectors, gateway routing tokens (<code className="text-[#00CEC9]">te_proj_storex_99a8b7c6</code>), P99 latency (0.8ms), and raw payload JSON.
               </p>
             </div>
           </div>
