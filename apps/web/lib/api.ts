@@ -111,13 +111,13 @@ export interface DashboardStats {
 }
 
 export function getStatsIntegrations(s: DashboardStats): number {
-  return s.integrations ?? s.totalIntegrations ?? 4;
+  return s.integrations ?? s.totalIntegrations ?? 0;
 }
 export function getStatsActive(s: DashboardStats): number {
-  return s.active ?? s.activeIntegrations ?? 4;
+  return s.active ?? s.activeIntegrations ?? 0;
 }
 export function getStatsRequests(s: DashboardStats): number {
-  return s.monitoredRequests ?? s.totalRequestsToday ?? 12480;
+  return s.monitoredRequests ?? s.totalRequestsToday ?? 0;
 }
 export function getStatsThreats(s: DashboardStats): number {
   return s.threats ?? s.totalThreats ?? s.totalViolationsToday ?? 0;

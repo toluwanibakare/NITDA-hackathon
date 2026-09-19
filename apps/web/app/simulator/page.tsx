@@ -1,6 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon, paths } from '@/components/icons';
 import { RiskBadge } from '@/components/RiskBadge';
 import {
@@ -9,10 +10,10 @@ import {
   getSimulatorTarget,
   riskColor,
   type CheckResult,
+  type IntegrationRow,
   type SimulatorPhase,
   type SimulatorStartResponse,
 } from '@/lib/api';
-import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 const FALLBACK_PHASES: SimulatorPhase[] = [
   {
@@ -58,6 +59,7 @@ const FALLBACK_PHASES: SimulatorPhase[] = [
 ];
 
 export default function SimulatorPage() {
+  const [integrations, setIntegrations] = useState<IntegrationRow[]>([]);
   const [integrationId, setIntegrationId] = useState('analytics_001');
   const [running, setRunning] = useState(false);
   const [step, setStep] = useState(-1);
@@ -69,13 +71,39 @@ export default function SimulatorPage() {
   const last = log[log.length - 1];
   const progress = log.length / Math.max(1, phases.length);
 
+  useEffect(() => {
+    apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+      if (r.data.length) {
+        setIntegrations(r.data);
+        const exists = r.data.some(d => d.id === integrationId);
+        if (!exists) setIntegrationId(r.data[0].id);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!integrationId) return;
+    apiSafe<SimulatorStartResponse>(
+      '/api/simulator/start',
+      { sessionId: 'sim_default', integrationId, status: 'running', phases: FALLBACK_PHASES },
+      {
+        method: 'POST',
+        body: JSON.stringify({ integrationId }),
+      }
+    ).then(res => {
+      if (res.data?.phases?.length) {
+        setPhases(res.data.phases);
+      }
+    });
+  }, [integrationId]);
+
   async function run() {
     setRunning(true);
     stopRef.current = false;
     setLog([]);
     setStep(-1);
     // Backend: POST /api/simulator/start {integrationId, attack} → {sessionId, integrationId, status, phases}
-    let activePhases: SimulatorPhase[] = FALLBACK_PHASES;
+    let activePhases: SimulatorPhase[] = phases;
     try {
       const started = await api<SimulatorStartResponse>('/api/simulator/start', {
         method: 'POST',
@@ -89,8 +117,8 @@ export default function SimulatorPage() {
       setLiveEngine(true);
       void getSimulatorTarget(started, integrationId);
     } catch {
-      activePhases = FALLBACK_PHASES;
-      setPhases(FALLBACK_PHASES);
+      activePhases = phases.length ? phases : FALLBACK_PHASES;
+      setPhases(activePhases);
       setSessionId(null);
       setLiveEngine(false);
     }
@@ -118,7 +146,7 @@ export default function SimulatorPage() {
         ]);
       } catch {
         setLiveEngine(false);
-        const fb = FALLBACK_PHASES[i] ?? p;
+        const fb = activePhases[i] ?? FALLBACK_PHASES[i];
         setLog(prev => [
           ...prev,
           {
@@ -131,6 +159,9 @@ export default function SimulatorPage() {
       }
     }
     setRunning(false);
+    apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+      if (r.data.length) setIntegrations(r.data);
+    });
   }
 
   function stop() {
@@ -148,18 +179,13 @@ export default function SimulatorPage() {
     setStep(-1);
     setLog([]);
     setSessionId(null);
-    // Backend supports both POST /api/simulator/reset and POST /api/integrations/:id/release — try reset first.
-    const r = await apiSafe('/api/simulator/reset', null, {
+    await apiSafe('/api/simulator/reset', null, {
       method: 'POST',
       body: JSON.stringify({ integrationId }),
     });
-    if (!r.live) {
-      await apiSafe(
-        `/api/integrations/${integrationId}/release`,
-        {},
-        { method: 'POST', body: JSON.stringify({}) }
-      ).catch(() => {});
-    }
+    apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+      if (r.data.length) setIntegrations(r.data);
+    });
   }
 
   return (
@@ -234,12 +260,34 @@ export default function SimulatorPage() {
                   className="input mt-2"
                   disabled={running}
                 >
-                  {MOCK_INTEGRATIONS.map(m => (
+                  {integrations.map(m => (
                     <option key={m.id} value={m.id} style={{ background: '#0E1A33' }}>
-                      {m.name} · {m.id}
+                      {m.name} · {m.id} ({m.status})
                     </option>
                   ))}
                 </select>
+                {(() => {
+                  const curr = integrations.find(i => i.id === integrationId);
+                  if (!curr) return null;
+                  const isQuarantined = curr.status === 'QUARANTINED';
+                  return (
+                    <div className="mt-2 flex items-center justify-between text-[11.5px]" style={{ color: '#7D8DA8' }}>
+                      <span>
+                        Status:{' '}
+                        <strong style={{ color: isQuarantined ? '#FF4D5E' : '#19D98A' }}>
+                          {curr.status}
+                        </strong>
+                        {isQuarantined ? ' (auto-resets on start)' : ''}
+                      </span>
+                      <span>
+                        Rate:{' '}
+                        <strong className="text-[#F5F9FF]">
+                          {curr.expected_request_rate ?? curr.expectedRequestRate ?? 100}/min
+                        </strong>
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <label className="section-label-soft">Attack pattern</label>

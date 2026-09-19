@@ -35,7 +35,6 @@ import {
   type IntegrationRow,
   type SecEvent,
 } from '@/lib/api';
-import { MOCK_EVENTS, MOCK_INTEGRATIONS } from '@/lib/mock';
 
 export default function IntegrationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -50,10 +49,7 @@ export default function IntegrationDetail() {
 
   const load = useCallback(async () => {
     const [p, h, ev] = await Promise.all([
-      apiSafe<IntegrationDetailResponse | IntegrationRow>(`/api/integrations/${id}`, {
-        profile: MOCK_INTEGRATIONS.find(m => m.id === id) ?? MOCK_INTEGRATIONS[2],
-        recentViolations: MOCK_EVENTS,
-      } as IntegrationDetailResponse),
+      apiSafe<IntegrationDetailResponse | IntegrationRow | null>(`/api/integrations/${id}`, null),
       apiSafe<HistoryResponse>(`/api/integrations/${id}/history`, {
         integrationId: id as string,
         normalRate: 100,
@@ -61,20 +57,23 @@ export default function IntegrationDetail() {
         currentRisk: 8,
         history: [],
       }),
-      apiSafe<SecEvent[]>(
-        `/api/security-events?integrationId=${id}&limit=10`,
-        MOCK_EVENTS.filter(e => e.integration_id === id)
-      ),
+      apiSafe<SecEvent[]>(`/api/security-events?integrationId=${id}&limit=10`, []),
     ]);
-    const prof = (p.data as { profile?: IntegrationRow }).profile ?? (p.data as IntegrationRow);
-    setProfile(prof);
-    const beh = (p.data as IntegrationDetailResponse).behaviour ?? null;
-    setBehaviour(beh);
+    if (p.data) {
+      const prof = (p.data as { profile?: IntegrationRow }).profile ?? (p.data as IntegrationRow);
+      setProfile(prof);
+      const beh = (p.data as IntegrationDetailResponse).behaviour ?? null;
+      setBehaviour(beh);
+      const fromDetail = (p.data as { recentViolations?: SecEvent[] }).recentViolations ?? [];
+      const merged = ev.data.length ? ev.data : fromDetail;
+      setEvents(merged.map(normaliseEvent));
+    } else {
+      setProfile(null);
+      setBehaviour(null);
+      setEvents(ev.data.map(normaliseEvent));
+    }
     if (h.live && h.data.history?.length) setHistory(h.data);
     else setHistory(null);
-    const fromDetail = (p.data as { recentViolations?: SecEvent[] }).recentViolations ?? [];
-    const merged = ev.data.length ? ev.data : fromDetail;
-    setEvents(merged.map(normaliseEvent));
     setLive(p.live || ev.live || h.live);
   }, [id]);
 

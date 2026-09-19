@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -16,7 +17,6 @@ import {
   normaliseIntegration,
   type IntegrationRow,
 } from '@/lib/api';
-import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 const MARKETPLACE_CATALOG = [
   {
@@ -78,7 +78,7 @@ const MARKETPLACE_CATALOG = [
 
 function IntegrationsInner() {
   const searchParams = useSearchParams();
-  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
+  const [items, setItems] = useState<IntegrationRow[]>([]);
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortKey, setSortKey] = useState<'risk' | 'rate' | 'name'>('risk');
@@ -99,16 +99,16 @@ function IntegrationsInner() {
     if (q) query.set('search', q);
     query.set('sort', sortKey);
 
-    apiSafe<IntegrationRow[]>(`/api/integrations?${query.toString()}`, MOCK_INTEGRATIONS).then(r => {
-      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
+    apiSafe<IntegrationRow[]>(`/api/integrations?${query.toString()}`, []).then(r => {
+      setItems(r.data.map(normaliseIntegration));
       setLive(r.live);
     });
   }, [q, statusFilter, sortKey]);
 
   useEffect(() => {
     const id = setInterval(() => {
-      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
-        if (r.data.length) setItems(r.data.map(normaliseIntegration));
+      apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+        setItems(r.data.map(normaliseIntegration));
         setLive(r.live);
       });
     }, 8000);

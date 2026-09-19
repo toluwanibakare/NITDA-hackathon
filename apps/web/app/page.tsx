@@ -14,7 +14,6 @@ import {
   riskColor,
   type IntegrationRow,
 } from '@/lib/api';
-import { MOCK_INTEGRATIONS } from '@/lib/mock';
 
 const TIERS = [
   {
@@ -149,7 +148,7 @@ function RiskLoop() {
 }
 
 export default function LandingPage() {
-  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
+  const [items, setItems] = useState<IntegrationRow[]>([]);
   const [live, setLive] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -165,8 +164,8 @@ export default function LandingPage() {
   }, [tierHold]);
 
   useEffect(() => {
-    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
-      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
+    apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+      setItems(r.data.map(normaliseIntegration));
       setLive(r.live);
     });
   }, []);

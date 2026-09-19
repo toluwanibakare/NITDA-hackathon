@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { EventTimeline } from '@/components/EventTimeline';
 import { IntegrationMap } from '@/components/IntegrationMap';
@@ -14,12 +15,11 @@ import {
   type IntegrationRow,
   type SecEvent,
 } from '@/lib/api';
-import { MOCK_EVENTS, MOCK_INTEGRATIONS } from '@/lib/mock';
 import { isSupabaseEnvConfigured, supabaseBrowser } from '@/lib/supabaseClient';
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<SecEvent[]>(MOCK_EVENTS);
-  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
+  const [events, setEvents] = useState<SecEvent[]>([]);
+  const [items, setItems] = useState<IntegrationRow[]>([]);
   const [filter, setFilter] = useState('all');
   const [live, setLive] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -29,19 +29,20 @@ export default function EventsPage() {
 
   useEffect(() => {
     // Backend: GET /api/security-events?limit=50 → SecEvent[] dual-cased + SHA-256 hash chain
-    apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then(r => {
-      setEvents((r.data.length ? r.data : MOCK_EVENTS).map(normaliseEvent));
+    apiSafe<SecEvent[]>('/api/security-events?limit=50', []).then(r => {
+      setEvents(r.data.map(normaliseEvent));
       setLive(r.live);
     });
-    apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
-      setItems((r.data.length ? r.data : MOCK_INTEGRATIONS).map(normaliseIntegration));
+    apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+      setItems(r.data.map(normaliseIntegration));
     });
     const poll = setInterval(() => {
-      apiSafe<SecEvent[]>('/api/security-events?limit=50', MOCK_EVENTS).then(r => {
-        if (r.data.length) setEvents(r.data.map(normaliseEvent));
+      apiSafe<SecEvent[]>('/api/security-events?limit=50', []).then(r => {
+        setEvents(r.data.map(normaliseEvent));
+        setLive(r.live);
       });
-      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS).then(r => {
-        if (r.data.length) setItems(r.data.map(normaliseIntegration));
+      apiSafe<IntegrationRow[]>('/api/integrations', []).then(r => {
+        setItems(r.data.map(normaliseIntegration));
       });
     }, 5000);
     let chan: { unsubscribe: () => void } | null = null;

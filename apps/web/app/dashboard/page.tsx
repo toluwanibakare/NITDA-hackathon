@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { EventTimeline } from '@/components/EventTimeline';
@@ -22,35 +23,48 @@ import {
   type IntegrationRow,
   type SecEvent,
 } from '@/lib/api';
-import { MOCK_EVENTS, MOCK_INTEGRATIONS, MOCK_STATS } from '@/lib/mock';
 import { isSupabaseEnvConfigured, supabaseBrowser } from '@/lib/supabaseClient';
 import { useDevMode } from '@/app/shell';
 
 export default function Dashboard() {
   const devMode = useDevMode();
-  const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
-  const [items, setItems] = useState<IntegrationRow[]>(MOCK_INTEGRATIONS);
-  const [events, setEvents] = useState<SecEvent[]>(MOCK_EVENTS);
+  const [stats, setStats] = useState<DashboardStats>({
+    integrations: 0,
+    active: 0,
+    monitoredRequests: 0,
+    threats: 0,
+    quarantined: 0,
+  });
+  const [items, setItems] = useState<IntegrationRow[]>([]);
+  const [events, setEvents] = useState<SecEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [live, setLive] = useState(false);
   const [quarantining, setQuarantining] = useState<string | null>(null);
   const [underAttackMode, setUnderAttackMode] = useState(false);
 
   const load = useCallback(async () => {
     const [s, list, act, ev] = await Promise.all([
-      apiSafe<DashboardStats>('/api/dashboard/stats', MOCK_STATS),
-      apiSafe<IntegrationRow[]>('/api/integrations', MOCK_INTEGRATIONS),
+      apiSafe<DashboardStats>('/api/dashboard/stats', {
+        integrations: 0,
+        active: 0,
+        monitoredRequests: 0,
+        threats: 0,
+        quarantined: 0,
+      }),
+      apiSafe<IntegrationRow[]>('/api/integrations', []),
       apiSafe<ActivityItem[] | { activities: ActivityItem[] }>('/api/dashboard/activity?limit=20', []),
-      apiSafe<SecEvent[]>('/api/security-events?limit=8', MOCK_EVENTS),
+      apiSafe<SecEvent[]>('/api/security-events?limit=8', []),
     ]);
     setStats(s.data);
-    setItems(list.data.length ? list.data.map(normaliseIntegration) : MOCK_INTEGRATIONS);
+    setItems(list.data.map(normaliseIntegration));
     const rawAct: ActivityItem[] = Array.isArray(act.data)
       ? act.data
       : ((act.data as { activities?: ActivityItem[] })?.activities ?? []);
     if (rawAct.length) setEvents(rawAct.map(activityToEvent));
     else if (ev.data.length) setEvents(ev.data.map(normaliseEvent));
-    else setEvents(MOCK_EVENTS);
+    else setEvents([]);
     setLive(s.live || list.live || act.live || ev.live);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
