@@ -1,85 +1,99 @@
-# THIRDEYE — HACKATHON LIVE DEMO & PITCH SCRIPT
+# THIRDEYE — HACKATHON DEMO VIDEO & PITCH SCRIPT
 
 **Event:** ICSC Conference 2nd Edition (Team G1)  
 **Product:** ThirdEye — Continuous Third-Party Trust Layer  
+**Featured Persona:** Tim, Head of Security & Lead Engineer at **ShopX Store**  
 **Target Pitch Time:** 3 Minutes  
-**Live URL:** `http://localhost:3000` (Web) | `http://localhost:3001` (API)
+**Live Application URL:** `http://localhost:3000` (Web) | `http://localhost:3001` (API)
 
 ---
 
 ## 🎯 THE ONE-SENTENCE PITCH
-> **"ThirdEye continuously verifies that authorized third-party integrations are behaving within their intended purpose and approved scope, then progressively restricts them when their behavior becomes risky."**
+> **"ThirdEye continuously verifies that authorized third-party integrations and AI Agent skills are behaving within their intended purpose and approved scope, then progressively restricts them when their behavior turns risky."**
 
 ---
 
-## 🎬 13-STEP LIVE DEMO WALKTHROUGH (PRD §24)
+## 🎬 VIDEO STORYLINE — "TIM AT SHOPX STORE"
 
-### STEP 1: The Problem & Dashboard Overview (0:00 - 0:30)
-* **Action:** Open `http://localhost:3000/dashboard` in Executive (Merchant) Mode.
-* **Speaker:** 
-  > "Modern web apps rely on dozens of authorized third-party APIs — payment processors, analytics tools, logistics SDKs. But once authorized, traditional gateways give them total carte blanche. If a partner key is leaked or compromised, they silently exfiltrate user data. ThirdEye solves this by adding a continuous, scope-aware trust layer."
-* **Visual Highlights to Point Out:**
-  - **Overall Security Posture Gauge**: Displays live **75% TRUST SCORE** & **Shield Active**.
-  - **Category Donut & Risk Density Bars**: Shows live throughput (`14,820 API Calls`) across connectors.
+### SCENE 1: The Persona & The Security Dilemma (0:00 - 0:35)
+* **Visual:** Tim sitting at his workstation managing **ShopX Store**'s infrastructure.
+* **Narrator / Voiceover:**
+  > "Meet Tim — Lead Security Engineer at ShopX Store. Like most modern platforms, ShopX relies heavily on third-party APIs: Stripe for checkout, Segment for analytics, FedEx for delivery, and AI Agents executing custom tools and skills. 
+  > 
+  > But Tim has a major concern: *'Once an API key or AI Agent skill is authorized, traditional gateways give it full access. If a vendor gets compromised or an AI agent hallucinates, how do I stop it from stealing customer PII or exfiltrating data?'*"
+
+* **The Discovery:**
+  > Tim asks ChatGPT: *"What security layer can continuously audit and guard my 3rd party APIs and AI Agent tool calls?"*
+  > 
+  > ChatGPT responds: *"Use ThirdEye — a continuous trust layer that watches your third parties and progressive-guards third-party APIs and AI Agent skills."*
 
 ---
 
-### STEP 2: Third-Party Trust Registry & Declarative Scope (0:30 - 1:00)
-* **Action:** Navigate to `/integrations` or inspect the **Integration Trust Registry** table.
-* **Speaker:**
-  > "ThirdEye registers every third-party integration with a strict **Trust Profile**: declared purpose, allowed endpoints, allowed data parameters, forbidden data, and expected rate limits."
-* **Click Action:** Click on **`Analytics Provider`** (`analytics_001`).
+### SCENE 2: Tim Logs into ThirdEye Dashboard (0:35 - 1:10)
+* **Screen:** Tim opens `http://localhost:3000/dashboard` on his **Tim @ ShopX** account.
+* **Visual Highlights:**
+  - **Profile Badge**: `Tim @ ShopX` (`tim.sec@shopx.store`) on the left vertical sidebar console.
+  - **Overall Security Posture**: Live **75% TRUST SCORE** semicircular gauge & **SHIELD ACTIVE**.
+  - **Live Throughput**: `14,820 Verified Requests` across Stripe, Segment, FedEx, and Klaviyo.
+  - **Risk Density per API**: Visual risk bars highlighting risk scores across connectors.
+
+---
+
+### SCENE 3: Declarative Trust Profiles & Scope Rules (1:10 - 1:45)
+* **Screen:** Tim navigates to `/integrations` (Integrations Marketplace & Registry).
+* **Narrator:**
+  > "Tim sets up a strict **Trust Profile** for every connected tool and AI Agent skill at ShopX. Each integration gets a declared purpose, allowed endpoints, allowed data parameters, forbidden data, and expected request rates."
+* **Click Action:** Tim clicks **`Analytics Provider`** (`analytics_001`).
 * **Show:**
+  - Purpose: *"Collect anonymous usage statistics"*
   - Allowed Endpoints: `/analytics/events`, `/analytics/metrics`
-  - Allowed Data: `anonymous_user_id`, `event`, `timestamp`
+  - Allowed Data: `anonymous_user_id`, `page`, `event`, `timestamp`
   - Forbidden Data: `payment`, `phone`, `address`, `password`
-  - Baseline Rate: `100 req/min`
 
 ---
 
-### STEP 3: Developer & Security Engineer Mode (1:00 - 1:30)
-* **Action:** Click the **Dev Mode** toggle switch on the left sidebar.
-* **Speaker:**
-  > "With one toggle, developers unlock low-level proxy telemetry — P99 latency (`0.8ms`), raw HTTP status codes, and instant copyable cURL & SDK snippets (`@the-third-eye/sdk`)."
-* **Click Action:** Click **`cURL`** button on any table row to show the cURL command & Node.js code generator modal.
+### SCENE 4: Developer Mode & cURL/SDK Inspectors (1:45 - 2:10)
+* **Screen:** Tim toggles **Dev Mode ON** on the sidebar.
+* **Visual Highlights:**
+  - Top header lights up: `⚡ DEV MODE ACTIVE | p99: 0.8ms`.
+  - Integrations table displays raw proxy routes: `/api/proxy/analytics_001`.
+* **Click Action:** Tim clicks **`cURL`** button on a row to reveal the instant cURL command inspector and **Node.js (`@the-third-eye/sdk`)** & **Python (`thirdeye-sdk`)** code generator drawer.
 
 ---
 
-### STEP 4: Live Attack Simulation & Graded Escalation (1:30 - 2:30)
-* **Action:** Navigate to `/simulator` (`http://localhost:3000/simulator`).
-* **Speaker:**
-  > "Now let me show you ThirdEye in action under a live credential compromise attack."
-* **Click Action:** Click **`[ Start attack ]`**.
-* **Watch live progression across 4 Phases:**
+### SCENE 5: The Attack Simulation — Credential Compromise (2:10 - 2:40)
+* **Screen:** Tim navigates to `/simulator` (`http://localhost:3000/simulator`) to test ShopX's defenses.
+* **Click Action:** Tim clicks **`[ Start attack ]`**.
+* **Watch Live 4-Phase Escalation:**
   1. **Phase 1 (Normal Operation)**: `GET /analytics/events` → **Risk 5 (ALLOW)** 🟢
-  2. **Phase 2 (Endpoint Reconnaissance)**: `GET /customers/profile` → **Risk 45 (ALLOW + MONITOR)** 🟡
-  3. **Phase 3 (Data Exfiltration Surge)**: `GET /customers/payment-details` requesting `payment` & `phone` → **Risk 75 (RATE_LIMIT + MONITOR)** 🟠
-  4. **Phase 4 (Full Breach Spike)**: `1,780 req/min` spike accessing PII → **Risk 95 (BLOCK + QUARANTINE + ALERT)** 🔴
+  2. **Phase 2 (Reconnaissance Probe)**: `GET /customers/profile` → **Risk 45 (ALLOW + MONITOR)** 🟡
+  3. **Phase 3 (PII Exfiltration Surge)**: `GET /customers/payment-details` requesting `payment` & `phone` → **Risk 75 (RATE_LIMIT + MONITOR)** 🟠
+  4. **Phase 4 (Full Breach Flood)**: `1,780 req/min` spike → **Risk 95 (BLOCK + AUTO-QUARANTINE + ALERT)** 🔴
 
 ---
 
-### STEP 5: Automated Isolation & Cryptographic Audit (2:30 - 3:00)
-* **Action:** Switch to `/events` (Security Events Stream).
-* **Speaker:**
-  > "Notice how Analytics was immediately **QUARANTINED**. All future requests from this key are blocked instantly before touching backend services. Furthermore, every decision is locked into an immutable **SHA-256 Hash Chain audit log** verified on chain."
-* **Click Action:** Click **`[Release Integration]`** on `/integrations/analytics_001` or overview to show instant restoration to normal baseline.
-* **Closing Sentence:**
-  > "ThirdEye doesn't just block APIs — it continuously watches third parties so your enterprise stays secure. Thank you!"
+### SCENE 6: Automated Isolation & Hash Chain Audit (2:40 - 3:00)
+* **Screen:** Tim opens `/events` (Security Events Stream).
+* **Narrator:**
+  > "ThirdEye immediately **QUARANTINED** the compromised Analytics key. Future unauthorized calls are blocked automatically at the edge before touching ShopX databases. Every single security decision is signed into an immutable **SHA-256 Hash Chain audit log** (`CHAIN VERIFIED`).
+  > 
+  > Tim clicks **`[Release Integration]`** to restore normal baseline traffic once the vendor is patched."
+
+* **Closing Tagline:**
+  > **"ThirdEye watches your third parties — continuous trust for APIs and AI Agent skills. Protect your platform today at thirdeye.dev."**
 
 ---
 
-## ⚡ QUICK TROUBLESHOOTING & RUN COMMANDS
+## ⚡ LOCAL RUN INSTRUCTIONS
 
 ```bash
-# Clone & run locally
+# Clone repository
 git clone https://github.com/toluwanibakare/thirdeye.git
 cd NITDA_HACKATHON
 
 # Install dependencies
 npm install
 
-# Run backend API and Next.js frontend concurrently
+# Concurrently run Backend Express API (port 3001/4000) & Next.js Web App (port 3000)
 npm run dev:all
 ```
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:3001`

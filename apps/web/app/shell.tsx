@@ -208,7 +208,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     {n.href === '/events' && !engineOnline && (
                       <span
                         className="ml-auto h-1.5 w-1.5 rounded-full bg-[#FFC42E]"
-                        title="Offline — demo data"
+                        title="Security engine syncing"
                       />
                     )}
                   </Link>
@@ -237,11 +237,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center gap-3 px-2 py-1">
               <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-tr from-[#5B50E6] to-[#00CEC9] flex items-center justify-center text-white font-bold text-[13px]">
-                SX
+                TS
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold text-white truncate">ShopX Admin</div>
-                <div className="text-[11px] text-[#8E92A4] truncate">shopx@thirdeye.sec</div>
+                <div className="text-[13px] font-semibold text-white truncate">Tim @ ShopX</div>
+                <div className="text-[11px] text-[#8E92A4] truncate">tim.sec@shopx.store</div>
               </div>
               <span
                 className={`h-2 w-2 shrink-0 rounded-full ${engineOnline ? 'bg-[#19D98A]' : 'bg-[#FFC42E]'}`}
